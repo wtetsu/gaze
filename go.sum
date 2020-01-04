@@ -1,0 +1,4 @@
+github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
+github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
+github.com/wtetsu/sillycd v0.0.0-20190910122828-7882468ef2eb h1:UOG8ma8FcEO/QMXfpffJluP+MRgAEJbYw2ei4aktIB8=
+github.com/wtetsu/sillycd v0.0.0-20190910122828-7882468ef2eb/go.mod h1:Gtdael2sdRdzI/BQedqLNho3U3cynhcZgd36QKXPlAU=
