@@ -1,16 +1,40 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"github.com/wtetsu/gaze/pkg/app"
 	"os"
+
+	"github.com/wtetsu/gaze/pkg/app"
 )
 
 func main() {
-	if len(os.Args) <= 1 {
-		fmt.Fprintln(os.Stderr, "Usage: gaze command [file1] [file2] [...]")
+	help := flag.Bool("h", false, "help")
+	// timeout := flag.Int("t", 0, "int flag")
+	// quiet := flag.Bool("q", false, "bool flag")
+	// parallel := flag.Bool("p", false, "bool flag")
+	// recursion := flag.Bool("r", false, "bool flag")
+	userCommand := flag.String("c", "", "command")
+	flag.Parse()
+
+	if *help {
+		fmt.Println(usage)
 		return
 	}
 
-	app.Start(os.Args[1:])
+	err := app.Start(flag.Args(), *userCommand)
+	if err != nil {
+		os.Exit(1)
+	}
 }
+
+var usage = `
+Usage: gaze [files...] [options...]
+
+Options:
+  -c  Command.
+  -q  Quiet.
+  -r  Recursive.
+  -p  Parallel.
+  -f  Filter.
+`

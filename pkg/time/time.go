@@ -19,3 +19,8 @@ func GetFileModifiedTime(filePath string) int64 {
 func Now() int64 {
 	return time.Now().UnixNano()
 }
+
+// Sleep sleeps milliseconds time
+func Sleep(d time.Duration) {
+	time.Sleep(d * time.Millisecond)
+}
