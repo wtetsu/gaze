@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/wtetsu/gaze/pkg/app"
+	"github.com/wtetsu/gaze/pkg/config"
 )
 
 func main() {
@@ -15,10 +16,16 @@ func main() {
 	// parallel := flag.Bool("p", false, "bool flag")
 	// recursion := flag.Bool("r", false, "bool flag")
 	userCommand := flag.String("c", "", "command")
+	yaml := flag.Bool("y", false, "Show default config")
 	flag.Parse()
 
 	if *help {
 		fmt.Println(usage)
+		return
+	}
+
+	if *yaml {
+		fmt.Println(config.Default())
 		return
 	}
 
@@ -36,5 +43,6 @@ Options:
   -q  Quiet.
   -r  Recursive.
   -p  Parallel.
-  -f  Filter.
+	-f  Filter.
+	-y  Show default configuration. Save as ./.gaze.yml or ~/.gaze.yml and edit it.
 `

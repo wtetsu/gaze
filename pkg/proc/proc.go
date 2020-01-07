@@ -1,12 +1,16 @@
 package proc
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"regexp"
+	"path/filepath"
+	"runtime"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
 )
@@ -41,10 +45,13 @@ func createWatcher(files []string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func waitAndRunForever(watcher *fsnotify.Watcher, files []string, userCommand string) {
+func waitAndRunForever(watcher *fsnotify.Watcher, files []string, userCommand string) error {
 	var lastExecutionTime int64
 
-	commandConfigs := createCommandConfigs()
+	commandConfigs, err := config.LoadConfig()
+	if err != nil {
+		return err
+	}
 
 	for {
 		select {
@@ -59,18 +66,22 @@ func waitAndRunForever(watcher *fsnotify.Watcher, files []string, userCommand st
 			if modifiedTime <= lastExecutionTime {
 				continue
 			}
+			var command string
 			if userCommand != "" {
-				executeShellCommand(userCommand)
+				command = userCommand
 			} else {
-				command := createCommand(event.Name, commandConfigs)
-				if command != nil {
-					executeCommand(command)
+				command = getAppropriateCommand(event.Name, commandConfigs)
+			}
+			if command != "" {
+				err := executeShellCommand(command)
+				if err != nil {
+					logger.Fatal(err)
 				}
 			}
-
 			lastExecutionTime = time.Now()
 		}
 	}
+	// return nil
 }
 
 func match(files []string, s string) bool {
@@ -84,8 +95,24 @@ func match(files []string, s string) bool {
 	return result
 }
 
-func executeCommand(command []string) {
-	cmd := exec.Command(command[0], command[1:]...)
+func executeShellCommand(commandString string) error {
+	var cmd *exec.Cmd
+
+	shell := os.Getenv("SHELL")
+	if shell != "" {
+		cmd = executeSh(shell, commandString)
+	} else {
+		if runtime.GOOS == "windows" {
+			cmd = executeBat(commandString)
+		} else {
+			cmd = executeSh("sh", commandString)
+		}
+	}
+
+	if cmd == nil {
+		return errors.New("failed:" + commandString)
+	}
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Start()
@@ -98,93 +125,60 @@ func executeCommand(command []string) {
 	if err != nil {
 		logger.Debug(err)
 	}
+	return nil
 }
 
-func executeShellCommand(commandString string) {
+func executeSh(shell string, commandString string) *exec.Cmd {
 	tmpFile, err := ioutil.TempFile("", "*.sh")
 	if err != nil {
-		return
+		return nil
 	}
+
+	fmt.Println(tmpFile.Name())
 	defer tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
 
 	_, err = tmpFile.WriteString(commandString)
 	if err != nil {
-		return
+		return nil
 	}
 
-	var cmd *exec.Cmd
-	shell := os.Getenv("SHELL")
-	if shell != "" {
-		cmd = exec.Command(shell, tmpFile.Name())
-	} else {
-		cmd = exec.Command("sh", tmpFile.Name())
-	}
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Start()
-
-	// fmt.Println(cmd.Process.Pid)
-	// time.Sleep(2000)
-	// cmd.Process.Kill()
-
-	err = cmd.Wait()
-	if err != nil {
-		logger.Debug(err)
-	}
+	return exec.Command(shell, tmpFile.Name())
 }
 
-func createCommand(filePath string, configs []commandConfig) []string {
-	var command []string = nil
-	for _, c := range configs {
-		if c.SearchRegexp == nil {
-			continue
-		}
-		if c.SearchRegexp.MatchString(filePath) {
-			command = append(c.Command, filePath)
+func executeBat(commandString string) *exec.Cmd {
+	tmpFile, err := ioutil.TempFile("", "*.bat")
+	if err != nil {
+		return nil
+	}
+
+	fmt.Println(tmpFile.Name())
+	defer tmpFile.Close()
+
+	_, err = tmpFile.WriteString("@" + commandString)
+	if err != nil {
+		return nil
+	}
+
+	return exec.Command("cmd", "/c", tmpFile.Name())
+}
+
+func getAppropriateCommand(filePath string, commandConfigs []config.Config) string {
+	ext := filepath.Ext(filePath)
+	// base := filepath.Base(filePath)
+	// abs, _ := filepath.Abs(filePath)
+	// dir := filepath.Dir(filePath)
+
+	var result string
+	for _, c := range commandConfigs {
+		// if c.SearchRegexp.MatchString(filePath) {
+		// 	command = append(c.Command, filePath)
+		// 	break
+		// }
+		if c.Run != "" && c.Ext == ext {
+			command := render(c.Run, filePath)
+			result = command
 			break
 		}
 	}
-	return command
-}
-
-func createCommandConfigs() []commandConfig {
-	var resultConfigs []commandConfig
-	configs := getConfigs()
-
-	n := len(configs)
-	for i := 0; i < n; i++ {
-		c := configs[i]
-		re, err := regexp.Compile(c.Search)
-		if err != nil {
-			logger.Fatal(err)
-			continue
-		}
-		c.SearchRegexp = re
-		resultConfigs = append(resultConfigs, commandConfig{c.Search, c.Command, re})
-	}
-
-	return resultConfigs
-}
-
-// TODO
-func getConfigs() []commandConfig {
-	return []commandConfig{
-		commandConfig{`\.d`, []string{"dmd", "-run"}, nil},
-		commandConfig{`\.js`, []string{"node"}, nil},
-		commandConfig{`\.go`, []string{"go run"}, nil},
-		commandConfig{`\.php`, []string{"php"}, nil},
-		commandConfig{`\.pl`, []string{"perl"}, nil},
-		commandConfig{`\.py`, []string{"python"}, nil},
-		commandConfig{`\.rb`, []string{"ruby"}, nil},
-		commandConfig{`\.sh`, []string{"sh"}, nil},
-	}
-
-}
-
-type commandConfig struct {
-	Search       string
-	Command      []string
-	SearchRegexp *regexp.Regexp
+	return result
 }
