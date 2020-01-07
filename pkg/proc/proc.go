@@ -2,7 +2,6 @@ package proc
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -11,9 +10,12 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/config"
+	"github.com/wtetsu/gaze/pkg/file"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
 )
+
+var commandFileMap = make(map[string]string)
 
 // StartGazing starts file
 func StartGazing(files []string, userCommand string) error {
@@ -95,19 +97,22 @@ func match(files []string, s string) bool {
 	return result
 }
 
-func executeShellCommand(commandString string) error {
-	var cmd *exec.Cmd
-
+func getDefaultShell() string {
 	shell := os.Getenv("SHELL")
 	if shell != "" {
-		cmd = executeSh(shell, commandString)
-	} else {
-		if runtime.GOOS == "windows" {
-			cmd = executeBat(commandString)
-		} else {
-			cmd = executeSh("sh", commandString)
-		}
+		return shell
 	}
+	if runtime.GOOS == "windows" {
+		return "cmd"
+	}
+	return "sh"
+}
+
+func executeShellCommand(commandString string) error {
+	defaultShell := getDefaultShell()
+
+	shellScriptPath := prepareScript(defaultShell, commandString)
+	cmd := executeScript(defaultShell, shellScriptPath)
 
 	if cmd == nil {
 		return errors.New("failed:" + commandString)
@@ -128,38 +133,38 @@ func executeShellCommand(commandString string) error {
 	return nil
 }
 
-func executeSh(shell string, commandString string) *exec.Cmd {
-	tmpFile, err := ioutil.TempFile("", "*.sh")
-	if err != nil {
-		return nil
+func prepareScript(defaultShell string, commandString string) string {
+	existingFilePath, found := commandFileMap[commandString]
+
+	if found && file.Exist(existingFilePath) {
+		return existingFilePath
 	}
 
-	fmt.Println(tmpFile.Name())
-	defer tmpFile.Close()
-
-	_, err = tmpFile.WriteString(commandString)
+	newFilePath, err := ioutil.TempFile("", "*.gaze.cmd")
 	if err != nil {
-		return nil
+		return ""
 	}
 
-	return exec.Command(shell, tmpFile.Name())
+	if defaultShell == "cmd" {
+		newFilePath.WriteString("@" + commandString)
+	} else {
+		newFilePath.WriteString(commandString)
+	}
+	err = newFilePath.Close()
+	if err != nil {
+		return ""
+	}
+
+	commandFileMap[commandString] = newFilePath.Name()
+
+	return newFilePath.Name()
 }
 
-func executeBat(commandString string) *exec.Cmd {
-	tmpFile, err := ioutil.TempFile("", "*.bat")
-	if err != nil {
-		return nil
+func executeScript(shell string, scriptPath string) *exec.Cmd {
+	if shell == "cmd" {
+		return exec.Command("cmd", "/c", scriptPath)
 	}
-
-	fmt.Println(tmpFile.Name())
-	defer tmpFile.Close()
-
-	_, err = tmpFile.WriteString("@" + commandString)
-	if err != nil {
-		return nil
-	}
-
-	return exec.Command("cmd", "/c", tmpFile.Name())
+	return exec.Command(shell, scriptPath)
 }
 
 func getAppropriateCommand(filePath string, commandConfigs []config.Config) string {

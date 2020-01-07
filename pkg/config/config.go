@@ -3,11 +3,11 @@ package config
 import (
 	"errors"
 	"io/ioutil"
-	"os"
 	"os/user"
 	"path"
 	"path/filepath"
 
+	"github.com/wtetsu/gaze/pkg/file"
 	"gopkg.in/yaml.v3"
 )
 
@@ -41,14 +41,14 @@ func searchConfigPath() (string, error) {
 	filepath.ToSlash("path string")
 
 	path1 := "./" + CONFIG
-	if fileExists(path1) {
+	if file.Exist(path1) {
 		return path1, nil
 	}
 
 	home := homeDirPath()
 	if home != "" {
 		path2 := path.Join(home, CONFIG)
-		if fileExists(path2) {
+		if file.Exist(path2) {
 			return path2, nil
 		}
 	}
@@ -62,14 +62,6 @@ func homeDirPath() string {
 		return ""
 	}
 	return filepath.ToSlash(currentUser.HomeDir)
-}
-
-func fileExists(filePath string) bool {
-	info, err := os.Stat(filePath)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }
 
 func parseConfig(fileBuffer []byte) ([]Config, error) {
