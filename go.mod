@@ -2,7 +2,6 @@ module github.com/wtetsu/gaze
 
 go 1.13
 
-require github.com/fsnotify/fsnotify v1.4.7
+replace github.com/fsnotify/fsnotify => ./vendor/fsnotify
 
-//replace github.com/wtetsu/gaze/pkg/logger => ./pkg/logger
-// replace github.com/wtetsu/gaze/pkg => ./pkg
+require github.com/fsnotify/fsnotify v0.0.0-00010101000000-000000000000
