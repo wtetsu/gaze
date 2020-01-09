@@ -2,20 +2,18 @@ package proc
 
 import (
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"os/signal"
 	"runtime"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/wtetsu/gaze/pkg/command"
 	"github.com/wtetsu/gaze/pkg/config"
-	"github.com/wtetsu/gaze/pkg/file"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
 )
-
-var commandFileMap = make(map[string]string)
 
 // StartGazing starts file
 func StartGazing(files []string, userCommand string) error {
@@ -25,13 +23,22 @@ func StartGazing(files []string, userCommand string) error {
 	}
 	defer watcher.Close()
 
-	done := make(chan bool)
+	var commandConfigs *config.Config
+	if userCommand != "" {
+		logger.Debugf("userCommand: %s", userCommand)
+		commandConfigs = config.New(userCommand)
+	} else {
+		commandConfigs, err = config.LoadConfig()
+		if err != nil {
+			return err
+		}
+	}
 
-	go waitAndRunForever(watcher, files, userCommand)
+	logger.Debug(commandConfigs)
 
-	<-done
+	err = waitAndRunForever(watcher, files, commandConfigs)
 
-	return nil
+	return err
 }
 
 func createWatcher(files []string) (*fsnotify.Watcher, error) {
@@ -47,18 +54,22 @@ func createWatcher(files []string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func waitAndRunForever(watcher *fsnotify.Watcher, files []string, userCommand string) error {
+func waitAndRunForever(watcher *fsnotify.Watcher, files []string, commandConfigs *config.Config) error {
+	cmd := command.New(getDefaultShell())
+	defer cmd.Dispose()
+
 	var lastExecutionTime int64
 
-	commandConfigs, err := config.LoadConfig()
-	if err != nil {
-		return err
-	}
+	sigInt := sigIntChannel()
 
 	for {
+		if cmd.Disposed() {
+			break
+		}
 		select {
 		case event, ok := <-watcher.Events:
-			if ok && event.Op&fsnotify.Write != fsnotify.Write {
+			flag := fsnotify.Write | fsnotify.Rename
+			if ok && event.Op|flag == 0 {
 				continue
 			}
 			if !match(files, event.Name) {
@@ -68,22 +79,35 @@ func waitAndRunForever(watcher *fsnotify.Watcher, files []string, userCommand st
 			if modifiedTime <= lastExecutionTime {
 				continue
 			}
-			var command string
-			if userCommand != "" {
-				command = userCommand
-			} else {
-				command = getAppropriateCommand(event.Name, commandConfigs)
-			}
-			if command != "" {
-				err := executeShellCommand(command)
+
+			commandString := getAppropriateCommand(event.Name, commandConfigs)
+			if commandString != "" {
+				scriptPath := cmd.PrepareScript(commandString)
+				fmt.Println(scriptPath)
+
+				err := executeShellCommand(cmd.Shell(), scriptPath)
 				if err != nil {
 					logger.Fatal(err)
 				}
 			}
 			lastExecutionTime = time.Now()
+		case <-sigInt:
+			cmd.Dispose()
+			return nil
 		}
 	}
-	// return nil
+	return nil
+}
+
+func sigIntChannel() chan struct{} {
+	ch := make(chan struct{})
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		<-c
+		close(ch)
+	}()
+	return ch
 }
 
 func match(files []string, s string) bool {
@@ -108,14 +132,11 @@ func getDefaultShell() string {
 	return "sh"
 }
 
-func executeShellCommand(commandString string) error {
-	defaultShell := getDefaultShell()
-
-	shellScriptPath := prepareScript(defaultShell, commandString)
-	cmd := executeScript(defaultShell, shellScriptPath)
+func executeShellCommand(shell string, scriptPath string) error {
+	cmd := executeScript(shell, scriptPath)
 
 	if cmd == nil {
-		return errors.New("failed:" + commandString)
+		return errors.New("failed")
 	}
 
 	cmd.Stdout = os.Stdout
@@ -133,33 +154,6 @@ func executeShellCommand(commandString string) error {
 	return nil
 }
 
-func prepareScript(defaultShell string, commandString string) string {
-	existingFilePath, found := commandFileMap[commandString]
-
-	if found && file.Exist(existingFilePath) {
-		return existingFilePath
-	}
-
-	newFilePath, err := ioutil.TempFile("", "*.gaze.cmd")
-	if err != nil {
-		return ""
-	}
-
-	if defaultShell == "cmd" {
-		newFilePath.WriteString("@" + commandString)
-	} else {
-		newFilePath.WriteString(commandString)
-	}
-	err = newFilePath.Close()
-	if err != nil {
-		return ""
-	}
-
-	commandFileMap[commandString] = newFilePath.Name()
-
-	return newFilePath.Name()
-}
-
 func executeScript(shell string, scriptPath string) *exec.Cmd {
 	if shell == "cmd" {
 		return exec.Command("cmd", "/c", scriptPath)
@@ -167,19 +161,13 @@ func executeScript(shell string, scriptPath string) *exec.Cmd {
 	return exec.Command(shell, scriptPath)
 }
 
-func getAppropriateCommand(filePath string, commandConfigs []config.Config) string {
-	ext := filepath.Ext(filePath)
-	// base := filepath.Base(filePath)
-	// abs, _ := filepath.Abs(filePath)
-	// dir := filepath.Dir(filePath)
-
+func getAppropriateCommand(filePath string, commandConfigs *config.Config) string {
 	var result string
-	for _, c := range commandConfigs {
-		// if c.SearchRegexp.MatchString(filePath) {
-		// 	command = append(c.Command, filePath)
-		// 	break
-		// }
-		if c.Run != "" && c.Ext == ext {
+	for _, c := range commandConfigs.Commands {
+		if c.Run == "" || c.Ext == "" && c.Re == "" {
+			continue
+		}
+		if c.Match(filePath) {
 			command := render(c.Run, filePath)
 			result = command
 			break

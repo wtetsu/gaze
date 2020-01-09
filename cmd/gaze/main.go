@@ -7,6 +7,7 @@ import (
 
 	"github.com/wtetsu/gaze/pkg/app"
 	"github.com/wtetsu/gaze/pkg/config"
+	"github.com/wtetsu/gaze/pkg/logger"
 )
 
 func main() {
@@ -31,6 +32,7 @@ func main() {
 
 	err := app.Start(flag.Args(), *userCommand)
 	if err != nil {
+		logger.Debug(err)
 		os.Exit(1)
 	}
 }
@@ -43,6 +45,6 @@ Options:
   -q  Quiet.
   -r  Recursive.
   -p  Parallel.
-	-f  Filter.
-	-y  Show default configuration. Save as ./.gaze.yml or ~/.gaze.yml and edit it.
+  -f  File.
+  -y  Show default configuration. Save as ./.gaze.yml or ~/.gaze.yml and edit it.
 `
