@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"runtime"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/command"
 	"github.com/wtetsu/gaze/pkg/config"
@@ -16,8 +17,8 @@ import (
 )
 
 // StartGazing starts file
-func StartGazing(files []string, userCommand string) error {
-	watcher, err := createWatcher(files)
+func StartGazing(watchFiles []string, userCommand string) error {
+	watcher, err := createWatcher(watchFiles)
 	if err != nil {
 		return err
 	}
@@ -36,25 +37,32 @@ func StartGazing(files []string, userCommand string) error {
 
 	logger.Debug(commandConfigs)
 
-	err = waitAndRunForever(watcher, files, commandConfigs)
+	err = waitAndRunForever(watcher, watchFiles, commandConfigs)
 
 	return err
 }
 
-func createWatcher(files []string) (*fsnotify.Watcher, error) {
+func createWatcher(watchFiles []string) (*fsnotify.Watcher, error) {
+	logger.Debug("createWatcher")
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logger.Fatal(err)
 		return nil, err
 	}
-	err = watcher.Add(".")
-	if err != nil {
-		logger.Debug(err)
+
+	dirs := listDir(".", "**")
+	for _, d := range dirs {
+		logger.Debugf("watching: %s", d)
+		err = watcher.Add(d)
+		if err != nil {
+			logger.Debug(err)
+		}
 	}
+
 	return watcher, nil
 }
 
-func waitAndRunForever(watcher *fsnotify.Watcher, files []string, commandConfigs *config.Config) error {
+func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandConfigs *config.Config) error {
 	cmd := command.New(getDefaultShell())
 	defer cmd.Dispose()
 
@@ -72,7 +80,7 @@ func waitAndRunForever(watcher *fsnotify.Watcher, files []string, commandConfigs
 			if ok && event.Op|flag == 0 {
 				continue
 			}
-			if !match(files, event.Name) {
+			if !matchAny(watchFiles, event.Name) {
 				continue
 			}
 			modifiedTime := time.GetFileModifiedTime(event.Name)
@@ -110,10 +118,11 @@ func sigIntChannel() chan struct{} {
 	return ch
 }
 
-func match(files []string, s string) bool {
+func matchAny(watchFiles []string, s string) bool {
 	result := false
-	for _, f := range files {
-		if f == s {
+	for _, f := range watchFiles {
+		ok, _ := doublestar.Match(f, s)
+		if ok {
 			result = true
 			break
 		}
