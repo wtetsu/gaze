@@ -1,40 +1,44 @@
 package fs
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
+	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
-func ListDir(root string, pattern string) []string {
-	result := []string{}
-	err := filepath.Walk(root,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				// return err
-				// log.Println(err)
-				return nil
-			}
-			// fmt.Println(path)
-			if !isDir(path) {
-				return nil
-			}
-			if globMatch(pattern, path) {
-				// fmt.Println(path, info.Size())
-				result = append(result, path)
-			} else {
-				fmt.Println("    " + path)
-			}
-			return nil
-		})
+// Find returns
+func Find(pattern string) ([]string, []string) {
+	foundFiles, err := doublestar.Glob(pattern)
 	if err != nil {
-		log.Println(err)
+		return []string{}, []string{}
 	}
-	return result
+
+	entryList := append([]string{pattern}, foundFiles...)
+
+	fileList, dirList := doFileDir(entryList)
+	return fileList, dirList
+}
+
+func doFileDir(entries []string) ([]string, []string) {
+	fileUniq := uniq.New()
+	dirUniq := uniq.New()
+
+	for _, entry := range entries {
+		if !Exist(entry) {
+			continue
+		}
+		if isDir(entry) {
+			dirUniq.Add(entry)
+		} else {
+			fileUniq.Add(entry)
+			dirPath := filepath.Dir(entry)
+			dirUniq.Add(dirPath)
+		}
+	}
+	return fileUniq.List(), dirUniq.List()
 }
 
 func isDir(name string) bool {
@@ -45,7 +49,7 @@ func isDir(name string) bool {
 	return fi.IsDir()
 }
 
-func globMatch(pattern string, rawPath string) bool {
+func GlobMatch(pattern string, rawPath string) bool {
 	path := trimSuffix(filepath.ToSlash(rawPath), "/")
 
 	ok, _ := doublestar.Match(pattern, path)

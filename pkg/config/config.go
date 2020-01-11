@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os/user"
 	"path"
@@ -95,7 +94,6 @@ func parseConfig(fileBuffer []byte) (*[]Command, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(config)
 	return &config.Commands, nil
 }
 

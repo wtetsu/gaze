@@ -1,4 +1,4 @@
-package proc
+package gazer
 
 import (
 	"path/filepath"
