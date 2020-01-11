@@ -53,8 +53,6 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 			}
 			logger.Notice("gazing at: %s", d)
 			err = watcher.Add(d)
-
-			err = errors.New("UNAOKO")
 			if err != nil {
 				logger.DebugObject(err)
 			}

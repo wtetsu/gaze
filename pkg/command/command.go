@@ -30,7 +30,7 @@ func (c *Command) PrepareScript(commandString string) string {
 	}
 	existingFilePath, found := c.fileMap[commandString]
 
-	if found && fs.Exist(existingFilePath) {
+	if found && fs.IsFile(existingFilePath) {
 		return existingFilePath
 	}
 

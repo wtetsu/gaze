@@ -65,14 +65,14 @@ func searchConfigPath() (string, error) {
 	filepath.ToSlash("path string")
 
 	path1 := "./" + CONFIG
-	if fs.Exist(path1) {
+	if fs.IsFile(path1) {
 		return path1, nil
 	}
 
 	home := homeDirPath()
 	if home != "" {
 		path2 := path.Join(home, CONFIG)
-		if fs.Exist(path2) {
+		if fs.IsFile(path2) {
 			return path2, nil
 		}
 	}

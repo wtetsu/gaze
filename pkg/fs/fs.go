@@ -27,7 +27,8 @@ func doFileDir(entries []string) ([]string, []string) {
 	dirUniq := uniq.New()
 
 	for _, entry := range entries {
-		if !Exist(entry) {
+		stat := Stat(entry)
+		if stat == nil {
 			continue
 		}
 		if isDir(entry) {
@@ -50,17 +51,18 @@ func isDir(name string) bool {
 }
 
 // GlobMatch returns true if a pattern matches a path string
-func GlobMatch(rawPattern string, rawPath string) bool {
+func GlobMatch(rawPattern string, rawFilePath string) bool {
 	pattern := filepath.ToSlash(rawPattern)
-	path := trimSuffix(filepath.ToSlash(rawPath), "/")
+	filePath := trimSuffix(filepath.ToSlash(rawFilePath), "/")
 
-	ok, _ := doublestar.Match(pattern, path)
+	ok, _ := doublestar.Match(pattern, filePath)
 	if ok {
 		return true
 	}
 
-	dirPath := filepath.Dir(pattern)
-	ok, _ = doublestar.Match(dirPath, path)
+	dirPath := filepath.Dir(filePath)
+
+	ok, _ = doublestar.Match(dirPath, pattern)
 	if ok {
 		return true
 	}
@@ -80,4 +82,31 @@ func doublestarMatch(pattern string, path string) bool {
 		return true
 	}
 	return false
+}
+
+// IsDir returns true if path is a directory.
+func IsDir(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+// IsFile returns true if path is a file.
+func IsFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// Stat returns a FileInfo.
+func Stat(path string) os.FileInfo {
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil
+	}
+	return info
 }
