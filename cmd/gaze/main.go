@@ -21,13 +21,13 @@ func main() {
 	verbose := flag.Bool("v", false, "")
 	flag.Parse()
 
-	if *help || len(flag.Args()) == 0 {
-		fmt.Println(usage)
+	if *yaml {
+		fmt.Println(config.Default())
 		return
 	}
 
-	if *yaml {
-		fmt.Println(config.Default())
+	if *help || len(flag.Args()) == 0 {
+		fmt.Println(usage)
 		return
 	}
 
