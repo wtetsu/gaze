@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/wtetsu/gaze/pkg/file"
+	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 )
 
@@ -30,7 +30,7 @@ func (c *Command) PrepareScript(commandString string) string {
 	}
 	existingFilePath, found := c.fileMap[commandString]
 
-	if found && file.Exist(existingFilePath) {
+	if found && fs.Exist(existingFilePath) {
 		return existingFilePath
 	}
 

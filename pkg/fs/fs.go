@@ -1,4 +1,4 @@
-package proc
+package fs
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/bmatcuk/doublestar"
 )
 
-func listDir(root string, pattern string) []string {
+func ListDir(root string, pattern string) []string {
 	result := []string{}
 	err := filepath.Walk(root,
 		func(path string, info os.FileInfo, err error) error {

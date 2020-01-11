@@ -14,6 +14,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/fs"
 )
 
 // StartGazing starts file
@@ -50,7 +51,7 @@ func createWatcher(watchFiles []string) (*fsnotify.Watcher, error) {
 		return nil, err
 	}
 
-	dirs := listDir(".", "**")
+	dirs := fs.ListDir(".", "**")
 	for _, d := range dirs {
 		logger.Debugf("watching: %s", d)
 		err = watcher.Add(d)

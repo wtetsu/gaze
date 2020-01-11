@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/wtetsu/gaze/pkg/file"
+	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"gopkg.in/yaml.v3"
 )
@@ -66,14 +66,14 @@ func searchConfigPath() (string, error) {
 	filepath.ToSlash("path string")
 
 	path1 := "./" + CONFIG
-	if file.Exist(path1) {
+	if fs.Exist(path1) {
 		return path1, nil
 	}
 
 	home := homeDirPath()
 	if home != "" {
 		path2 := path.Join(home, CONFIG)
-		if file.Exist(path2) {
+		if fs.Exist(path2) {
 			return path2, nil
 		}
 	}
