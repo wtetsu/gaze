@@ -2,13 +2,11 @@ package gazer
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime"
 
-	"github.com/bmatcuk/doublestar"
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/command"
 	"github.com/wtetsu/gaze/pkg/config"
@@ -41,7 +39,7 @@ func (g *Gazer) Run(configs *config.Config) error {
 func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error(err)
 		return nil, err
 	}
 
@@ -53,10 +51,12 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 			if ok {
 				continue
 			}
-			logger.Debugf("watching: %s", d)
+			logger.Notice("gazing at: %s", d)
 			err = watcher.Add(d)
+
+			err = errors.New("UNAOKO")
 			if err != nil {
-				logger.Debug(err)
+				logger.DebugObject(err)
 			}
 			added[d] = struct{}{}
 		}
@@ -94,11 +94,12 @@ func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandCo
 			commandString := getAppropriateCommand(event.Name, commandConfigs)
 			if commandString != "" {
 				scriptPath := cmd.PrepareScript(commandString)
-				fmt.Println(scriptPath)
+
+				logger.Notice(commandString)
 
 				err := executeShellCommand(cmd.Shell(), scriptPath)
 				if err != nil {
-					logger.Fatal(err)
+					logger.Error(err)
 				}
 			}
 			lastExecutionTime = time.Now()
@@ -124,8 +125,7 @@ func sigIntChannel() chan struct{} {
 func matchAny(watchFiles []string, s string) bool {
 	result := false
 	for _, f := range watchFiles {
-		ok, _ := doublestar.Match(f, s)
-		if ok {
+		if fs.GlobMatch(f, s) {
 			result = true
 			break
 		}
@@ -161,7 +161,7 @@ func executeShellCommand(shell string, scriptPath string) error {
 
 	err := cmd.Wait()
 	if err != nil {
-		logger.Debug(err)
+		logger.DebugObject(err)
 	}
 	return nil
 }

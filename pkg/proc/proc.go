@@ -29,7 +29,7 @@ func StartGazing(watchFiles []string, userCommand string) error {
 
 func createCommandConfig(userCommand string) (*config.Config, error) {
 	if userCommand != "" {
-		logger.Debugf("userCommand: %s", userCommand)
+		logger.Debug("userCommand: %s", userCommand)
 		commandConfigs := config.New(userCommand)
 		return commandConfigs, nil
 	}

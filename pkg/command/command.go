@@ -63,7 +63,7 @@ func (c *Command) Dispose() {
 		fmt.Println(filePath)
 		err := os.Remove(filePath)
 		if err != nil {
-			logger.Debug(err)
+			logger.DebugObject(err)
 		}
 	}
 	c.disposed = true

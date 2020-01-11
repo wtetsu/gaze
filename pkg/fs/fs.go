@@ -49,7 +49,9 @@ func isDir(name string) bool {
 	return fi.IsDir()
 }
 
-func GlobMatch(pattern string, rawPath string) bool {
+// GlobMatch returns true if a pattern matches a path string
+func GlobMatch(rawPattern string, rawPath string) bool {
+	pattern := filepath.ToSlash(rawPattern)
 	path := trimSuffix(filepath.ToSlash(rawPath), "/")
 
 	ok, _ := doublestar.Match(pattern, path)
