@@ -1,3 +1,9 @@
+/**
+ * Gaze (https://github.com/wtetsu/gaze/)
+ * Copyright 2020-present wtetsu
+ * Licensed under MIT
+ */
+
 package uniq
 
 // Uniq can deal with unique list.
