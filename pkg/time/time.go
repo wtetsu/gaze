@@ -32,6 +32,13 @@ func Sleep(d time.Duration) {
 }
 
 // After waits for the duration.
-func After(d int) <-chan time.Time {
-	return time.After(time.Duration(d) * time.Millisecond)
+func After(d int) <-chan struct{} {
+	ch := make(chan struct{})
+
+	go func() {
+		time.Sleep(time.Duration(d) * time.Millisecond)
+		close(ch)
+	}()
+
+	return ch
 }

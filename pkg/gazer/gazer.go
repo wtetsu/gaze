@@ -7,13 +7,9 @@
 package gazer
 
 import (
-	"errors"
-	"os"
 	"os/exec"
-	"os/signal"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -47,8 +43,8 @@ func (g *Gazer) Close() {
 }
 
 // Run starts to gaze.
-func (g *Gazer) Run(configs *config.Config, timeout int) error {
-	err := waitAndRunForever(g.watcher, g.patterns, configs, timeout)
+func (g *Gazer) Run(configs *config.Config, timeout int, restart bool) error {
+	err := repeatRunAndWait(g.watcher, g.patterns, configs, timeout, restart)
 	return err
 }
 
@@ -79,10 +75,14 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandConfigs *config.Config, timeout int) error {
+func repeatRunAndWait(watcher *fsnotify.Watcher, watchFiles []string, commandConfigs *config.Config, timeout int, restart bool) error {
 	var lastExecutionTime int64
 
 	sigInt := sigIntChannel()
+
+	var ignorePeriod int64 = 10 * 1000000
+
+	var ongoingCommand *exec.Cmd
 
 	isDisposed := false
 	for {
@@ -98,8 +98,9 @@ func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandCo
 			if !matchAny(watchFiles, event.Name) {
 				continue
 			}
+			logger.Debug("Receive: %s", event.Name)
 			modifiedTime := time.GetFileModifiedTime(event.Name)
-			if modifiedTime <= lastExecutionTime {
+			if (modifiedTime - lastExecutionTime) < ignorePeriod {
 				continue
 			}
 
@@ -107,29 +108,36 @@ func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandCo
 			if commandString != "" {
 				logger.NoticeWithBlank("[%s]", commandString)
 
-				err := executeCommandOrTimeout(commandString, timeout)
-				if err != nil {
-					logger.NoticeObject(err)
+				if ongoingCommand != nil {
+					kill(ongoingCommand, "Restart")
+					ongoingCommand = nil
+				}
+
+				cmd := createCommand(commandString)
+				lastExecutionTime = time.Now()
+				if !restart {
+					err := executeCommandOrTimeout(cmd, timeout)
+					if err != nil {
+						logger.NoticeObject(err)
+					}
+				} else {
+					// restartable
+					ongoingCommand = cmd
+					go func() {
+						err := executeCommandOrTimeout(cmd, timeout)
+						if err != nil {
+							logger.NoticeObject(err)
+						}
+						ongoingCommand = nil
+					}()
 				}
 			}
-			lastExecutionTime = time.Now()
 		case <-sigInt:
 			isDisposed = true
 			return nil
 		}
 	}
 	return nil
-}
-
-func sigIntChannel() chan struct{} {
-	ch := make(chan struct{})
-	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt)
-		<-c
-		close(ch)
-	}()
-	return ch
 }
 
 func matchAny(watchFiles []string, s string) bool {
@@ -141,77 +149,6 @@ func matchAny(watchFiles []string, s string) bool {
 		}
 	}
 	return result
-}
-
-func executeCommandOrTimeout(commandString string, timeoutMill int) error {
-	cmd, exec := executeCommand(commandString)
-	if timeoutMill <= 0 {
-		return <-exec
-	}
-
-	timeout := time.After(timeoutMill)
-	var err error
-
-	finished := false
-	for {
-		if finished {
-			break
-		}
-		select {
-		case <-timeout:
-			if cmd.Process == nil {
-				timeout = time.After(timeoutMill)
-				break
-			}
-			err = cmd.Process.Kill()
-			if err != nil {
-				logger.NoticeObject(err)
-			}
-			logger.Notice("Timeout: %d has been killed", cmd.Process.Pid)
-			finished = true
-
-		case err = <-exec:
-			finished = true
-		}
-	}
-	return err
-}
-
-func executeCommand(commandString string) (*exec.Cmd, <-chan error) {
-	ch := make(chan error)
-	cmd := createCommand(commandString)
-
-	go func() {
-		if cmd == nil {
-			ch <- errors.New("failed")
-			return
-		}
-
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Start()
-		logger.Info("Pid: %d", cmd.Process.Pid)
-
-		err := cmd.Wait()
-		if err != nil {
-			ch <- err
-			return
-		}
-		ch <- nil
-	}()
-	return cmd, ch
-}
-
-func createCommand(commandString string) *exec.Cmd {
-	args, err := shellwords.Parse(commandString)
-
-	if err != nil {
-		return nil
-	}
-	if len(args) == 1 {
-		return exec.Command(args[0])
-	}
-	return exec.Command(args[0], args[1:]...)
 }
 
 func getAppropriateCommand(filePath string, commandConfigs *config.Config) string {

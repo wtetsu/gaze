@@ -13,7 +13,7 @@ import (
 )
 
 // Start starts a gaze process
-func Start(watchFiles []string, userCommand string, file string, timeout int) error {
+func Start(watchFiles []string, userCommand string, file string, timeout int, restart bool) error {
 	watcher := gazer.New(watchFiles)
 	defer watcher.Close()
 
@@ -21,7 +21,7 @@ func Start(watchFiles []string, userCommand string, file string, timeout int) er
 	if err != nil {
 		return err
 	}
-	err = watcher.Run(commandConfigs, timeout)
+	err = watcher.Run(commandConfigs, timeout, restart)
 	return err
 }
 
