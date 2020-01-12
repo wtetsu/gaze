@@ -1,3 +1,9 @@
+/**
+ * Gaze (https://github.com/wtetsu/gaze/)
+ * Copyright 2020-present wtetsu
+ * Licensed under MIT
+ */
+
 package main
 
 import (
@@ -19,6 +25,8 @@ func main() {
 	yaml := flag.Bool("y", false, "Show default config")
 	quiet := flag.Bool("q", false, "")
 	verbose := flag.Bool("v", false, "")
+	color := flag.Int("color", 1, "")
+
 	flag.Parse()
 
 	if *yaml {
@@ -27,11 +35,15 @@ func main() {
 	}
 
 	if *help || len(flag.Args()) == 0 {
-		fmt.Println(usage)
+		fmt.Println(usage())
 		return
 	}
 
-	logger.Colorful()
+	if *color == 0 {
+		logger.Plain()
+	} else {
+		logger.Colorful()
+	}
 	if *quiet {
 		logger.Level(logger.QUIET)
 	}
@@ -46,14 +58,16 @@ func main() {
 	}
 }
 
-var usage = `
-Usage: gaze [files...] [options...]
-
-Options:
-  -c  Command.
-  -q  Quiet.
-  -r  Recursive.
-  -p  Parallel.
-  -f  File.
-  -y  Show default configuration. Save as ./.gaze.yml or ~/.gaze.yml and edit it.
-`
+func usage() string {
+	return `
+	Usage: gaze [files...] [options...]
+	
+	Options:
+		-c  Command.
+		-q  Quiet.
+		-r  Recursive.
+		-p  Parallel.
+		f  File.
+	-y  Show default configuration. Save as ./.gaze.yml or ~/.gaze.yml and edit it.
+	`
+}
