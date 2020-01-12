@@ -31,6 +31,7 @@ func main() {
 		return
 	}
 
+	logger.Colorful()
 	if *quiet {
 		logger.Level(logger.QUIET)
 	}
@@ -40,7 +41,7 @@ func main() {
 
 	err := app.Start(flag.Args(), *userCommand)
 	if err != nil {
-		logger.Error(err)
+		logger.ErrorObject(err)
 		os.Exit(1)
 	}
 }

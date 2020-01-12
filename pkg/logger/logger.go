@@ -1,6 +1,11 @@
 package logger
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/fatih/color"
+)
 
 // Log level.
 const (
@@ -11,29 +16,78 @@ const (
 	DEBUG   = 4
 )
 
-var logLevel int = NORMAL
+var logLevel = NORMAL
+var count = 0
+
+var printInfo func(format string, a ...interface{})
+var printNotice func(format string, a ...interface{})
+var printError func(format string, a ...interface{})
 
 // Level sets a new log level.
 func Level(newLogLevel int) {
 	logLevel = newLogLevel
 }
 
-// Error writes a fatal log
-func Error(a ...interface{}) {
+// Colorful enables colorful output
+func Colorful() {
+	printInfo = color.New(color.FgHiCyan).PrintfFunc()
+	printNotice = color.New(color.FgCyan).PrintfFunc()
+
+	f := color.New(color.FgRed).FprintfFunc()
+	printError = func(format string, a ...interface{}) {
+		f(color.Error, format, a...)
+	}
+}
+
+// Plain disables colorful output
+func Plain() {
+	printInfo = func(format string, a ...interface{}) {
+		fmt.Printf(format, a...)
+	}
+	printNotice = func(format string, a ...interface{}) {
+		fmt.Printf(format, a...)
+	}
+	printError = func(format string, a ...interface{}) {
+		fmt.Fprintf(os.Stderr, format, a...)
+	}
+}
+
+// Error writes an error log
+func Error(format string, a ...interface{}) {
 	if logLevel < QUIET {
 		return
 	}
-
+	space()
+	printError(format, a...)
 	fmt.Println(a...)
+	count++
 }
 
-// Notice writes a warning log
+// ErrorObject writes an error log
+func ErrorObject(a ...interface{}) {
+	Error("%v", a...)
+}
+
+// Notice writes a notice log
 func Notice(format string, a ...interface{}) {
-	if logLevel <= NORMAL {
+	notice(true, format, a...)
+}
+
+// NoticeObject writes a notice log
+func NoticeObject(a ...interface{}) {
+	notice(false, "%v", a...)
+}
+
+func notice(enableSpace bool, format string, a ...interface{}) {
+	if logLevel < NORMAL {
 		return
 	}
-	fmt.Printf(format, a...)
+	if enableSpace {
+		space()
+	}
+	printNotice(format, a...)
 	fmt.Println()
+	count++
 }
 
 // Info writes a info log
@@ -41,8 +95,9 @@ func Info(format string, a ...interface{}) {
 	if logLevel < VERBOSE {
 		return
 	}
-	fmt.Printf(format, a...)
+	printInfo(format, a...)
 	fmt.Println()
+	count++
 }
 
 // Debug writes a debug log
@@ -52,12 +107,18 @@ func Debug(format string, a ...interface{}) {
 	}
 	fmt.Printf(format, a...)
 	fmt.Println()
+	count++
 }
 
 // DebugObject writes a debug log
 func DebugObject(a ...interface{}) {
-	if logLevel < DEBUG {
+	Debug("%v", a...)
+}
+
+func space() {
+	count++
+	if count <= 1 {
 		return
 	}
-	fmt.Println(a...)
+	fmt.Println()
 }

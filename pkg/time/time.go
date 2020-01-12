@@ -24,3 +24,8 @@ func Now() int64 {
 func Sleep(d time.Duration) {
 	time.Sleep(d * time.Millisecond)
 }
+
+// After waits for the duration.
+func After(d int) <-chan time.Time {
+	return time.After(time.Duration(d) * time.Millisecond)
+}

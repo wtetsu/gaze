@@ -2,6 +2,7 @@ package gazer
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -50,7 +51,7 @@ func (g *Gazer) Run(configs *config.Config) error {
 func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		logger.Error(err)
+		logger.ErrorObject(err)
 		return nil, err
 	}
 
@@ -62,7 +63,7 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 			if ok {
 				continue
 			}
-			logger.Notice("gazing at: %s", d)
+			logger.Info("gazing at: %s", d)
 			err = watcher.Add(d)
 			if err != nil {
 				logger.DebugObject(err)
@@ -103,12 +104,11 @@ func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandCo
 			commandString := getAppropriateCommand(event.Name, commandConfigs)
 			if commandString != "" {
 				scriptPath := cmd.PrepareScript(commandString)
+				logger.Notice("[%s]", commandString)
 
-				logger.Notice(commandString)
-
-				err := executeShellCommand(cmd.Shell(), scriptPath)
+				err := executeShellCommandOrTimeout(cmd.Shell(), scriptPath, 1000)
 				if err != nil {
-					logger.Error(err)
+					logger.NoticeObject(err)
 				}
 			}
 			lastExecutionTime = time.Now()
@@ -153,29 +153,55 @@ func getDefaultShell() string {
 	return "sh"
 }
 
-func executeShellCommand(shell string, scriptPath string) error {
-	cmd := executeScript(shell, scriptPath)
+func executeShellCommandOrTimeout(shell string, scriptPath string, timeoutMill int) error {
+	timeout := time.After(timeoutMill)
+	cmd, exec := executeShellCommand(shell, scriptPath)
 
-	if cmd == nil {
-		return errors.New("failed")
+	var err error
+	select {
+	case <-timeout:
+		fmt.Println(cmd.Process.Pid)
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+			fmt.Println("kill!!!")
+		}
+	case err = <-exec:
+		// if cmd != nil {
+		// 	if cmd.ProcessState != nil {
+		// 		logger.Info("exit: %d", cmd.ProcessState.ExitCode())
+		// 	}
+		// }
 	}
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Start()
-
-	// fmt.Println(cmd.Process.Pid)
-	// time.Sleep(2000)
-	// cmd.Process.Kill()
-
-	err := cmd.Wait()
-	if err != nil {
-		logger.DebugObject(err)
-	}
-	return nil
+	return err
 }
 
-func executeScript(shell string, scriptPath string) *exec.Cmd {
+func executeShellCommand(shell string, scriptPath string) (*exec.Cmd, <-chan error) {
+	ch := make(chan error)
+	cmd := createScriptCommand(shell, scriptPath)
+
+	go func() {
+		if cmd == nil {
+			ch <- errors.New("failed")
+			return
+		}
+
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Start()
+		logger.Info("Pid: %d", cmd.Process.Pid)
+
+		err := cmd.Wait()
+		if err != nil {
+			ch <- err
+			return
+		}
+		ch <- nil
+	}()
+	return cmd, ch
+}
+
+func createScriptCommand(shell string, scriptPath string) *exec.Cmd {
 	if shell == "cmd" {
 		return exec.Command("cmd", "/c", scriptPath)
 	}
