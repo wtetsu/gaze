@@ -2,14 +2,12 @@ package gazer
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
-	"runtime"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/wtetsu/gaze/pkg/command"
+	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -43,8 +41,8 @@ func (g *Gazer) Close() {
 }
 
 // Run starts to gaze.
-func (g *Gazer) Run(configs *config.Config) error {
-	err := waitAndRunForever(g.watcher, g.patterns, configs)
+func (g *Gazer) Run(configs *config.Config, timeout int) error {
+	err := waitAndRunForever(g.watcher, g.patterns, configs, timeout)
 	return err
 }
 
@@ -75,16 +73,14 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandConfigs *config.Config) error {
-	cmd := command.New(getDefaultShell())
-	defer cmd.Dispose()
-
+func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandConfigs *config.Config, timeout int) error {
 	var lastExecutionTime int64
 
 	sigInt := sigIntChannel()
 
+	isDisposed := false
 	for {
-		if cmd.Disposed() {
+		if isDisposed {
 			break
 		}
 		select {
@@ -103,17 +99,16 @@ func waitAndRunForever(watcher *fsnotify.Watcher, watchFiles []string, commandCo
 
 			commandString := getAppropriateCommand(event.Name, commandConfigs)
 			if commandString != "" {
-				scriptPath := cmd.PrepareScript(commandString)
-				logger.Notice("[%s]", commandString)
+				logger.NoticeWithBlank("[%s]", commandString)
 
-				err := executeShellCommandOrTimeout(cmd.Shell(), scriptPath, 1000)
+				err := executeCommandOrTimeout(commandString, timeout)
 				if err != nil {
 					logger.NoticeObject(err)
 				}
 			}
 			lastExecutionTime = time.Now()
 		case <-sigInt:
-			cmd.Dispose()
+			isDisposed = true
 			return nil
 		}
 	}
@@ -142,43 +137,43 @@ func matchAny(watchFiles []string, s string) bool {
 	return result
 }
 
-func getDefaultShell() string {
-	shell := os.Getenv("SHELL")
-	if shell != "" {
-		return shell
+func executeCommandOrTimeout(commandString string, timeoutMill int) error {
+	cmd, exec := executeCommand(commandString)
+	if timeoutMill <= 0 {
+		return <-exec
 	}
-	if runtime.GOOS == "windows" {
-		return "cmd"
-	}
-	return "sh"
-}
 
-func executeShellCommandOrTimeout(shell string, scriptPath string, timeoutMill int) error {
 	timeout := time.After(timeoutMill)
-	cmd, exec := executeShellCommand(shell, scriptPath)
-
 	var err error
-	select {
-	case <-timeout:
-		fmt.Println(cmd.Process.Pid)
-		if cmd.Process != nil {
-			cmd.Process.Kill()
-			fmt.Println("kill!!!")
-		}
-	case err = <-exec:
-		// if cmd != nil {
-		// 	if cmd.ProcessState != nil {
-		// 		logger.Info("exit: %d", cmd.ProcessState.ExitCode())
-		// 	}
-		// }
-	}
 
+	finished := false
+	for {
+		if finished {
+			break
+		}
+		select {
+		case <-timeout:
+			if cmd.Process == nil {
+				timeout = time.After(timeoutMill)
+				break
+			}
+			err = cmd.Process.Kill()
+			if err != nil {
+				logger.NoticeObject(err)
+			}
+			logger.Notice("Timeout: %d has been killed", cmd.Process.Pid)
+			finished = true
+
+		case err = <-exec:
+			finished = true
+		}
+	}
 	return err
 }
 
-func executeShellCommand(shell string, scriptPath string) (*exec.Cmd, <-chan error) {
+func executeCommand(commandString string) (*exec.Cmd, <-chan error) {
 	ch := make(chan error)
-	cmd := createScriptCommand(shell, scriptPath)
+	cmd := createCommand(commandString)
 
 	go func() {
 		if cmd == nil {
@@ -201,11 +196,15 @@ func executeShellCommand(shell string, scriptPath string) (*exec.Cmd, <-chan err
 	return cmd, ch
 }
 
-func createScriptCommand(shell string, scriptPath string) *exec.Cmd {
-	if shell == "cmd" {
-		return exec.Command("cmd", "/c", scriptPath)
+func createCommand(commandString string) *exec.Cmd {
+	args, err := shellwords.Parse(commandString)
+	if err != nil {
+		return nil
 	}
-	return exec.Command(shell, scriptPath)
+	if len(args) == 1 {
+		return exec.Command(args[0])
+	}
+	return exec.Command(args[0], args[1:]...)
 }
 
 func getAppropriateCommand(filePath string, commandConfigs *config.Config) string {

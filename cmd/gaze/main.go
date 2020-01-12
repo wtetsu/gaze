@@ -12,10 +12,10 @@ import (
 
 func main() {
 	help := flag.Bool("h", false, "help")
-	// timeout := flag.Int("t", 0, "int flag")
 	// parallel := flag.Bool("p", false, "bool flag")
 	// recursion := flag.Bool("r", false, "bool flag")
 	userCommand := flag.String("c", "", "command")
+	timeout := flag.Int("t", 0, "int flag")
 	yaml := flag.Bool("y", false, "Show default config")
 	quiet := flag.Bool("q", false, "")
 	verbose := flag.Bool("v", false, "")
@@ -39,7 +39,7 @@ func main() {
 		logger.Level(logger.VERBOSE)
 	}
 
-	err := app.Start(flag.Args(), *userCommand)
+	err := app.Start(flag.Args(), *userCommand, *timeout)
 	if err != nil {
 		logger.ErrorObject(err)
 		os.Exit(1)

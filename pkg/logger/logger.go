@@ -60,6 +60,7 @@ func Error(format string, a ...interface{}) {
 	space()
 	printError(format, a...)
 	fmt.Println(a...)
+	fmt.Println()
 	count++
 }
 
@@ -70,6 +71,11 @@ func ErrorObject(a ...interface{}) {
 
 // Notice writes a notice log
 func Notice(format string, a ...interface{}) {
+	notice(false, format, a...)
+}
+
+// NoticeWithBlank writes a notice log
+func NoticeWithBlank(format string, a ...interface{}) {
 	notice(true, format, a...)
 }
 
