@@ -19,6 +19,7 @@ import (
 type Gazer struct {
 	patterns []string
 	watcher  *fsnotify.Watcher
+	isClosed bool
 }
 
 // New returns a new Gazer.
@@ -27,7 +28,17 @@ func New(patterns []string) *Gazer {
 	return &Gazer{
 		patterns: patterns,
 		watcher:  watcher,
+		isClosed: false,
 	}
+}
+
+// Close disposes internal resources.
+func (g *Gazer) Close() {
+	if g.isClosed {
+		return
+	}
+	g.watcher.Close()
+	g.isClosed = true
 }
 
 // Run starts to gaze.

@@ -13,6 +13,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Config represents Gaze configuration
+type Config struct {
+	Commands []Command
+}
+
+// Command represents Gaze configuration
+type Command struct {
+	Ext string
+	Run string
+	Re  string
+	re  *regexp.Regexp
+}
+
 // New returns
 func New(command string) *Config {
 	fixedCommand := Command{Re: ".", Run: command}
@@ -97,19 +110,6 @@ func parseConfig(fileBuffer []byte) (*[]Command, error) {
 	return &config.Commands, nil
 }
 
-// Config represents Gaze configuration
-type Config struct {
-	Commands []Command
-}
-
-// Command represents Gaze configuration
-type Command struct {
-	Ext string
-	Run string
-	Re  string
-	re  *regexp.Regexp
-}
-
 // Match return true is filePath meets the condition
 func (c *Command) Match(filePath string) bool {
 	if c.Ext == "" && c.re == nil {
@@ -127,39 +127,4 @@ func (c *Command) Match(filePath string) bool {
 	}
 
 	return false
-}
-
-// Default returns the default configuration
-func Default() string {
-	return `# Gaze configuration(priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
-commands:
-- ext: .d
-  run: dmd -run "{{file}}"
-- ext: .js
-  run: node "{{file}}"
-- ext: .go
-  run: go run "{{file}}"
-- ext: .groovy
-  run: groovy "{{file}}"
-- ext: .php
-  run: php "{{file}}"
-- ext: .pl
-  run: perl "{{file}}"
-- ext: .py
-  run: python "{{file}}"
-- ext: .rb
-  run: ruby "{{file}}"
-- ext: .java
-  run: java "{{file}}"
-- re: ^Dockerfile$
-  run: docker build -f "{{file}}" .
-- ext: .c
-  run: gcc "{{file}}" && ./a.out
-- ext: .cpp
-  run: gcc "{{file}}" && ./a.out
-- ext: .kts
-  run: kotlinc -script "{{file}}"
-# - ext: .sh
-#   run: sh "{{file}}"
-`
 }
