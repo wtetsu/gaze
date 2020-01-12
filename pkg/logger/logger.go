@@ -65,7 +65,6 @@ func Error(format string, a ...interface{}) {
 	}
 	space()
 	printError(format, a...)
-	fmt.Println(a...)
 	fmt.Println()
 	count++
 }

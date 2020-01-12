@@ -43,7 +43,7 @@ func New(command string) *Config {
 // Priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
 func LoadConfig() (*Config, error) {
 	configPath, err := searchConfigPath()
-	logger.Debug("configPath: " + configPath)
+	logger.Info("config: " + configPath)
 
 	var bytes []byte
 	if err == nil {
@@ -78,21 +78,17 @@ func prepare(configs *Config) *Config {
 }
 
 func searchConfigPath() (string, error) {
-	const CONFIG = ".gaze.yml"
-
-	filepath.FromSlash("path string")
-	filepath.ToSlash("path string")
-
-	path1 := "./" + CONFIG
-	if fs.IsFile(path1) {
-		return path1, nil
-	}
-
+	const CONFIG1 = ".gaze.yml"
+	const CONFIG2 = ".gaze.yaml"
+	candidates := []string{"./" + CONFIG1, "./" + CONFIG2}
 	home := homeDirPath()
 	if home != "" {
-		path2 := path.Join(home, CONFIG)
-		if fs.IsFile(path2) {
-			return path2, nil
+		candidates = append(candidates, path.Join(home, CONFIG1), path.Join(home, CONFIG2))
+	}
+
+	for _, c := range candidates {
+		if fs.IsFile(c) {
+			return c, nil
 		}
 	}
 
