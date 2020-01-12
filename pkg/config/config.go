@@ -7,7 +7,6 @@
 package config
 
 import (
-	"errors"
 	"io/ioutil"
 	"os/user"
 	"path"
@@ -39,20 +38,37 @@ func New(command string) *Config {
 	return prepare(&config)
 }
 
-// LoadConfig loads a configuration file.
+// InitConfig loads a configuration file.
 // Priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
-func LoadConfig() (*Config, error) {
-	configPath, err := searchConfigPath()
-	logger.Info("config: " + configPath)
+func InitConfig() (*Config, error) {
+	configPath := searchConfigPath()
 
-	var bytes []byte
-	if err == nil {
-		bytes, err = ioutil.ReadFile(configPath)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		bytes = []byte(Default())
+	if configPath != "" {
+		logger.Info("config: " + configPath)
+		return LoadConfig(configPath)
+	}
+
+	logger.Info("config: (default)")
+	return defaultConfig()
+}
+
+func defaultConfig() (*Config, error) {
+	bytes := []byte(Default())
+	entries, err := parseConfig(bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	config := Config{Commands: *entries}
+	return &config, nil
+}
+
+// LoadConfig loads a configuration file.
+func LoadConfig(configPath string) (*Config, error) {
+	logger.Info("config: " + configPath)
+	bytes, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
 	}
 
 	entries, err := parseConfig(bytes)
@@ -60,9 +76,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	var config Config
-	config.Commands = *entries
-
+	config := Config{Commands: *entries}
 	return prepare(&config), nil
 }
 
@@ -77,7 +91,7 @@ func prepare(configs *Config) *Config {
 	return configs
 }
 
-func searchConfigPath() (string, error) {
+func searchConfigPath() string {
 	const CONFIG1 = ".gaze.yml"
 	const CONFIG2 = ".gaze.yaml"
 	candidates := []string{"./" + CONFIG1, "./" + CONFIG2}
@@ -85,14 +99,12 @@ func searchConfigPath() (string, error) {
 	if home != "" {
 		candidates = append(candidates, path.Join(home, CONFIG1), path.Join(home, CONFIG2))
 	}
-
 	for _, c := range candidates {
 		if fs.IsFile(c) {
-			return c, nil
+			return c
 		}
 	}
-
-	return "", errors.New("Config file not found")
+	return ""
 }
 
 func homeDirPath() string {

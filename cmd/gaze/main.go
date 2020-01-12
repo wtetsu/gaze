@@ -25,6 +25,7 @@ func main() {
 	yaml := flag.Bool("y", false, "Show default config")
 	quiet := flag.Bool("q", false, "")
 	verbose := flag.Bool("v", false, "")
+	file := flag.String("f", "", "")
 	color := flag.Int("color", 1, "")
 
 	flag.Parse()
@@ -51,7 +52,7 @@ func main() {
 		logger.Level(logger.VERBOSE)
 	}
 
-	err := app.Start(flag.Args(), *userCommand, *timeout)
+	err := app.Start(flag.Args(), *userCommand, *file, *timeout)
 	if err != nil {
 		logger.ErrorObject(err)
 		os.Exit(1)

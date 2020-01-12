@@ -13,11 +13,11 @@ import (
 )
 
 // Start starts a gaze process
-func Start(watchFiles []string, userCommand string, timeout int) error {
+func Start(watchFiles []string, userCommand string, file string, timeout int) error {
 	watcher := gazer.New(watchFiles)
 	defer watcher.Close()
 
-	commandConfigs, err := createCommandConfig(userCommand)
+	commandConfigs, err := createCommandConfig(userCommand, file)
 	if err != nil {
 		return err
 	}
@@ -25,16 +25,16 @@ func Start(watchFiles []string, userCommand string, timeout int) error {
 	return err
 }
 
-func createCommandConfig(userCommand string) (*config.Config, error) {
+func createCommandConfig(userCommand string, file string) (*config.Config, error) {
 	if userCommand != "" {
 		logger.Debug("userCommand: %s", userCommand)
 		commandConfigs := config.New(userCommand)
 		return commandConfigs, nil
 	}
 
-	commandConfigs, err := config.LoadConfig()
-	if err != nil {
-		return nil, err
+	if file != "" {
+		return config.LoadConfig(file)
 	}
-	return commandConfigs, nil
+
+	return config.InitConfig()
 }

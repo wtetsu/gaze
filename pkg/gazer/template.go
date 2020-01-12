@@ -12,9 +12,10 @@ import (
 	"github.com/cbroglie/mustache"
 )
 
-func render(sourceString string, filePath string) string {
+func render(sourceString string, rawfilePath string) string {
 	template, _ := mustache.ParseString(sourceString)
 
+	filePath := filepath.ToSlash(rawfilePath)
 	ext := filepath.Ext(filePath)
 	base := filepath.Base(filePath)
 	abs, _ := filepath.Abs(filePath)

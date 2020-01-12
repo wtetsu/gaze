@@ -28,11 +28,9 @@ commands:
   run: perl "{{file}}"
 - ext: .java
   run: java "{{file}}"
-- re: ^Dockerfile$
-  run: docker build -f "{{file}}" .
 - ext: .kts
   run: kotlinc -script "{{file}}"
-# - ext: .sh
-#   run: sh "{{file}}"
+- re: ^Dockerfile$
+  run: docker build -f "{{file}}" .
 `
 }

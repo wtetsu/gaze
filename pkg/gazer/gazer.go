@@ -204,6 +204,7 @@ func executeCommand(commandString string) (*exec.Cmd, <-chan error) {
 
 func createCommand(commandString string) *exec.Cmd {
 	args, err := shellwords.Parse(commandString)
+
 	if err != nil {
 		return nil
 	}
