@@ -67,7 +67,7 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 			logger.Info("gazing at: %s", d)
 			err = watcher.Add(d)
 			if err != nil {
-				logger.DebugObject(err)
+				logger.ErrorObject(err)
 			}
 			added[d] = struct{}{}
 		}
