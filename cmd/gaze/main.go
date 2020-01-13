@@ -59,15 +59,16 @@ func main() {
 }
 
 func usage() string {
-	return `
-	Usage: gaze [files...] [options...]
-	
-	Options:
-		-c  Command.
-		-q  Quiet.
-		-r  Recursive.
-		-p  Parallel.
-		f  File.
-	-y  Show default configuration. Save as ./.gaze.yml or ~/.gaze.yml and edit it.
+	return `Usage: gaze [options...] file(s)
+
+Options:
+	-c  A command string.
+	-r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
+	-t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
+	-q  Quiet mode.
+	-f  Specify a YAML configuration file.
+	-c  Color(0:plain, 1:colorful)
+	-v  Verbose mode.
+	-h  Display help.		
 	`
 }

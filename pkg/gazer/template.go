@@ -18,7 +18,8 @@ func render(sourceString string, rawfilePath string) string {
 	filePath := filepath.ToSlash(rawfilePath)
 	ext := filepath.Ext(filePath)
 	base := filepath.Base(filePath)
-	abs, _ := filepath.Abs(filePath)
+	rawAbs, _ := filepath.Abs(filePath)
+	abs := filepath.ToSlash(rawAbs)
 	dir := filepath.ToSlash(filepath.Dir(filePath))
 
 	params := map[string]string{
