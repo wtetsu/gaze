@@ -26,8 +26,14 @@ func main() {
 	verbose := flag.Bool("v", false, "")
 	file := flag.String("f", "", "")
 	color := flag.Int("color", 1, "")
+	version := flag.Bool("version", false, "")
 
 	flag.Parse()
+
+	if *version {
+		fmt.Println("gaze v0.0.2")
+		return
+	}
 
 	if *yaml {
 		fmt.Println(config.Default())
