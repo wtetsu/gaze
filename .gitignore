@@ -13,3 +13,5 @@
 
 dist/
 .vscode/
+test/**/*.log
+coverage.txt

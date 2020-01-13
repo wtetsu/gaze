@@ -2,3 +2,9 @@ language: go
 go:
   - "1.13"
   - master
+
+script:
+  - sh go.test.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
