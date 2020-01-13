@@ -82,14 +82,6 @@ func trimSuffix(s, suffix string) string {
 	return s
 }
 
-func doublestarMatch(pattern string, path string) bool {
-	ok, _ := doublestar.Match(pattern, path)
-	if ok {
-		return true
-	}
-	return false
-}
-
 // IsDir returns true if path is a directory.
 func IsDir(path string) bool {
 	info, err := os.Stat(path)

@@ -70,19 +70,25 @@ func LoadConfig(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	return makeConfig(bytes)
+}
 
-	entries, err := parseConfig(bytes)
+func makeConfig(bytes []byte) (*Config, error) {
+	commands, err := parseConfig(bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	config := Config{Commands: *entries}
+	config := Config{Commands: *commands}
 	return prepare(&config), nil
 }
 
 func prepare(configs *Config) *Config {
 	for i := 0; i < len(configs.Commands); i++ {
 		reStr := configs.Commands[i].Re
+		if reStr == "" {
+			continue
+		}
 		re, err := regexp.Compile(reStr)
 		if err == nil {
 			configs.Commands[i].re = re
@@ -126,6 +132,9 @@ func parseConfig(fileBuffer []byte) (*[]Command, error) {
 
 // Match return true is filePath meets the condition
 func (c *Command) Match(filePath string) bool {
+	if filePath == "" {
+		return false
+	}
 	if c.Ext == "" && c.re == nil {
 		return false
 	}

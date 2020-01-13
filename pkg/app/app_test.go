@@ -77,7 +77,7 @@ func TestEndTopEnd(t *testing.T) {
 }
 
 func createTempFile(pattern string, content string) string {
-	file, err := ioutil.TempFile("", "*.rb")
+	file, err := ioutil.TempFile("", pattern)
 	if err != nil {
 		return ""
 	}

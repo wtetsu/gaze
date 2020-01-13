@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
 set -e
-echo "" > coverage.txt
+go test -coverprofile=coverage.txt -covermode=atomic github.com/wtetsu/gaze/pkg/...
 
-for d in $(go list ./pkg/...); do
-    go test -coverprofile=profile.out -covermode=atomic "$d"
-    if [ -f profile.out ]; then
-        cat profile.out >> coverage.txt
-        rm profile.out
-    fi
-done

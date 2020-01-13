@@ -21,6 +21,7 @@ type Gazer struct {
 	patterns []string
 	watcher  *fsnotify.Watcher
 	isClosed bool
+	counter  uint64
 }
 
 // New returns a new Gazer.
@@ -44,7 +45,7 @@ func (g *Gazer) Close() {
 
 // Run starts to gaze.
 func (g *Gazer) Run(configs *config.Config, timeout int, restart bool) error {
-	err := repeatRunAndWait(g.watcher, g.patterns, configs, timeout, restart)
+	err := g.repeatRunAndWait(configs, timeout, restart)
 	return err
 }
 
@@ -75,7 +76,7 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 	return watcher, nil
 }
 
-func repeatRunAndWait(watcher *fsnotify.Watcher, watchFiles []string, commandConfigs *config.Config, timeout int, restart bool) error {
+func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, restart bool) error {
 	var lastExecutionTime int64
 
 	sigInt := sigIntChannel()
@@ -90,12 +91,12 @@ func repeatRunAndWait(watcher *fsnotify.Watcher, watchFiles []string, commandCon
 			break
 		}
 		select {
-		case event, ok := <-watcher.Events:
+		case event, ok := <-g.watcher.Events:
 			flag := fsnotify.Write | fsnotify.Rename
 			if ok && event.Op|flag == 0 {
 				continue
 			}
-			if !matchAny(watchFiles, event.Name) {
+			if !matchAny(g.patterns, event.Name) {
 				continue
 			}
 			logger.Debug("Receive: %s", event.Name)
@@ -104,6 +105,7 @@ func repeatRunAndWait(watcher *fsnotify.Watcher, watchFiles []string, commandCon
 				continue
 			}
 
+			g.counter++
 			commandString := getAppropriateCommand(event.Name, commandConfigs)
 			if commandString != "" {
 				logger.NoticeWithBlank("[%s]", commandString)
@@ -164,4 +166,9 @@ func getAppropriateCommand(filePath string, commandConfigs *config.Config) strin
 		}
 	}
 	return result
+}
+
+// Counter returns the current execution counter
+func (g *Gazer) Counter() uint64 {
+	return g.counter
 }

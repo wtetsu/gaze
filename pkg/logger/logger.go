@@ -29,6 +29,15 @@ var printInfo func(format string, a ...interface{})
 var printNotice func(format string, a ...interface{})
 var printError func(format string, a ...interface{})
 
+var initialized = false
+
+func initialize() {
+	if initialized {
+		return
+	}
+	Plain()
+}
+
 // Level sets a new log level.
 func Level(newLogLevel int) {
 	logLevel = newLogLevel
@@ -43,6 +52,7 @@ func Colorful() {
 	printError = func(format string, a ...interface{}) {
 		f(color.Error, format, a...)
 	}
+	initialized = true
 }
 
 // Plain disables colorful output
@@ -56,6 +66,7 @@ func Plain() {
 	printError = func(format string, a ...interface{}) {
 		fmt.Fprintf(os.Stderr, format, a...)
 	}
+	initialized = true
 }
 
 // Error writes an error log
@@ -63,6 +74,7 @@ func Error(format string, a ...interface{}) {
 	if logLevel < QUIET {
 		return
 	}
+	initialize()
 	space()
 	printError(format, a...)
 	fmt.Println()
@@ -93,6 +105,7 @@ func notice(enableSpace bool, format string, a ...interface{}) {
 	if logLevel < NORMAL {
 		return
 	}
+	initialize()
 	if enableSpace {
 		space()
 	}
@@ -106,6 +119,7 @@ func Info(format string, a ...interface{}) {
 	if logLevel < VERBOSE {
 		return
 	}
+	initialize()
 	printInfo(format, a...)
 	fmt.Println()
 	count++
@@ -116,6 +130,7 @@ func Debug(format string, a ...interface{}) {
 	if logLevel < DEBUG {
 		return
 	}
+	initialize()
 	fmt.Printf(format, a...)
 	fmt.Println()
 	count++

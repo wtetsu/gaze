@@ -10,5 +10,31 @@ import (
 	"testing"
 )
 
-func TestSimple(t *testing.T) {
+func Test(t *testing.T) {
+	Colorful()
+	for level := 0; level <= 4; level++ {
+		Level(level)
+		writeAll()
+	}
+
+	Plain()
+	for level := 0; level <= 4; level++ {
+		Level(level)
+		Colorful()
+	}
+}
+
+func writeAll() {
+	Error("log")
+	ErrorObject("log")
+
+	Notice("log")
+	NoticeObject("log")
+	NoticeWithBlank("log")
+
+	Info("log")
+	//InfoObject("log")
+
+	Debug("log")
+	DebugObject("log")
 }

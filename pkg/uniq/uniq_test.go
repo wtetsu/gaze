@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestSimple(t *testing.T) {
+func Test(t *testing.T) {
 	uniq := New()
 	if len(uniq.List()) != 0 {
 		t.Fatal()
