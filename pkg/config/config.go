@@ -42,7 +42,10 @@ func New(command string) *Config {
 // Priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
 func InitConfig() (*Config, error) {
 	configPath := searchConfigPath()
+	return makeConfig(configPath)
+}
 
+func makeConfig(configPath string) (*Config, error) {
 	if configPath != "" {
 		logger.Info("config: " + configPath)
 		return LoadConfig(configPath)
@@ -70,10 +73,10 @@ func LoadConfig(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return makeConfig(bytes)
+	return makeConfigFromBytes(bytes)
 }
 
-func makeConfig(bytes []byte) (*Config, error) {
+func makeConfigFromBytes(bytes []byte) (*Config, error) {
 	commands, err := parseConfig(bytes)
 	if err != nil {
 		return nil, err
@@ -135,9 +138,6 @@ func (c *Command) Match(filePath string) bool {
 	if filePath == "" {
 		return false
 	}
-	if c.Ext == "" && c.re == nil {
-		return false
-	}
 
 	if c.Ext != "" && c.re != nil {
 		return c.Ext == filepath.Ext(filePath) && c.re.MatchString(filePath)
@@ -149,5 +149,6 @@ func (c *Command) Match(filePath string) bool {
 		return c.re.MatchString(filePath)
 	}
 
+	// c.Ext == "" && c.re == nil
 	return false
 }

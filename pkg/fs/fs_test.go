@@ -37,7 +37,25 @@ func TestIs(t *testing.T) {
 	if !IsFile("fs.go") {
 		t.Fatal()
 	}
+	if IsFile("__fs.go") {
+		t.Fatal()
+	}
+	if !IsDir(".") || !IsDir("..") {
+		t.Fatal()
+	}
 	if IsDir("fs.go") {
+		t.Fatal()
+	}
+	if IsDir("__fs.go") {
+		t.Fatal()
+	}
+}
+
+func TestSuffix(t *testing.T) {
+	if trimSuffix("/aaa/bbb/ccc", "/") != "/aaa/bbb/ccc" {
+		t.Fatal()
+	}
+	if trimSuffix("/aaa/bbb/ccc/", "/") != "/aaa/bbb/ccc" {
 		t.Fatal()
 	}
 }
