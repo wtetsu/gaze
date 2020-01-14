@@ -21,7 +21,6 @@ func Find(pattern string) ([]string, []string) {
 	if err != nil {
 		return []string{}, []string{}
 	}
-
 	entryList := append([]string{pattern}, foundFiles...)
 
 	fileList, dirList := doFileDir(entryList)
@@ -38,7 +37,7 @@ func doFileDir(entries []string) ([]string, []string) {
 			continue
 		}
 		if isDir(entry) {
-			dirUniq.Add(entry)
+			dirUniq.Add(filepath.Clean(entry))
 		} else {
 			fileUniq.Add(entry)
 			dirPath := filepath.Dir(entry)
@@ -66,7 +65,7 @@ func GlobMatch(rawPattern string, rawFilePath string) bool {
 		return true
 	}
 
-	dirPath := filepath.Dir(filePath)
+	dirPath := filepath.ToSlash(filepath.Dir(filePath))
 
 	ok, _ = doublestar.Match(dirPath, pattern)
 	if ok {

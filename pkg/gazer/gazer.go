@@ -8,6 +8,7 @@ package gazer
 
 import (
 	"os/exec"
+	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/config"
@@ -26,9 +27,14 @@ type Gazer struct {
 
 // New returns a new Gazer.
 func New(patterns []string) *Gazer {
-	watcher, _ := createWatcher(patterns)
+	cleanPatterns := make([]string, len(patterns))
+	for i, p := range patterns {
+		cleanPatterns[i] = filepath.Clean(p)
+	}
+
+	watcher, _ := createWatcher(cleanPatterns)
 	return &Gazer{
-		patterns: patterns,
+		patterns: cleanPatterns,
 		watcher:  watcher,
 		isClosed: false,
 	}
@@ -67,7 +73,7 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 			logger.Info("gazing at: %s", d)
 			err = watcher.Add(d)
 			if err != nil {
-				logger.ErrorObject(err)
+				logger.Error("%s: %v", d, err)
 			}
 			added[d] = struct{}{}
 		}
@@ -92,6 +98,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 		}
 		select {
 		case event, ok := <-g.watcher.Events:
+			logger.Debug("Receive: %s", event.Name)
 			flag := fsnotify.Write | fsnotify.Rename
 			if ok && event.Op|flag == 0 {
 				continue
@@ -99,7 +106,6 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			if !matchAny(g.patterns, event.Name) {
 				continue
 			}
-			logger.Debug("Receive: %s", event.Name)
 			modifiedTime := time.GetFileModifiedTime(event.Name)
 			if (modifiedTime - lastExecutionTime) < ignorePeriod {
 				continue

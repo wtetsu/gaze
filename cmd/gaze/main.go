@@ -26,6 +26,7 @@ func main() {
 	verbose := flag.Bool("v", false, "")
 	file := flag.String("f", "", "")
 	color := flag.Int("color", 1, "")
+	debug := flag.Bool("debug", false, "")
 	version := flag.Bool("version", false, "")
 
 	flag.Parse()
@@ -55,6 +56,9 @@ func main() {
 	}
 	if *verbose {
 		logger.Level(logger.VERBOSE)
+	}
+	if *debug {
+		logger.Level(logger.DEBUG)
 	}
 
 	err := app.Start(flag.Args(), *userCommand, *file, *timeout, *restart)
