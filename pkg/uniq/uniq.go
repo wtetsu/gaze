@@ -20,7 +20,7 @@ func New() *Uniq {
 	}
 }
 
-// Add adds a new entry
+// Add adds a new entry.
 func (u *Uniq) Add(newEntry string) {
 	_, ok := u.keys[newEntry]
 	if ok {
@@ -30,7 +30,14 @@ func (u *Uniq) Add(newEntry string) {
 	u.list = (append(u.list, newEntry))
 }
 
-// List returns a internal unique list
+// AddAll adds multiple new entries.
+func (u *Uniq) AddAll(newEntries []string) {
+	for _, e := range newEntries {
+		u.Add(e)
+	}
+}
+
+// List returns a internal unique list.
 func (u *Uniq) List() []string {
 	return u.list
 }
