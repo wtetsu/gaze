@@ -68,7 +68,12 @@ func executeCommand(cmd *exec.Cmd) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Start()
-	logger.Info("Pid: %d", cmd.Process.Pid)
+
+	if cmd.Process != nil {
+		logger.Info("Pid: %d", cmd.Process.Pid)
+	} else {
+		logger.Info("Pid: ????")
+	}
 	err := cmd.Wait()
 	return err
 }
