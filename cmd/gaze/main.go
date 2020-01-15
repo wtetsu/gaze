@@ -22,7 +22,7 @@ func main() {
 	args := parseArgs()
 
 	if args == nil || args.help {
-		usage()
+		fmt.Println(usage())
 		return
 	}
 
@@ -135,14 +135,22 @@ type Args struct {
 
 func usage() string {
 	return `Usage: gaze [options...] file(s)
-
-Options:
-	-c  A command string.
-	-r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
-	-t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
-	-f  Specify a YAML configuration file.
-	-c  Color(0:plain, 1:colorful)
-	-v  Verbose mode.
-	-q  Quiet mode.
-	`
+ Options:
+	 -c  A command string.
+	 -r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
+	 -t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
+	 -f  Specify a YAML configuration file.
+	 -c  Color(0:plain, 1:colorful)
+	 -v  Verbose mode.
+	 -q  Quiet mode.
+ Examples:
+	 gaze .
+	 gaze *.rb
+	 gaze main.go
+	 gaze -c make '**/*.c'
+	 gaze -c "eslint {{file}}" 'src/**/*.js'
+	 gaze -r server.py
+	 gaze -t 1000 complicated.py
+ For more information: https://github.com/wtetsu/gaze
+	 `
 }

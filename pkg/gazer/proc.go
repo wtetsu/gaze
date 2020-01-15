@@ -11,7 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	
+
 	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
@@ -82,8 +82,10 @@ func kill(cmd *exec.Cmd, reason string) {
 }
 
 func createCommand(commandString string) *exec.Cmd {
-	args, err := shellwords.Parse(commandString)
-
+	perser := shellwords.NewParser()
+	// perser.ParseBacktick = true
+	// perser.ParseEnv = true
+	args, err := perser.Parse(commandString)
 	if err != nil {
 		return nil
 	}

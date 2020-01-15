@@ -15,6 +15,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
 // Gazer gazes filesystem.
@@ -61,22 +62,27 @@ func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
 		logger.ErrorObject(err)
 		return nil, err
 	}
-
-	added := map[string]struct{}{}
+	targets := uniq.New()
 	for _, pattern := range patterns {
+		patternDir := filepath.Dir(pattern)
+		if fs.IsDir(patternDir) {
+			targets.Add(patternDir)
+		}
 		_, dirs := fs.Find(pattern)
 		for _, d := range dirs {
-			_, ok := added[d]
-			if ok {
-				continue
-			}
-			logger.Info("gazing at: %s", d)
 			err = watcher.Add(d)
 			if err != nil {
 				logger.Error("%s: %v", d, err)
 			}
-			added[d] = struct{}{}
 		}
+	}
+
+	for _, t := range targets.List() {
+		err = watcher.Add(t)
+		if err != nil {
+			logger.Error("%s: %v", t, err)
+		}
+		logger.Info("gazing at: %s", t)
 	}
 
 	return watcher, nil
