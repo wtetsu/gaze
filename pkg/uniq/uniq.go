@@ -41,3 +41,8 @@ func (u *Uniq) AddAll(newEntries []string) {
 func (u *Uniq) List() []string {
 	return u.list
 }
+
+// Len returns the length
+func (u *Uniq) Len() int {
+	return len(u.list)
+}

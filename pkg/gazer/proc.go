@@ -79,7 +79,7 @@ func executeCommand(cmd *exec.Cmd) error {
 }
 
 func kill(cmd *exec.Cmd, reason string) {
-	err := cmd.Process.Kill()
+	err := cmd.Process.Signal(os.Interrupt)
 	if err != nil {
 		logger.NoticeObject(err)
 	}

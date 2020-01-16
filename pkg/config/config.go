@@ -63,7 +63,7 @@ func defaultConfig() (*Config, error) {
 	}
 
 	config := Config{Commands: *entries}
-	return &config, nil
+	return prepare(&config), nil
 }
 
 // LoadConfig loads a configuration file.

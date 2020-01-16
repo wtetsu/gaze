@@ -119,33 +119,37 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 
 			g.counter++
 			commandString := getAppropriateCommand(event.Name, commandConfigs)
-			if commandString != "" {
-				logger.NoticeWithBlank("[%s]", commandString)
+			if commandString == "" {
+				logger.Debug("Command not found: %s", event.Name)
+				continue
+			}
 
-				if ongoingCommand != nil {
-					kill(ongoingCommand, "Restart")
-					ongoingCommand = nil
+			logger.NoticeWithBlank("[%s]", commandString)
+
+			if ongoingCommand != nil {
+				kill(ongoingCommand, "Restart")
+				ongoingCommand = nil
+			}
+
+			cmd := createCommand(commandString)
+			lastExecutionTime = time.Now()
+			if !restart {
+				err := executeCommandOrTimeout(cmd, timeout)
+				if err != nil {
+					logger.NoticeObject(err)
 				}
-
-				cmd := createCommand(commandString)
-				lastExecutionTime = time.Now()
-				if !restart {
+			} else {
+				// restartable
+				ongoingCommand = cmd
+				go func() {
 					err := executeCommandOrTimeout(cmd, timeout)
 					if err != nil {
 						logger.NoticeObject(err)
 					}
-				} else {
-					// restartable
-					ongoingCommand = cmd
-					go func() {
-						err := executeCommandOrTimeout(cmd, timeout)
-						if err != nil {
-							logger.NoticeObject(err)
-						}
-						ongoingCommand = nil
-					}()
-				}
+					ongoingCommand = nil
+				}()
 			}
+
 		case <-sigInt:
 			isDisposed = true
 			return nil
