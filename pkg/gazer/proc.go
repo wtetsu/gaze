@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime"
 
 	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -79,11 +80,18 @@ func executeCommand(cmd *exec.Cmd) error {
 }
 
 func kill(cmd *exec.Cmd, reason string) {
-	err := cmd.Process.Signal(os.Interrupt)
-	if err != nil {
-		logger.NoticeObject(err)
+	var signal os.Signal
+	if runtime.GOOS == "windows" {
+		signal = os.Kill
+	} else {
+		signal = os.Interrupt
 	}
-	logger.Notice("%s: %d has been killed", reason, cmd.Process.Pid)
+	err := cmd.Process.Signal(signal)
+	if err != nil {
+		logger.Notice("kill failed: %v", err)
+	} else {
+		logger.Notice("%s: %d has been killed", reason, cmd.Process.Pid)
+	}
 }
 
 func createCommand(commandString string) *exec.Cmd {
