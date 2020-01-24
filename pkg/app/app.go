@@ -36,5 +36,5 @@ func createCommandConfig(userCommand string, file string) (*config.Config, error
 		return config.LoadConfig(file)
 	}
 
-	return config.InitConfig()
+	return config.InitConfig([]string{".gaze.yml", ".gaze.yaml"})
 }

@@ -40,8 +40,8 @@ func New(command string) *Config {
 
 // InitConfig loads a configuration file.
 // Priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
-func InitConfig() (*Config, error) {
-	configPath := searchConfigPath()
+func InitConfig(fileNameList []string) (*Config, error) {
+	configPath := searchConfigPath(fileNameList)
 	return makeConfig(configPath)
 }
 
@@ -100,13 +100,17 @@ func prepare(configs *Config) *Config {
 	return configs
 }
 
-func searchConfigPath() string {
-	const CONFIG1 = ".gaze.yml"
-	const CONFIG2 = ".gaze.yaml"
-	candidates := []string{"./" + CONFIG1, "./" + CONFIG2}
+func searchConfigPath(fileNameList []string) string {
+	candidates := []string{}
+	for _, n := range fileNameList {
+		candidates = append(candidates, "./"+n)
+	}
+
 	home := homeDirPath()
 	if home != "" {
-		candidates = append(candidates, path.Join(home, CONFIG1), path.Join(home, CONFIG2))
+		for _, n := range fileNameList {
+			candidates = append(candidates, path.Join(home, n))
+		}
 	}
 	for _, c := range candidates {
 		if fs.IsFile(c) {
