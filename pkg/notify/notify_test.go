@@ -11,16 +11,20 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/wtetsu/gaze/pkg/logger"
 )
 
 func TestBasic(t *testing.T) {
+	logger.Level(logger.VERBOSE)
+
 	rb := createTempFile("*.rb", `puts "Hello from Ruby`)
 	py := createTempFile("*.py", `print("Hello from Python")`)
 
 	pattens := []string{rb, py}
 
 	notify, err := New(pattens)
-
 	if err != nil {
 		t.Fatal()
 	}
@@ -44,15 +48,17 @@ func TestBasic(t *testing.T) {
 		}
 	}()
 
-	// time.Sleep(100)
-	// touch(py)
-	// time.Sleep(100)
-	// touch(rb)
-	// time.Sleep(100)
-
-	// if count != 0 {
-	// 	t.Fatal()
-	// }
+	for i := 0; i < 100; i++ {
+		touch(py)
+		touch(rb)
+		time.Sleep(10)
+		if count >= 2 {
+			break
+		}
+	}
+	if count == 0 {
+		t.Fatal()
+	}
 
 	notify.Close()
 }
@@ -73,6 +79,6 @@ func touch(fileName string) {
 	if err != nil {
 		return
 	}
-	file.WriteString("")
+	file.WriteString(" ")
 	file.Close()
 }

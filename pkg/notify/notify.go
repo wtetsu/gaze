@@ -49,22 +49,10 @@ func New(patterns []string) (*Notify, error) {
 		logger.ErrorObject(err)
 		return nil, err
 	}
-	targets := uniq.New()
-	for _, pattern := range patterns {
-		patternDir := filepath.Dir(pattern)
-		if fs.IsDir(patternDir) {
-			targets.Add(patternDir)
-		}
-		_, dirs := fs.Find(pattern)
-		for _, d := range dirs {
-			err = watcher.Add(d)
-			if err != nil {
-				logger.Error("%s: %v", d, err)
-			}
-		}
-	}
 
-	for _, t := range targets.List() {
+	watchDirs := findDirs(patterns)
+
+	for _, t := range watchDirs {
 		err = watcher.Add(t)
 		if err != nil {
 			logger.Error("%s: %v", t, err)
@@ -81,6 +69,21 @@ func New(patterns []string) (*Notify, error) {
 	go wait(notify)
 
 	return notify, nil
+}
+
+func findDirs(patterns []string) []string {
+	targets := uniq.New()
+	for _, pattern := range patterns {
+		patternDir := filepath.Dir(pattern)
+		if fs.IsDir(patternDir) {
+			targets.Add(patternDir)
+		}
+		_, dirs := fs.Find(pattern)
+		for _, d := range dirs {
+			targets.Add(d)
+		}
+	}
+	return targets.List()
 }
 
 func wait(notify *Notify) {
