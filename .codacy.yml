@@ -3,3 +3,5 @@ exclude_paths:
   - "**.md"
   - "**.rb"
   - "**.py"
+  - "**.sh"
+  - "**_test.go"
