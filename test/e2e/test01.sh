@@ -28,7 +28,7 @@ wait
 num=`cat test.log | grep "hello, world!" | wc -l`
 
 if [ $num -ne 6 ]; then
-  echo "Failed"
+  echo "Failed:${num}"
   exit 1
 fi
 
