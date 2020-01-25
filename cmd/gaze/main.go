@@ -18,6 +18,8 @@ import (
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
+const version = "v0.0.6"
+
 func main() {
 	args := parseArgs()
 
@@ -27,7 +29,7 @@ func main() {
 	}
 
 	if args.version {
-		fmt.Println("gaze v0.0.4")
+		fmt.Println("gaze " + version)
 		return
 	}
 

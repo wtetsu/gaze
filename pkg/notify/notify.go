@@ -12,22 +12,24 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
+	"github.com/wtetsu/gaze/pkg/time"
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
 // Notify delives events to a channel when files are virtually updated.
 // "create+rename" is regarded as "update".
 type Notify struct {
-	Events   chan Event
-	Errors   chan error
-	watcher  *fsnotify.Watcher
-	isClosed bool
+	Events        chan Event
+	Errors        chan error
+	watcher       *fsnotify.Watcher
+	isClosed      bool
+	times         map[string]int64
+	pendingPeriod int64
 }
 
 // Event represents a single file system notification.
 type Event struct {
 	Name string
-	Op   Op
 }
 
 // Op describes a set of file operations.
@@ -61,12 +63,14 @@ func New(patterns []string) (*Notify, error) {
 	}
 
 	notify := &Notify{
-		Events:   make(chan Event),
-		watcher:  watcher,
-		isClosed: false,
+		Events:        make(chan Event),
+		watcher:       watcher,
+		isClosed:      false,
+		times:         make(map[string]int64),
+		pendingPeriod: 100 * 1000000,
 	}
 
-	go wait(notify)
+	go notify.wait()
 
 	return notify, nil
 }
@@ -86,23 +90,40 @@ func findDirs(patterns []string) []string {
 	return targets.List()
 }
 
-func wait(notify *Notify) {
+func (n *Notify) wait() {
 	for {
 		select {
-		case event, ok := <-notify.watcher.Events:
+		case event, ok := <-n.watcher.Events:
 			if !ok {
 				continue
 			}
+			if !n.shouldExecute(event.Name, event.Op) {
+				continue
+			}
+			n.times[event.Name] = time.Now()
 			e := Event{
 				Name: event.Name,
-				Op:   event.Op,
 			}
-			notify.Events <- e
-		case err, ok := <-notify.watcher.Errors:
+			n.Events <- e
+		case err, ok := <-n.watcher.Errors:
 			if !ok {
 				continue
 			}
-			notify.Errors <- err
+			n.Errors <- err
 		}
 	}
+}
+
+func (n *Notify) shouldExecute(filePath string, op Op) bool {
+	flag := fsnotify.Write | fsnotify.Rename
+	if op|flag == 0 {
+		return false
+	}
+
+	lastExecutionTime := n.times[filePath]
+	modifiedTime := time.GetFileModifiedTime(filePath)
+	if (modifiedTime - lastExecutionTime) < n.pendingPeriod {
+		return false
+	}
+	return true
 }

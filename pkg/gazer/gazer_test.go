@@ -37,9 +37,13 @@ func TestBasic(t *testing.T) {
 	}
 
 	touch(py1)
+	touch(py1)
+	touch(py1)
+	touch(txt1)
+	touch(txt1)
 	touch(txt1)
 	time.Sleep(100)
-	if gazer.Counter() != 1 {
+	if gazer.Counter() != 2 {
 		t.Fatal()
 	}
 }
@@ -74,13 +78,10 @@ print("end")
 	}
 
 	touch(py1)
-	time.Sleep(100)
 	touch(py1)
-	time.Sleep(100)
 	touch(py1)
-	time.Sleep(100)
 
-	if gazer.Counter() != 3 {
+	if gazer.Counter() != 1 {
 		t.Fatal()
 	}
 }

@@ -10,12 +10,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/notify"
-	"github.com/wtetsu/gaze/pkg/time"
 )
 
 // Gazer gazes filesystem.
@@ -57,12 +55,7 @@ func (g *Gazer) Run(configs *config.Config, timeout int, restart bool) error {
 }
 
 func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, restart bool) error {
-	var lastExecutionTime int64
-
 	sigInt := sigIntChannel()
-
-	var ignorePeriod int64 = 10 * 1000000
-
 	var ongoingCommand *exec.Cmd
 
 	isDisposed := false
@@ -71,17 +64,9 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			break
 		}
 		select {
-		case event, ok := <-g.notify.Events:
+		case event := <-g.notify.Events:
 			logger.Debug("Receive: %s", event.Name)
-			flag := fsnotify.Write | fsnotify.Rename
-			if ok && event.Op|flag == 0 {
-				continue
-			}
 			if !matchAny(g.patterns, event.Name) {
-				continue
-			}
-			modifiedTime := time.GetFileModifiedTime(event.Name)
-			if (modifiedTime - lastExecutionTime) < ignorePeriod {
 				continue
 			}
 
@@ -100,7 +85,6 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			}
 
 			cmd := createCommand(commandString)
-			lastExecutionTime = time.Now()
 			if !restart {
 				err := executeCommandOrTimeout(cmd, timeout)
 				if err != nil {
