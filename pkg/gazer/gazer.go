@@ -14,14 +14,14 @@ import (
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
+	"github.com/wtetsu/gaze/pkg/notify"
 	"github.com/wtetsu/gaze/pkg/time"
-	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
 // Gazer gazes filesystem.
 type Gazer struct {
 	patterns []string
-	watcher  *fsnotify.Watcher
+	notify   *notify.Notify
 	isClosed bool
 	counter  uint64
 }
@@ -33,10 +33,10 @@ func New(patterns []string) *Gazer {
 		cleanPatterns[i] = filepath.Clean(p)
 	}
 
-	watcher, _ := createWatcher(cleanPatterns)
+	notify, _ := notify.New(cleanPatterns)
 	return &Gazer{
 		patterns: cleanPatterns,
-		watcher:  watcher,
+		notify:   notify,
 		isClosed: false,
 	}
 }
@@ -46,7 +46,7 @@ func (g *Gazer) Close() {
 	if g.isClosed {
 		return
 	}
-	g.watcher.Close()
+	g.notify.Close()
 	g.isClosed = true
 }
 
@@ -54,38 +54,6 @@ func (g *Gazer) Close() {
 func (g *Gazer) Run(configs *config.Config, timeout int, restart bool) error {
 	err := g.repeatRunAndWait(configs, timeout, restart)
 	return err
-}
-
-func createWatcher(patterns []string) (*fsnotify.Watcher, error) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		logger.ErrorObject(err)
-		return nil, err
-	}
-	targets := uniq.New()
-	for _, pattern := range patterns {
-		patternDir := filepath.Dir(pattern)
-		if fs.IsDir(patternDir) {
-			targets.Add(patternDir)
-		}
-		_, dirs := fs.Find(pattern)
-		for _, d := range dirs {
-			err = watcher.Add(d)
-			if err != nil {
-				logger.Error("%s: %v", d, err)
-			}
-		}
-	}
-
-	for _, t := range targets.List() {
-		err = watcher.Add(t)
-		if err != nil {
-			logger.Error("%s: %v", t, err)
-		}
-		logger.Info("gazing at: %s", t)
-	}
-
-	return watcher, nil
 }
 
 func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, restart bool) error {
@@ -103,7 +71,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			break
 		}
 		select {
-		case event, ok := <-g.watcher.Events:
+		case event, ok := <-g.notify.Events:
 			logger.Debug("Receive: %s", event.Name)
 			flag := fsnotify.Write | fsnotify.Rename
 			if ok && event.Op|flag == 0 {
