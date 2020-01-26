@@ -79,7 +79,14 @@ func executeCommand(cmd *exec.Cmd) error {
 	return err
 }
 
-func kill(cmd *exec.Cmd, reason string) {
+func kill(cmd *exec.Cmd, reason string) bool {
+	if cmd == nil || cmd.Process == nil {
+		return false
+	}
+	if cmd.ProcessState != nil && cmd.ProcessState.Exited() {
+		return false
+	}
+
 	var signal os.Signal
 	if runtime.GOOS == "windows" {
 		signal = os.Kill
@@ -89,9 +96,10 @@ func kill(cmd *exec.Cmd, reason string) {
 	err := cmd.Process.Signal(signal)
 	if err != nil {
 		logger.Notice("kill failed: %v", err)
-	} else {
-		logger.Notice("%s: %d has been killed", reason, cmd.Process.Pid)
+		return false
 	}
+	logger.Notice("%s: %d has been killed", reason, cmd.Process.Pid)
+	return true
 }
 
 func createCommand(commandString string) *exec.Cmd {

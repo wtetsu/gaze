@@ -25,16 +25,16 @@ func Test(t *testing.T) {
 }
 
 func writeAll() {
-	Error("log")
-	ErrorObject("log")
+	Error("log(Error)")
+	ErrorObject("log(ErrorObject)")
 
-	Notice("log")
-	NoticeObject("log")
-	NoticeWithBlank("log")
+	Notice("log(Notice)")
+	NoticeObject("log(NoticeObject)")
+	NoticeWithBlank("log(NoticeWithBlank)")
 
-	Info("log")
+	Info("log(Info)")
 	//InfoObject("log")
 
-	Debug("log")
-	DebugObject("log")
+	Debug("log(Debug)")
+	DebugObject("log(DebugObject)")
 }

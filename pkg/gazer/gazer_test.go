@@ -16,10 +16,14 @@ import (
 )
 
 func TestBasic(t *testing.T) {
-	py1 := createTempFile("*.py", `print("hello!!!")`)
-	txt1 := createTempFile("*.txt", `print("hello!!!")`)
+	py1 := createTempFile("*.py", `import datetime; print(datetime.datetime.now())`)
+	rb1 := createTempFile("*.rb", `print(Time.new)`)
 
-	gazer := New([]string{py1, txt1})
+	if py1 == "" || rb1 == "" {
+		t.Fatal("Temp files error")
+	}
+
+	gazer := New([]string{py1, rb1})
 	if gazer == nil {
 		t.Fatal()
 	}
@@ -30,20 +34,20 @@ func TestBasic(t *testing.T) {
 		t.Fatal()
 	}
 	go gazer.Run(c, 0, false)
-	time.Sleep(100)
-
 	if gazer.Counter() != 0 {
 		t.Fatal()
 	}
 
-	touch(py1)
-	touch(py1)
-	touch(py1)
-	touch(txt1)
-	touch(txt1)
-	touch(txt1)
-	time.Sleep(100)
-	if gazer.Counter() != 2 {
+	for i := 0; i < 100; i++ {
+		touch(py1)
+		touch(rb1)
+		if gazer.Counter() >= 4 {
+			break
+		}
+		time.Sleep(50)
+	}
+
+	if gazer.Counter() < 4 {
 		t.Fatal()
 	}
 }
@@ -58,6 +62,9 @@ print("end")
 `
 
 	py1 := createTempFile("*.py", content)
+	if py1 == "" {
+		t.Fatal("Temp files error")
+	}
 
 	gazer := New([]string{py1})
 	if gazer == nil {
@@ -71,23 +78,79 @@ print("end")
 	}
 	go gazer.Run(c, 0, true)
 
-	time.Sleep(100)
+	if gazer.Counter() != 0 {
+		t.Fatal()
+	}
 
+	for i := 0; i < 100; i++ {
+		touch(py1)
+		touch(py1)
+		touch(py1)
+		if gazer.Counter() >= 2 {
+			break
+		}
+		time.Sleep(10)
+	}
+
+	if gazer.Counter() < 2 {
+		t.Fatalf("count:%d", gazer.Counter())
+	}
+}
+
+func TestKill(t *testing.T) {
+	py1 := createTempFile("*.py", `import time; time.sleep(5)`)
+	rb1 := createTempFile("*.rb", `sleep(5)`)
+
+	if py1 == "" || rb1 == "" {
+		t.Fatal("Temp files error")
+	}
+
+	gazer := New([]string{py1, rb1})
+	if gazer == nil {
+		t.Fatal()
+	}
+	defer gazer.Close()
+
+	c, err := config.InitConfig([]string{".gaze.yml", ".gaze.yaml"})
+	if err != nil {
+		t.Fatal()
+	}
+	go gazer.Run(c, 0, false)
 	if gazer.Counter() != 0 {
 		t.Fatal()
 	}
 
 	touch(py1)
-	touch(py1)
-	touch(py1)
+	touch(rb1)
 
-	if gazer.Counter() != 1 {
+	pyKilled := false
+	rbKilled := false
+	for i := 0; i < 100; i++ {
+		if !pyKilled && kill(gazer.commands[py1], "test") {
+			pyKilled = true
+		}
+		if !rbKilled && kill(gazer.commands[rb1], "test") {
+			rbKilled = true
+		}
+		if pyKilled && rbKilled {
+			break
+		}
+		time.Sleep(10)
+	}
+
+	if !pyKilled || !rbKilled {
 		t.Fatal()
 	}
 }
 
 func createTempFile(pattern string, content string) string {
-	file, err := ioutil.TempFile("", pattern)
+	dirpath, err := ioutil.TempDir("", "_gaze")
+
+	if err != nil {
+		return ""
+	}
+
+	file, err := ioutil.TempFile(dirpath, pattern)
 	if err != nil {
 		return ""
 	}

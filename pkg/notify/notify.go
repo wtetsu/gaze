@@ -67,7 +67,7 @@ func New(patterns []string) (*Notify, error) {
 		watcher:       watcher,
 		isClosed:      false,
 		times:         make(map[string]int64),
-		pendingPeriod: 100 * 1000000,
+		pendingPeriod: 100,
 	}
 
 	go notify.wait()
@@ -122,8 +122,14 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 
 	lastExecutionTime := n.times[filePath]
 	modifiedTime := time.GetFileModifiedTime(filePath)
-	if (modifiedTime - lastExecutionTime) < n.pendingPeriod {
+	p := n.pendingPeriod * 1000000
+	if (modifiedTime - lastExecutionTime) < p {
 		return false
 	}
 	return true
+}
+
+// PendingPeriod sets new pendingPeriod(ms)
+func (n *Notify) PendingPeriod(p int64) {
+	n.pendingPeriod = p
 }

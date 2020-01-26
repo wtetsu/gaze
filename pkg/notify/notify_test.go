@@ -11,8 +11,8 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
+	"github.com/wtetsu/gaze/pkg/time"
 	"github.com/wtetsu/gaze/pkg/logger"
 )
 
@@ -22,6 +22,10 @@ func TestBasic(t *testing.T) {
 	rb := createTempFile("*.rb", `puts "Hello from Ruby`)
 	py := createTempFile("*.py", `print("Hello from Python")`)
 
+	if rb == "" || py == "" {
+		t.Fatal("Temp files error")
+	}
+
 	pattens := []string{rb, py}
 
 	notify, err := New(pattens)
@@ -29,42 +33,50 @@ func TestBasic(t *testing.T) {
 		t.Fatal()
 	}
 
+	notify.PendingPeriod(10)
+
 	count := 0
 	go func() {
 		for {
 			select {
 			case _, ok := <-notify.Events:
-				count++
 				if !ok {
 					continue
 				}
-			case err, ok := <-notify.Errors:
 				count++
+			case err, ok := <-notify.Errors:
 				if !ok {
 					continue
 				}
 				log.Println("error:", err)
+				count++
 			}
 		}
 	}()
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 50; i++ {
 		touch(py)
 		touch(rb)
-		time.Sleep(10)
-		if count >= 2 {
+		if count >= 4 {
 			break
 		}
+		time.Sleep(20)
 	}
-	if count == 0 {
-		t.Fatal()
+	if count < 4 {
+		t.Fatalf("count:%d", count)
 	}
 
 	notify.Close()
 }
 
 func createTempFile(pattern string, content string) string {
-	file, err := ioutil.TempFile("", pattern)
+	dirpath, err := ioutil.TempDir("", "_gaze")
+
+	if err != nil {
+		return ""
+	}
+
+	file, err := ioutil.TempFile(dirpath, pattern)
 	if err != nil {
 		return ""
 	}

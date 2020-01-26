@@ -22,6 +22,7 @@ type Gazer struct {
 	notify   *notify.Notify
 	isClosed bool
 	counter  uint64
+	commands map[string]*exec.Cmd
 }
 
 // New returns a new Gazer.
@@ -36,6 +37,8 @@ func New(patterns []string) *Gazer {
 		patterns: cleanPatterns,
 		notify:   notify,
 		isClosed: false,
+		counter:  0,
+		commands: make(map[string]*exec.Cmd),
 	}
 }
 
@@ -85,6 +88,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			}
 
 			cmd := createCommand(commandString)
+			g.commands[event.Name] = cmd
 			if !restart {
 				err := executeCommandOrTimeout(cmd, timeout)
 				if err != nil {
