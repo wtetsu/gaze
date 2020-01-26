@@ -12,8 +12,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/wtetsu/gaze/pkg/time"
 	"github.com/wtetsu/gaze/pkg/logger"
+	"github.com/wtetsu/gaze/pkg/time"
 )
 
 func TestBasic(t *testing.T) {
@@ -44,6 +44,7 @@ func TestBasic(t *testing.T) {
 					continue
 				}
 				count++
+
 			case err, ok := <-notify.Errors:
 				if !ok {
 					continue
@@ -66,6 +67,7 @@ func TestBasic(t *testing.T) {
 		t.Fatalf("count:%d", count)
 	}
 
+	notify.Close()
 	notify.Close()
 }
 

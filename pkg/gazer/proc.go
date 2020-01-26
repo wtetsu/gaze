@@ -36,7 +36,7 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeoutMill int) error {
 		case <-timeout:
 			if cmd.Process == nil {
 				timeout = time.After(5)
-				break
+				continue
 			}
 			kill(cmd, "Timeout")
 			finished = true

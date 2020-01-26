@@ -18,6 +18,7 @@ func Test(t *testing.T) {
 
 	fileTime := GetFileModifiedTime("time.go")
 
+	Sleep(1)
 	now1 := Now()
 
 	if now1 < fileTime {
