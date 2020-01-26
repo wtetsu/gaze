@@ -28,7 +28,12 @@ func Test(t *testing.T) {
 	uniq.Add("ccc")
 	uniq.Add("ccc")
 
-	if len(uniq.List()) != 3 {
+	if uniq.Len() != 3 {
+		t.Fatal()
+	}
+
+	uniq.AddAll([]string{"bbb", "ccc", "ddd"})
+	if uniq.Len() != 4 {
 		t.Fatal()
 	}
 }

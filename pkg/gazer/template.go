@@ -7,14 +7,20 @@
 package gazer
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/cbroglie/mustache"
 )
 
-func render(sourceString string, rawfilePath string) string {
-	template, _ := mustache.ParseString(sourceString)
+var templateCache = make(map[string]*mustache.Template)
+
+func render(sourceString string, rawfilePath string) (string, error) {
+	template, err := getOrCreateTemplate(sourceString)
+	if err != nil {
+		return "", err
+	}
 
 	filePath := filepath.ToSlash(rawfilePath)
 	ext := filepath.Ext(filePath)
@@ -41,11 +47,21 @@ func render(sourceString string, rawfilePath string) string {
 
 	result, err := template.Render(params)
 
-	if err != nil {
-		return ""
+	return result, err
+}
+
+func getOrCreateTemplate(sourceString string) (*mustache.Template, error) {
+	cachedTemplate, ok := templateCache[sourceString]
+	if ok {
+		return cachedTemplate, nil
 	}
 
-	return result
+	template, err := mustache.ParseString(sourceString)
+	if err != nil {
+		return nil, fmt.Errorf("%v(%s)", err, sourceString)
+	}
+	templateCache[sourceString] = template
+	return template, nil
 }
 
 func baseN(arr []string, lastIndex int) string {

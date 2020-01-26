@@ -74,7 +74,11 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			}
 
 			g.counter++
-			commandString := getAppropriateCommand(event.Name, commandConfigs)
+			commandString, err := getAppropriateCommand(event.Name, commandConfigs)
+			if err != nil {
+				logger.NoticeObject(err)
+				continue
+			}
 			if commandString == "" {
 				logger.Debug("Command not found: %s", event.Name)
 				continue
@@ -125,19 +129,21 @@ func matchAny(watchFiles []string, s string) bool {
 	return result
 }
 
-func getAppropriateCommand(filePath string, commandConfigs *config.Config) string {
+func getAppropriateCommand(filePath string, commandConfigs *config.Config) (string, error) {
 	var result string
+	var resultError error
 	for _, c := range commandConfigs.Commands {
 		if c.Run == "" || c.Ext == "" && c.Re == "" {
 			continue
 		}
 		if c.Match(filePath) {
-			command := render(c.Run, filePath)
+			command, err := render(c.Run, filePath)
 			result = command
+			resultError = err
 			break
 		}
 	}
-	return result
+	return result, resultError
 }
 
 // Counter returns the current execution counter

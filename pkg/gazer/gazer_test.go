@@ -95,6 +95,9 @@ print("end")
 	if gazer.Counter() < 2 {
 		t.Fatalf("count:%d", gazer.Counter())
 	}
+
+	gazer.Close()
+	gazer.Close()
 }
 
 func TestKill(t *testing.T) {
