@@ -58,8 +58,9 @@ func New(patterns []string) (*Notify, error) {
 		err = watcher.Add(t)
 		if err != nil {
 			logger.Error("%s: %v", t, err)
+		} else {
+			logger.Info("gazing at: %s", t)
 		}
-		logger.Info("gazing at: %s", t)
 	}
 
 	notify := &Notify{
