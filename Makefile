@@ -5,9 +5,9 @@ CMD=cmd/gaze/main.go
 
 build:
 	go build -v ${CMD}
-build-all: build build-osx build-windows build-linux
-build-osx:
-	GOOS=darwin GOARCH=amd64 go build -o ${OUT}/osx/$(BINARY_NAME) -v ${CMD}
+build-all: build build-darwin build-windows build-linux
+build-darwin:
+	GOOS=darwin GOARCH=amd64 go build -o ${OUT}/darwin/$(BINARY_NAME) -v ${CMD}
 build-windows:
 	GOOS=windows GOARCH=amd64 go build -o ${OUT}/windows/$(BINARY_NAME).exe -v ${CMD}
 build-linux:
@@ -18,6 +18,6 @@ cov:
 	go test -coverprofile=coverage.txt -covermode=atomic github.com/wtetsu/gaze/pkg/...
 clean:
 	go clean ${CMD}
-	rm -f ${OUT}/osx/$(BINARY_NAME)
+	rm -f ${OUT}/darwin/$(BINARY_NAME)
 	rm -f ${OUT}/windows/$(BINARY_NAME)
 	rm -f ${OUT}/linux/$(BINARY_NAME)
