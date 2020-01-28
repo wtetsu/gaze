@@ -59,12 +59,12 @@ func TestUpdate(t *testing.T) {
 	for i := 0; i < 50; i++ {
 		touch(py)
 		touch(rb)
-		if count >= 4 {
+		if count >= 2 {
 			break
 		}
 		time.Sleep(20)
 	}
-	if count < 4 {
+	if count < 2 {
 		t.Fatalf("count:%d", count)
 	}
 
