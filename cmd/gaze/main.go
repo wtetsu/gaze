@@ -23,7 +23,7 @@ const version = "v0.0.6"
 func main() {
 	args := parseArgs()
 
-	if args == nil || args.help {
+	if args.help {
 		fmt.Println(usage())
 		return
 	}
@@ -100,9 +100,6 @@ func parseArgs() *Args {
 	u := uniq.New()
 	u.AddAll(files)
 	u.AddAll(flag.Args())
-	if u.Len() == 0 {
-		u.Add(".")
-	}
 
 	args := Args{
 		help:        *help,
