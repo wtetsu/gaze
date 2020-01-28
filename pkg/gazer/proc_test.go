@@ -36,3 +36,29 @@ func TestProc3(t *testing.T) {
 		}
 	}
 }
+
+func TestProc4(t *testing.T) {
+	cmd1 := createCommand("ls")
+	if len(cmd1.Args) != 1 {
+		t.Fatal()
+	}
+	if kill(cmd1, "test") {
+		t.Fatal()
+	}
+
+	cmd2 := createCommand("ls aaa.txt")
+	if len(cmd2.Args) != 2 {
+		t.Fatal()
+	}
+	if kill(cmd2, "test") {
+		t.Fatal()
+	}
+
+	cmd3 := createCommand(`ls aaa.txt "Program Files"`)
+	if len(cmd3.Args) != 3 {
+		t.Fatal()
+	}
+	if kill(cmd3, "test") {
+		t.Fatal()
+	}
+}

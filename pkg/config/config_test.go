@@ -25,7 +25,7 @@ func TestInit(t *testing.T) {
 
 func TestMatch(t *testing.T) {
 	yaml := createTempFile("*.yml", testConfig())
-	c, err := makeConfig(yaml)
+	c, err := makeConfigFromFile(yaml)
 
 	if err != nil {
 		t.Fatal(err)
@@ -66,7 +66,15 @@ func TestMatch(t *testing.T) {
 }
 
 func TestInvalidYaml(t *testing.T) {
-	c, err := makeConfig("___.yml")
+	c, err := makeConfigFromBytes([]byte("aaa_bbb_ccc"))
+	if err == nil {
+		t.Fatal()
+	}
+	if c != nil {
+		t.Fatal()
+	}
+
+	c, err = makeConfigFromFile("___.yml")
 	t.Log(c)
 	t.Log(err)
 	if err == nil {

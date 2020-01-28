@@ -11,7 +11,13 @@ import (
 )
 
 func Test(t *testing.T) {
+	for level := 0; level <= 4; level++ {
+		Level(level)
+		writeAll()
+	}
+
 	Colorful()
+
 	for level := 0; level <= 4; level++ {
 		Level(level)
 		writeAll()

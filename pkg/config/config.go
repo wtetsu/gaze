@@ -42,10 +42,10 @@ func New(command string) *Config {
 // Priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
 func InitConfig(fileNameList []string) (*Config, error) {
 	configPath := searchConfigPath(fileNameList)
-	return makeConfig(configPath)
+	return makeConfigFromFile(configPath)
 }
 
-func makeConfig(configPath string) (*Config, error) {
+func makeConfigFromFile(configPath string) (*Config, error) {
 	if configPath != "" {
 		logger.Info("config: " + configPath)
 		return LoadConfig(configPath)

@@ -20,3 +20,10 @@ func TestTemplate1(t *testing.T) {
 		t.Fatal(r)
 	}
 }
+
+func TestTemplateError(t *testing.T) {
+	r, err := render("{{file}", "/full/path/test.txt.bak")
+	if err == nil || r != "" {
+		t.Fatal(err)
+	}
+}
