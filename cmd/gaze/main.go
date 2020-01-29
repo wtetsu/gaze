@@ -24,7 +24,7 @@ func main() {
 	args := parseArgs()
 
 	if args.help {
-		fmt.Println(usage())
+		fmt.Println(usage2())
 		return
 	}
 
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	if len(args.targets) == 0 {
-		fmt.Println(usage())
+		fmt.Println(usage1())
 		return
 	}
 
@@ -68,7 +68,7 @@ func main() {
 
 func parseArgs() *Args {
 	flag.Usage = func() {
-		usage()
+		usage1()
 	}
 
 	help := flag.Bool("h", false, "")
@@ -135,16 +135,42 @@ type Args struct {
 	targets     []string
 }
 
-func usage() string {
+func usage1() string {
 	return `Usage: gaze [options...] file(s)
+
+Options(excerpt):
+	-c  A command string.
+	-r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
+	-t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
+	-h  Display help
+
+Examples:
+	gaze .
+	gaze *.rb
+	gaze main.go
+	gaze -c make '**/*.c'
+	gaze -c "eslint {{file}}" 'src/**/*.js'
+	gaze -r server.py
+	gaze -t 1000 complicated.py
+
+For more information: https://github.com/wtetsu/gaze
+`
+}
+
+func usage2() string {
+	return `Usage: gaze [options...] file(s)
+
 Options:
 	-c  A command string.
 	-r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
 	-t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
 	-f  Specify a YAML configuration file.
-	-c  Color(0:plain, 1:colorful)
 	-v  Verbose mode.
 	-q  Quiet mode.
+	-y  Output the default configuration
+	-h  Display help
+	--color    Color(0:plain, 1:colorful)
+	--version  Output version information
 
 Examples:
 	gaze .
