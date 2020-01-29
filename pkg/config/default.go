@@ -11,26 +11,26 @@ func Default() string {
 	return `# Gaze configuration(priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
 commands:
 - ext: .go
-  run: go run "{{file}}"
+  cmd: go run "{{file}}"
 - ext: .py
-  run: python "{{file}}"
+  cmd: python "{{file}}"
 - ext: .rb
-  run: ruby "{{file}}"
+  cmd: ruby "{{file}}"
 - ext: .js
-  run: node "{{file}}"
+  cmd: node "{{file}}"
 - ext: .d
-  run: dmd -run "{{file}}"
+  cmd: dmd -run "{{file}}"
 - ext: .groovy
-  run: groovy "{{file}}"
+  cmd: groovy "{{file}}"
 - ext: .php
-  run: php "{{file}}"
+  cmd: php "{{file}}"
 - ext: .pl
-  run: perl "{{file}}"
+  cmd: perl "{{file}}"
 - ext: .java
-  run: java "{{file}}"
+  cmd: java "{{file}}"
 - ext: .kts
-  run: kotlinc -script "{{file}}"
+  cmd: kotlinc -script "{{file}}"
 - re: ^Dockerfile$
-  run: docker build -f "{{file}}" .
+  cmd: docker build -f "{{file}}" .
 `
 }

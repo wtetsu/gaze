@@ -133,11 +133,11 @@ func getAppropriateCommand(filePath string, commandConfigs *config.Config) (stri
 	var result string
 	var resultError error
 	for _, c := range commandConfigs.Commands {
-		if c.Run == "" || c.Ext == "" && c.Re == "" {
+		if c.Cmd == "" || c.Ext == "" && c.Re == "" {
 			continue
 		}
 		if c.Match(filePath) {
-			command, err := render(c.Run, filePath)
+			command, err := render(c.Cmd, filePath)
 			result = command
 			resultError = err
 			break

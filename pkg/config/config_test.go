@@ -36,10 +36,10 @@ func TestMatch(t *testing.T) {
 	if getFirstMatch(c, "") != nil {
 		t.Fatal()
 	}
-	if getFirstMatch(c, "a.rb").Run != "run01" {
+	if getFirstMatch(c, "a.rb").Cmd != "run01" {
 		t.Fatal()
 	}
-	if getFirstMatch(c, "Dockerfile").Run != "run02" {
+	if getFirstMatch(c, "Dockerfile").Cmd != "run02" {
 		t.Fatal()
 	}
 	if getFirstMatch(c, ".Dockerfile") != nil {
@@ -48,10 +48,10 @@ func TestMatch(t *testing.T) {
 	if getFirstMatch(c, "Dockerfile.") != nil {
 		t.Fatal()
 	}
-	if getFirstMatch(c, "abc.txt").Run != "run03" {
+	if getFirstMatch(c, "abc.txt").Cmd != "run03" {
 		t.Fatal()
 	}
-	if getFirstMatch(c, "abcdef.txt").Run != "run03" {
+	if getFirstMatch(c, "abcdef.txt").Cmd != "run03" {
 		t.Fatal()
 	}
 	if getFirstMatch(c, "ab.txt") != nil {
@@ -100,14 +100,14 @@ func testConfig() string {
 	return `#
 commands:
 - ext:
-  run: run00
+  cmd: run00
 - ext: .rb
-  run: run01
+  cmd: run01
 - re: ^Dockerfile$
-  run: run02
+  cmd: run02
 - re: ^abc
   ext: .txt
-  run: run03
+  cmd: run03
 `
 }
 

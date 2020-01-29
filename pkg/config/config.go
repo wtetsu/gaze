@@ -26,14 +26,14 @@ type Config struct {
 // Command represents Gaze configuration
 type Command struct {
 	Ext string
-	Run string
+	Cmd string
 	Re  string
 	re  *regexp.Regexp
 }
 
 // New returns
 func New(command string) *Config {
-	fixedCommand := Command{Re: ".", Run: command}
+	fixedCommand := Command{Re: ".", Cmd: command}
 	config := Config{Commands: []Command{fixedCommand}}
 	return prepare(&config)
 }
