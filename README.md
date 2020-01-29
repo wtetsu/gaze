@@ -8,21 +8,21 @@
 
 ## What is Gaze?
 
-Gaze runs a command, **right after** you saved something.
+Gaze runs a command, **right after** you save something.
 
 ## Features:
 
-- Easy to run
-- React you file modifications super quickly
+- Easy to use out-of-the-box
+- React super quickly to your file modifications
+- Language-agnostic
+- Flexible configuration
 - Useful options
   - timeout(useful if you sometimes write infinite loops)
   - restart(useful for server applications)
-- Language-agnostic
-  - It has useful default configurations for some languages
 
 ## Use cases:
 
-🚀Gaze runs a script, **Right after** you save it(e.g. Python),
+🚀Gaze runs a script, **Right after** you save it(e.g. Python, Ruby),
 
 You can also use Gaze for these purposes:
 
@@ -81,10 +81,10 @@ Gaze at subdirectories. Runs a modified file.
 gaze 'src/**/*.rb'
 ```
 
-Gaze at subdirectories. Runs a fixed command.
+Gaze at subdirectories. Runs a command to a modified file.
 
 ```
-gaze 'src/**/*.js' -c "npm run lint"
+gaze 'src/**/*.js' -c "eslint {{file}}"
 ```
 
 Kill an ongoing process, every time before it runs the next(Useful when you are writing servers)
@@ -129,27 +129,27 @@ You can display the default configuration by running `gaze -y`.
 ```yaml
 commands:
   - ext: .go
-    run: go run "{{file}}"
+    cmd: go run "{{file}}"
   - ext: .py
-    run: python "{{file}}"
+    cmd: python "{{file}}"
   - ext: .rb
-    run: ruby "{{file}}"
+    cmd: ruby "{{file}}"
   - ext: .js
-    run: node "{{file}}"
+    cmd: node "{{file}}"
   - ext: .d
-    run: dmd -run "{{file}}"
+    cmd: dmd -run "{{file}}"
   - ext: .groovy
-    run: groovy "{{file}}"
+    cmd: groovy "{{file}}"
   - ext: .php
-    run: php "{{file}}"
+    cmd: php "{{file}}"
   - ext: .pl
-    run: perl "{{file}}"
+    cmd: perl "{{file}}"
   - ext: .java
-    run: java "{{file}}"
+    cmd: java "{{file}}"
   - ext: .kts
-    run: kotlinc -script "{{file}}"
+    cmd: kotlinc -script "{{file}}"
   - re: ^Dockerfile$
-    run: docker build -f "{{file}}" .
+    cmd: docker build -f "{{file}}" .
 ```
 
 You're able to have your own configuration very easily.
@@ -162,19 +162,30 @@ vi ~/.gaze.yml
 ### Options:
 
 ```
-
 Usage: gaze [options...] file(s)
 
 Options:
--c A command string.
--r Restart mode. Send SIGKILL to a ongoing process before invoking next.
--t Timeout(ms) Send SIGKILL to a ongoing process after this time.
--q Quiet mode.
--f Specify a YAML configuration file.
--c Color(0:plain, 1:colorful)
--v Verbose mode.
--h Display help.
+  -c  A command string.
+  -r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
+  -t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
+  -f  Specify a YAML configuration file.
+  -v  Verbose mode.
+  -q  Quiet mode.
+  -y  Output the default configuration
+  -h  Display help
+  --color    Color(0:plain, 1:colorful)
+  --version  Output version information
 
+Examples:
+  gaze .
+  gaze *.rb
+  gaze main.go
+  gaze -c make '**/*.c'
+  gaze -c "eslint {{file}}" 'src/**/*.js'
+  gaze -r server.py
+  gaze -t 1000 complicated.py
+
+For more information: https://github.com/wtetsu/gaze
 ```
 
 ### Command format
