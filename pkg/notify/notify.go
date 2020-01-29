@@ -115,18 +115,31 @@ func (n *Notify) wait() {
 	}
 }
 
+const regardRenameAsMod int64 = 1000 * 1000000
+
 func (n *Notify) shouldExecute(filePath string, op Op) bool {
-	flag := fsnotify.Write | fsnotify.Rename
-	if op|flag == 0 {
+	if op != fsnotify.Write && op != fsnotify.Rename && op != fsnotify.Create {
 		return false
 	}
 
 	lastExecutionTime := n.times[filePath]
-	modifiedTime := time.GetFileModifiedTime(filePath)
-	p := n.pendingPeriod * 1000000
-	if (modifiedTime - lastExecutionTime) < p {
+
+	if !fs.IsFile(filePath) {
 		return false
 	}
+
+	modifiedTime := time.GetFileModifiedTime(filePath)
+	if op == fsnotify.Write {
+		if (modifiedTime - lastExecutionTime) < n.pendingPeriod*1000000 {
+			return false
+		}
+	}
+	if op == fsnotify.Rename || op == fsnotify.Create {
+		if (time.Now() - modifiedTime) > regardRenameAsMod {
+			return false
+		}
+	}
+
 	return true
 }
 
