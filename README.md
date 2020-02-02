@@ -8,17 +8,21 @@
 
 ## What is Gaze?
 
-Gaze runs a command, **right after** you save something.
+Gaze runs a command, **right after** you save a file.
+
+It greatly helps you focus on writing simple code!
+![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
 ## Features:
 
-- Easy to use out-of-the-box
+- Easy to use, out-of-the-box
 - React super quickly to your file modifications
 - Language-agnostic
 - Flexible configuration
-- Useful options
+- Useful advanced options
   - timeout(useful if you sometimes write infinite loops)
   - restart(useful for server applications)
+- Multiplatform (macOS, Windows, Linux)
 
 ## Use cases:
 
