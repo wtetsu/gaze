@@ -170,8 +170,8 @@ Usage: gaze [options...] file(s)
 
 Options:
   -c  A command string.
-  -r  Restart mode. Send SIGKILL to a ongoing process before invoking next.
-  -t  Timeout(ms) Send SIGKILL to a ongoing process after this time.
+  -r  Restart mode. Send SIGTERM to a ongoing process before invoking next.
+  -t  Timeout(ms) Send SIGTERM to a ongoing process after this time.
   -f  Specify a YAML configuration file.
   -v  Verbose mode.
   -q  Quiet mode.
@@ -189,7 +189,6 @@ Examples:
   gaze -r server.py
   gaze -t 1000 complicated.py
 
-For more information: https://github.com/wtetsu/gaze
 ```
 
 ### Command format
