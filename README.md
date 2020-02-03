@@ -10,7 +10,7 @@
 
 Gaze runs a command, **right after** you save a file.
 
-It greatly helps you focus on writing simple code!
+It greatly helps you focus on writing code!
 ![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
 ## Features:
@@ -26,13 +26,13 @@ It greatly helps you focus on writing simple code!
 
 ## Use cases:
 
-🚀Gaze runs a script, **Right after** you save it(e.g. Python, Ruby),
+🚀Gaze runs a script, **right after** you save it(e.g. Python, Ruby),
 
 You can also use Gaze for these purposes:
 
-- 🚀Gaze runs tests, **Right after** you save a Ruby script
-- 🚀Gaze runs linter, **Right after** you save a JavaScript file
-- 🚀Gaze runs "docker build .", **Right after** you save Dockerfile
+- 🚀Gaze runs tests, **right after** you save a Ruby script
+- 🚀Gaze runs linter, **right after** you save a JavaScript file
+- 🚀Gaze runs "docker build .", **right after** you save Dockerfile
 - And so forth...
 
 ---
@@ -65,11 +65,13 @@ https://github.com/wtetsu/gaze/releases
 
 The top priority of the Gaze's design is "easy to invoke".
 
-By this command, gaze starts watching the files in the current directory.
+By this command, Gaze starts watching the files in the current directory.
 
 ```
 gaze .
 ```
+
+On another terminal, run `vi a.py` and edit it. Gaze executes a.py in response to your file modifications!
 
 ### Other examples:
 
@@ -107,7 +109,7 @@ gaze -t 1000 complicated.py
 
 Gaze is Language-agnostic.
 
-But it has useful default configurations for some languages.
+But it has useful default configurations for several languages.
 
 Due to the default configurations, the command below is valid.
 
@@ -123,10 +125,10 @@ gaze a.py -c 'python "{{file}}"'
 
 Gaze searches a configuration file according to it's priority rule.
 
-- Specify using -y option
-- ./gaze.yml
-- ~/.gaze.yml
-- (Default)
+1. A file specified by -y option
+1. ./gaze.yml
+1. ~/.gaze.yml
+1. (Default)
 
 You can display the default configuration by running `gaze -y`.
 
@@ -196,21 +198,18 @@ Examples:
 You can specify a mustache style template as a command.
 
 ```
-
-gaze -c 'go run "{{file}}"'
-
+gaze -c 'echo "{{file}}" "{{abs}}"' .
 ```
 
-| Parameter | Example              |
-| --------- | -------------------- |
-| {{file}}  | src/mod1/a.py        |
-| {{ext}}   | .py                  |
-| {{base}}  | a.py                 |
-| {{dir}}   | src/mod1             |
-| {{abs}}   | /my/source/mod1/a.py |
+| Parameter | Example                 |
+| --------- | ----------------------- |
+| {{file}}  | src/mod1/main.py        |
+| {{ext}}   | .py                     |
+| {{base}}  | main.py                 |
+| {{base0}} | main                    |
+| {{dir}}   | src/mod1                |
+| {{abs}}   | /my/source/mod1/main.py |
 
 # Third-party data
 
 https://www.iconfinder.com/icons/2303106/eye_opened_public_visible_watch_icon
-
-See also: go.mod
