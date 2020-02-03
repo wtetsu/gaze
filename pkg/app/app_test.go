@@ -76,6 +76,22 @@ func TestEndTopEnd(t *testing.T) {
 	time.Sleep(300)
 }
 
+func TestEndTopEndError(t *testing.T) {
+	rb := createTempFile("*.rb", `puts "Hello from Ruby`)
+	py := createTempFile("*.py", `print("Hello from Python")`)
+
+	watchFiles := []string{rb, py}
+	userCommand := ""
+	file := "--invalid--"
+	timeout := 0
+	restart := false
+
+	err := Start(watchFiles, userCommand, file, timeout, restart)
+	if err == nil {
+		t.Fatal()
+	}
+}
+
 func createTempFile(pattern string, content string) string {
 	file, err := ioutil.TempFile("", pattern)
 	if err != nil {

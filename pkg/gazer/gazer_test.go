@@ -146,6 +146,28 @@ func TestKill(t *testing.T) {
 	}
 }
 
+func TestGetAppropriateCommand(t *testing.T) {
+	var commandConfigs config.Config
+
+	var command string
+	var err error
+
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: "", Cmd: "echo"})
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".txt", Cmd: ""})
+
+	command, err = getAppropriateCommand("a.txt", &commandConfigs)
+	if command != "" {
+		t.Fatal()
+	}
+
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".txt", Cmd: "echo"})
+
+	command, err = getAppropriateCommand("", &commandConfigs)
+	if command == "a.txt" || err != nil {
+		t.Fatal()
+	}
+}
+
 func createTempFile(pattern string, content string) string {
 	dirpath, err := ioutil.TempDir("", "_gaze")
 
