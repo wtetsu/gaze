@@ -18,7 +18,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
-const version = "v0.0.8"
+const version = "v0.0.9"
 
 func main() {
 	args := parseArgs()
