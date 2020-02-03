@@ -106,7 +106,6 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 					if err != nil {
 						logger.NoticeObject(err)
 					}
-					ongoingCommand = nil
 				}()
 			}
 

@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"runtime"
+	"syscall"
 
 	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -91,7 +92,7 @@ func kill(cmd *exec.Cmd, reason string) bool {
 	if runtime.GOOS == "windows" {
 		signal = os.Kill
 	} else {
-		signal = os.Interrupt
+		signal = syscall.SIGTERM
 	}
 	err := cmd.Process.Signal(signal)
 	if err != nil {
