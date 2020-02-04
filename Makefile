@@ -7,11 +7,11 @@ build:
 	go build -v ${CMD}
 build-all: build build-darwin build-windows build-linux
 build-darwin:
-	GOOS=darwin GOARCH=amd64 go build -o ${OUT}/darwin/$(BINARY_NAME) -v ${CMD}
+	GOOS=darwin GOARCH=amd64 go build  -ldflags "-s -w" -o ${OUT}/darwin/$(BINARY_NAME) -v ${CMD}
 build-windows:
-	GOOS=windows GOARCH=amd64 go build -o ${OUT}/windows/$(BINARY_NAME).exe -v ${CMD}
+	GOOS=windows GOARCH=amd64 go build  -ldflags "-s -w" -o ${OUT}/windows/$(BINARY_NAME).exe -v ${CMD}
 build-linux:
-	GOOS=linux GOARCH=amd64 go build -o ${OUT}/linux/$(BINARY_NAME) -v ${CMD}
+	GOOS=linux GOARCH=amd64 go build  -ldflags "-s -w" -o ${OUT}/linux/$(BINARY_NAME) -v ${CMD}
 ut:
 	go test github.com/wtetsu/gaze/pkg/...
 cov:
