@@ -48,7 +48,9 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 	flagSet := flag.NewFlagSet(osArgs[0], flag.ExitOnError)
 
 	flagSet.Usage = func() {
-		usage()
+		if usage != nil {
+			usage()
+		}
 	}
 
 	help := flagSet.Bool("h", false, "")

@@ -94,46 +94,48 @@ func TestEndTopEndError(t *testing.T) {
 }
 
 func TestParseArgs(t *testing.T) {
-	if !ParseArgs([]string{"", "-h"}, nil).Help() {
+	usage := func() {}
+	if !ParseArgs([]string{"", "-h"}, usage).Help() {
 		t.Fatal()
 	}
-	if !ParseArgs([]string{"", "-r"}, nil).Restart() {
+	if !ParseArgs([]string{"", "-r"}, usage).Restart() {
 		t.Fatal()
 	}
-	if ParseArgs([]string{"", "-c", "echo"}, nil).UserCommand() != "echo" {
+	if ParseArgs([]string{"", "-c", "echo"}, usage).UserCommand() != "echo" {
 		t.Fatal()
 	}
-	if ParseArgs([]string{"", "-t", "999"}, nil).Timeout() != 999 {
+	if ParseArgs([]string{"", "-t", "999"}, usage).Timeout() != 999 {
 		t.Fatal()
 	}
-	if !ParseArgs([]string{"", "-y"}, nil).Yaml() {
+	if !ParseArgs([]string{"", "-y"}, usage).Yaml() {
 		t.Fatal()
 	}
-	if !ParseArgs([]string{"", "-q"}, nil).Quiet() {
+	if !ParseArgs([]string{"", "-q"}, usage).Quiet() {
 		t.Fatal()
 	}
-	if !ParseArgs([]string{"", "-v"}, nil).Verbose() {
+	if !ParseArgs([]string{"", "-v"}, usage).Verbose() {
 		t.Fatal()
 	}
-	if ParseArgs([]string{"", "-f", "abc.yml"}, nil).File() != "abc.yml" {
+	if ParseArgs([]string{"", "-f", "abc.yml"}, usage).File() != "abc.yml" {
 		t.Fatal()
 	}
-	if ParseArgs([]string{"", "-c", "1"}, nil).Color() != 1 {
+	if ParseArgs([]string{"", "-c", "1"}, usage).Color() != 1 {
 		t.Fatal()
 	}
-	if !ParseArgs([]string{"", "--debug"}, nil).Debug() {
+	if !ParseArgs([]string{"", "--debug"}, usage).Debug() {
 		t.Fatal()
 	}
-	if !ParseArgs([]string{"", "--version"}, nil).Version() {
+	if !ParseArgs([]string{"", "--version"}, usage).Version() {
 		t.Fatal()
 	}
-	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt"}, nil).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
+	ParseArgs([]string{"", "--help"}, usage)
+	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt"}, usage).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
 		t.Fatal()
 	}
-	if !reflect.DeepEqual(ParseArgs([]string{"", "-v", "a.txt", "b.txt", "c.txt"}, nil).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
+	if !reflect.DeepEqual(ParseArgs([]string{"", "-v", "a.txt", "b.txt", "c.txt"}, usage).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
 		t.Fatal()
 	}
-	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt", "-v"}, nil).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
+	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt", "-v"}, usage).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
 		t.Fatal()
 	}
 }
