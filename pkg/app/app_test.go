@@ -128,7 +128,6 @@ func TestParseArgs(t *testing.T) {
 	if !ParseArgs([]string{"", "--version"}, usage).Version() {
 		t.Fatal()
 	}
-	ParseArgs([]string{"", "--help"}, usage)
 	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt"}, usage).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
 		t.Fatal()
 	}
