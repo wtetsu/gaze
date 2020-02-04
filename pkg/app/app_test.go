@@ -1,7 +1,7 @@
 /**
- * Gaze (https://github.com/wtetsu/gaze/)
- * Copyright 2020-present wtetsu
- * Licensed under MIT
+* Gaze (https://github.com/wtetsu/gaze/)
+* Copyright 2020-present wtetsu
+* Licensed under MIT
  */
 
 package app
@@ -9,6 +9,7 @@ package app
 import (
 	"io/ioutil"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -88,6 +89,51 @@ func TestEndTopEndError(t *testing.T) {
 
 	err := Start(watchFiles, userCommand, file, timeout, restart)
 	if err == nil {
+		t.Fatal()
+	}
+}
+
+func TestParseArgs(t *testing.T) {
+	if !ParseArgs([]string{"", "-h"}, nil).Help() {
+		t.Fatal()
+	}
+	if !ParseArgs([]string{"", "-r"}, nil).Restart() {
+		t.Fatal()
+	}
+	if ParseArgs([]string{"", "-c", "echo"}, nil).UserCommand() != "echo" {
+		t.Fatal()
+	}
+	if ParseArgs([]string{"", "-t", "999"}, nil).Timeout() != 999 {
+		t.Fatal()
+	}
+	if !ParseArgs([]string{"", "-y"}, nil).Yaml() {
+		t.Fatal()
+	}
+	if !ParseArgs([]string{"", "-q"}, nil).Quiet() {
+		t.Fatal()
+	}
+	if !ParseArgs([]string{"", "-v"}, nil).Verbose() {
+		t.Fatal()
+	}
+	if ParseArgs([]string{"", "-f", "abc.yml"}, nil).File() != "abc.yml" {
+		t.Fatal()
+	}
+	if ParseArgs([]string{"", "-c", "1"}, nil).Color() != 1 {
+		t.Fatal()
+	}
+	if !ParseArgs([]string{"", "--debug"}, nil).Debug() {
+		t.Fatal()
+	}
+	if !ParseArgs([]string{"", "--version"}, nil).Version() {
+		t.Fatal()
+	}
+	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt"}, nil).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
+		t.Fatal()
+	}
+	if !reflect.DeepEqual(ParseArgs([]string{"", "-v", "a.txt", "b.txt", "c.txt"}, nil).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
+		t.Fatal()
+	}
+	if !reflect.DeepEqual(ParseArgs([]string{"", "a.txt", "b.txt", "c.txt", "-v"}, nil).Targets(), []string{"a.txt", "b.txt", "c.txt"}) {
 		t.Fatal()
 	}
 }
