@@ -70,8 +70,8 @@ func usage1() string {
 
 Options(excerpt):
 	-c  A command string.
-	-r  Restart mode. Send SIGTERM to a ongoing process before invoking next.
-	-t  Timeout(ms) Send SIGTERM to a ongoing process after this time.
+	-r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
+	-t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
 	-h  Display help
 
 Examples:
@@ -91,8 +91,8 @@ func usage2() string {
 
 Options:
 	-c  A command string.
-	-r  Restart mode. Send SIGTERM to a ongoing process before invoking next.
-	-t  Timeout(ms) Send SIGTERM to a ongoing process after this time.
+	-r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
+	-t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
 	-f  Specify a YAML configuration file.
 	-v  Verbose mode.
 	-q  Quiet mode.
