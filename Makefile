@@ -4,7 +4,7 @@ OUT=dist
 CMD=cmd/gaze/main.go
 
 build:
-	go build -v ${CMD}
+	go build -ldflags "-s -w" -v ${CMD}
 build-all: build build-darwin build-windows build-linux
 build-darwin:
 	GOOS=darwin GOARCH=amd64 go build  -ldflags "-s -w" -o ${OUT}/darwin/$(BINARY_NAME) -v ${CMD}
