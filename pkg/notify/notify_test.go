@@ -7,6 +7,7 @@
 package notify
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -192,6 +193,90 @@ func TestDelete(t *testing.T) {
 	time.Sleep(20)
 
 	if count != 0 {
+		t.Fatalf("count:%d", count)
+	}
+
+	notify.Close()
+	notify.Close()
+}
+
+func TestQueue(t *testing.T) {
+	logger.Level(logger.VERBOSE)
+
+	rb := createTempFile("*.rb", `puts "Hello from Ruby`)
+	py := createTempFile("*.py", `print("Hello from Python")`)
+
+	if rb == "" || py == "" {
+		t.Fatal("Temp files error")
+	}
+
+	rbCommand := fmt.Sprintf(`ruby "%s"`, rb)
+	pyCommand := fmt.Sprintf(`python "%s"`, py)
+
+	pattens := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
+
+	notify, err := New(pattens)
+	if err != nil {
+		t.Fatal()
+	}
+
+	notify.PendingPeriod(10)
+
+	count := 0
+	go func() {
+		for {
+			select {
+			case _, ok := <-notify.Events:
+				if !ok {
+					continue
+				}
+				count++
+
+			case err, ok := <-notify.Errors:
+				if !ok {
+					continue
+				}
+				log.Println("error:", err)
+				count++
+			}
+		}
+	}()
+
+	if notify.Dequeue(rbCommand) != nil {
+		t.Fatal()
+	}
+	if notify.Dequeue(pyCommand) != nil {
+		t.Fatal()
+	}
+	notify.Enqueue(rbCommand, Event{rbCommand, 1})
+	notify.Enqueue(pyCommand, Event{pyCommand, 2})
+
+	if notify.Dequeue(rbCommand) == nil {
+		t.Fatal()
+	}
+	if notify.Dequeue(pyCommand) == nil {
+		t.Fatal()
+	}
+	if notify.Dequeue(rbCommand) != nil {
+		t.Fatal()
+	}
+	if notify.Dequeue(pyCommand) != nil {
+		t.Fatal()
+	}
+
+	notify.Requeue(Event{rbCommand, 3})
+	notify.Requeue(Event{pyCommand, 4})
+	notify.Requeue(Event{rbCommand, 5})
+	notify.Requeue(Event{pyCommand, 6})
+	for i := 0; i < 50; i++ {
+		// touch(py)
+		// touch(rb)
+		if count >= 2 {
+			break
+		}
+		time.Sleep(20)
+	}
+	if count < 2 {
 		t.Fatalf("count:%d", count)
 	}
 

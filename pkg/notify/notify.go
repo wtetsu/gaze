@@ -8,6 +8,7 @@ package notify
 
 import (
 	"path/filepath"
+	"sync"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/fs"
@@ -25,11 +26,14 @@ type Notify struct {
 	isClosed      bool
 	times         map[string]int64
 	pendingPeriod int64
+	queueMutex    sync.Mutex
+	queue         map[string]Event
 }
 
 // Event represents a single file system notification.
 type Event struct {
 	Name string
+	Time int64
 }
 
 // Op describes a set of file operations.
@@ -69,6 +73,7 @@ func New(patterns []string) (*Notify, error) {
 		isClosed:      false,
 		times:         make(map[string]int64),
 		pendingPeriod: 100,
+		queue:         make(map[string]Event),
 	}
 
 	go notify.wait()
@@ -101,9 +106,11 @@ func (n *Notify) wait() {
 			if !n.shouldExecute(event.Name, event.Op) {
 				continue
 			}
-			n.times[event.Name] = time.Now()
+			now := time.Now()
+			n.times[event.Name] = now
 			e := Event{
 				Name: event.Name,
+				Time: now,
 			}
 			n.Events <- e
 		case err, ok := <-n.watcher.Errors:
@@ -143,7 +150,35 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 	return true
 }
 
-// PendingPeriod sets new pendingPeriod(ms)
+// PendingPeriod sets new pendingPeriod(ms).
 func (n *Notify) PendingPeriod(p int64) {
 	n.pendingPeriod = p
+}
+
+// Requeue requeue an event.
+func (n *Notify) Requeue(event Event) {
+	n.Events <- event
+}
+
+// Enqueue adds one event to the internal queue.
+func (n *Notify) Enqueue(commandString string, event Event) {
+	n.queueMutex.Lock()
+	defer n.queueMutex.Unlock()
+
+	n.queue[commandString] = event
+}
+
+// Dequeue remove the first event of the internal queue and return it.
+func (n *Notify) Dequeue(commandString string) *Event {
+	n.queueMutex.Lock()
+	defer n.queueMutex.Unlock()
+
+	event, ok := n.queue[commandString]
+
+	if !ok {
+		return nil
+	}
+
+	delete(n.queue, commandString)
+	return &event
 }
