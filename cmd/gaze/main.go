@@ -76,8 +76,8 @@ Options(excerpt):
 
 Examples:
 	gaze .
-	gaze *.rb
 	gaze main.go
+	gaze a.rb b.rb
 	gaze -c make '**/*.c'
 	gaze -c "eslint {{file}}" 'src/**/*.js'
 	gaze -r server.py
@@ -103,8 +103,8 @@ Options:
 
 Examples:
 	gaze .
-	gaze *.rb
 	gaze main.go
+	gaze a.rb b.rb
 	gaze -c make '**/*.c'
 	gaze -c "eslint {{file}}" 'src/**/*.js'
 	gaze -r server.py
