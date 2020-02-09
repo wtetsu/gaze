@@ -7,8 +7,11 @@
 package gazer
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/wtetsu/gaze/pkg/config"
@@ -126,13 +129,16 @@ func TestKill(t *testing.T) {
 	touch(py1)
 	touch(rb1)
 
+	py1Command := fmt.Sprintf(`python "%s"`, py1)
+	rb1Command := fmt.Sprintf(`ruby "%s"`, rb1)
+
 	pyKilled := false
 	rbKilled := false
 	for i := 0; i < 100; i++ {
-		if !pyKilled && kill(gazer.commands[py1], "test") {
+		if !pyKilled && kill(getCmd(&gazer.commands, py1Command), "test") {
 			pyKilled = true
 		}
-		if !rbKilled && kill(gazer.commands[rb1], "test") {
+		if !rbKilled && kill(getCmd(&gazer.commands, rb1Command), "test") {
 			rbKilled = true
 		}
 		if pyKilled && rbKilled {
@@ -144,6 +150,15 @@ func TestKill(t *testing.T) {
 	if !pyKilled || !rbKilled {
 		t.Fatal()
 	}
+}
+
+func getCmd(commands *commands, command string) *exec.Cmd {
+	c := commands.get(command)
+	if c == nil {
+		return nil
+	}
+
+	return c.cmd
 }
 
 func TestGetAppropriateCommand(t *testing.T) {
@@ -182,7 +197,7 @@ func createTempFile(pattern string, content string) string {
 	file.WriteString(content)
 	file.Close()
 
-	return file.Name()
+	return filepath.ToSlash(file.Name())
 }
 
 func touch(fileName string) {

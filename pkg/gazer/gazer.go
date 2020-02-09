@@ -14,6 +14,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/notify"
+	"github.com/wtetsu/gaze/pkg/time"
 )
 
 // Gazer gazes filesystem.
@@ -22,7 +23,7 @@ type Gazer struct {
 	notify   *notify.Notify
 	isClosed bool
 	counter  uint64
-	commands map[string]*exec.Cmd
+	commands commands
 }
 
 // New returns a new Gazer.
@@ -38,7 +39,7 @@ func New(patterns []string) *Gazer {
 		notify:   notify,
 		isClosed: false,
 		counter:  0,
-		commands: make(map[string]*exec.Cmd),
+		commands: newCommands(),
 	}
 }
 
@@ -59,7 +60,6 @@ func (g *Gazer) Run(configs *config.Config, timeout int, restart bool) error {
 
 func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, restart bool) error {
 	sigInt := sigIntChannel()
-	var ongoingCommand *exec.Cmd
 
 	isDisposed := false
 	for {
@@ -84,37 +84,54 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 				continue
 			}
 
+			ongoingCommand := g.commands.get(commandString)
+			if ongoingCommand != nil && !hasProcessExited(ongoingCommand.cmd) {
+				if restart {
+					kill(ongoingCommand.cmd, "Restart")
+					g.commands.update(commandString, nil)
+				} else {
+					g.notify.Enqueue(commandString, event)
+					continue
+				}
+			}
 			logger.NoticeWithBlank("[%s]", commandString)
 
-			if ongoingCommand != nil {
-				kill(ongoingCommand, "Restart")
-				ongoingCommand = nil
-			}
-
 			cmd := createCommand(commandString)
-			g.commands[event.Name] = cmd
-			if !restart {
+			g.commands.update(commandString, cmd)
+			go func() {
+				lastLaunched := time.Now()
 				err := executeCommandOrTimeout(cmd, timeout)
 				if err != nil {
 					logger.NoticeObject(err)
 				}
-			} else {
-				// restartable
-				ongoingCommand = cmd
-				go func() {
-					err := executeCommandOrTimeout(cmd, timeout)
-					if err != nil {
-						logger.NoticeObject(err)
+				// Handle waiting events
+				for {
+					queuedEvent := g.notify.Dequeue(commandString)
+					if queuedEvent == nil {
+						break
 					}
-				}()
-			}
-
+					canAbolish := lastLaunched > queuedEvent.Time
+					if canAbolish {
+						logger.Notice("Abolish:%d, %d", lastLaunched, queuedEvent.Time)
+						continue
+					}
+					// Requeue
+					g.notify.Requeue(*queuedEvent)
+				}
+			}()
 		case <-sigInt:
 			isDisposed = true
 			return nil
 		}
 	}
 	return nil
+}
+
+func hasProcessExited(cmd *exec.Cmd) bool {
+	if cmd.ProcessState == nil {
+		return false
+	}
+	return cmd.ProcessState.Exited()
 }
 
 func matchAny(watchFiles []string, s string) bool {
