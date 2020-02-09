@@ -161,7 +161,45 @@ func getCmd(commands *commands, command string) *exec.Cmd {
 	return c.cmd
 }
 
-func TestGetAppropriateCommand(t *testing.T) {
+func TestInvalidCommand(t *testing.T) {
+	py1 := createTempFile("*.py", `import datetime; print(datetime.datetime.now())`)
+	rb1 := createTempFile("*.rb", `print(Time.new)`)
+
+	if py1 == "" || rb1 == "" {
+		t.Fatal("Temp files error")
+	}
+
+	gazer := New([]string{py1, rb1})
+	if gazer == nil {
+		t.Fatal()
+	}
+	defer gazer.Close()
+
+	var commandConfigs config.Config
+
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".rb", Cmd: "ruby {{file]]"})
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".py", Cmd: ""})
+
+	go gazer.Run(&commandConfigs, 0, false)
+	if gazer.Counter() != 0 {
+		t.Fatal()
+	}
+
+	for i := 0; i < 100; i++ {
+		touch(py1)
+		touch(rb1)
+		if gazer.Counter() >= 4 {
+			break
+		}
+		time.Sleep(50)
+	}
+
+	if gazer.Counter() < 4 {
+		t.Fatal()
+	}
+}
+
+func TestGetAppropriateCommandOk(t *testing.T) {
 	var commandConfigs config.Config
 
 	var command string
@@ -179,6 +217,30 @@ func TestGetAppropriateCommand(t *testing.T) {
 
 	command, err = getAppropriateCommand("", &commandConfigs)
 	if command == "a.txt" || err != nil {
+		t.Fatal()
+	}
+}
+
+func TestGetAppropriateCommandError(t *testing.T) {
+	var commandConfigs config.Config
+
+	var command string
+	var err error
+
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".rb", Cmd: "ruby {{file]]"})
+	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".py", Cmd: "python {{file]]"})
+
+	command, err = getAppropriateCommand("a.txt", &commandConfigs)
+	if command != "" || err != nil {
+		t.Fatal()
+	}
+
+	command, err = getAppropriateCommand("a.rb", &commandConfigs)
+	if command != "" || err == nil {
+		t.Fatal()
+	}
+	command, err = getAppropriateCommand("a.py", &commandConfigs)
+	if command != "" || err == nil {
 		t.Fatal()
 	}
 }
