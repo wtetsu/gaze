@@ -90,7 +90,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 					kill(ongoingCommand.cmd, "Restart")
 					g.commands.update(commandString, nil)
 				} else {
-					g.notify.Enqueue(commandString, event)
+					g.commands.enqueue(commandString, event)
 					continue
 				}
 			}
@@ -102,17 +102,18 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 				lastLaunched := time.Now()
 				err := executeCommandOrTimeout(cmd, timeout)
 				if err != nil {
+					logger.NoticeObject("error command\n")
 					logger.NoticeObject(err)
 				}
 				// Handle waiting events
 				for {
-					queuedEvent := g.notify.Dequeue(commandString)
+					queuedEvent := g.commands.dequeue(commandString)
 					if queuedEvent == nil {
 						break
 					}
 					canAbolish := lastLaunched > queuedEvent.Time
 					if canAbolish {
-						logger.Notice("Abolish:%d, %d", lastLaunched, queuedEvent.Time)
+						logger.Debug("Abolish:%d, %d", lastLaunched, queuedEvent.Time)
 						continue
 					}
 					// Requeue
