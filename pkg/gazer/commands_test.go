@@ -10,10 +10,11 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/wtetsu/gaze/pkg/notify"
 	"github.com/wtetsu/gaze/pkg/time"
 )
 
-func TestCommandsBasic(t *testing.T) {
+func TestCommandsBasic1(t *testing.T) {
 	commands := newCommands()
 
 	key := "key01"
@@ -28,6 +29,35 @@ func TestCommandsBasic(t *testing.T) {
 	}
 	commands.update(key, nil)
 	if commands.get(key) != nil {
+		t.Fatal()
+	}
+}
+
+func TestCommandsBasic2(t *testing.T) {
+	rbCommand := `ruby a.rb`
+	pyCommand := `python a.py`
+
+	commands := newCommands()
+
+	if commands.dequeue(rbCommand) != nil {
+		t.Fatal()
+	}
+	if commands.dequeue(pyCommand) != nil {
+		t.Fatal()
+	}
+	commands.enqueue(rbCommand, notify.Event{rbCommand, 1})
+	commands.enqueue(pyCommand, notify.Event{pyCommand, 2})
+
+	if commands.dequeue(rbCommand) == nil {
+		t.Fatal()
+	}
+	if commands.dequeue(pyCommand) == nil {
+		t.Fatal()
+	}
+	if commands.dequeue(rbCommand) != nil {
+		t.Fatal()
+	}
+	if commands.dequeue(pyCommand) != nil {
 		t.Fatal()
 	}
 }

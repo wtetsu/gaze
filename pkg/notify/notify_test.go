@@ -242,28 +242,6 @@ func TestQueue(t *testing.T) {
 		}
 	}()
 
-	if notify.Dequeue(rbCommand) != nil {
-		t.Fatal()
-	}
-	if notify.Dequeue(pyCommand) != nil {
-		t.Fatal()
-	}
-	notify.Enqueue(rbCommand, Event{rbCommand, 1})
-	notify.Enqueue(pyCommand, Event{pyCommand, 2})
-
-	if notify.Dequeue(rbCommand) == nil {
-		t.Fatal()
-	}
-	if notify.Dequeue(pyCommand) == nil {
-		t.Fatal()
-	}
-	if notify.Dequeue(rbCommand) != nil {
-		t.Fatal()
-	}
-	if notify.Dequeue(pyCommand) != nil {
-		t.Fatal()
-	}
-
 	notify.Requeue(Event{rbCommand, 3})
 	notify.Requeue(Event{pyCommand, 4})
 	notify.Requeue(Event{rbCommand, 5})
