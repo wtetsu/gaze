@@ -198,10 +198,10 @@ Examples:
 
 ### Command format
 
-You can specify a mustache style template as a command.
+You can write [Mustache](<https://en.wikipedia.org/wiki/Mustache_(template_system)>) templates for commands.
 
 ```
-gaze -c 'echo "{{file}}" "{{abs}}"' .
+gaze -c "echo {{file}} {{ext}} {{abs}}" .
 ```
 
 | Parameter | Example                 |
