@@ -37,16 +37,20 @@ You can also use Gaze for these purposes:
 
 ---
 
-Software development sometimes forces us to execute the same command again and again, by hands!
+Software development sometimes forces us to execute the same command again and again, by hand!
 
-Let's say, you started writing a really really really simple Python script. You created a.py, wrote 5 lines of code and run "python a.py".
+Let's say, you started writing a really really simple Python script. You created a.py, wrote 5 lines of code and run "python a.py".
 Since the result was not perfect, you edited a.py again, and run "python a.py" again.
 
 Again and again...
 
-Before you realized, you've saved the same files and executes the same command thousands of times!
+Before you realized, you've saved the same file and type the same command thousands of times.
 
-Gaze runs a command Instead of you, **right after** you edit files.
+That's totally waste of time and energy!
+
+---
+
+Gaze runs a command on behalf of you, **right after** you edit files.
 
 # Installation
 
