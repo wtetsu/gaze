@@ -20,8 +20,9 @@ It greatly helps you focus on writing code!
 - Language-agnostic
 - Flexible configuration
 - Useful advanced options
-  - timeout(useful if you sometimes write infinite loops)
-  - restart(useful for server applications)
+  - `-r`: restart(useful for server applications)
+  - `-t 2000`: timeout(useful if you sometimes write infinite loops)
+- Can handle a "create-and-rename" type of save appropriately
 - Multiplatform (macOS, Windows, Linux)
 
 ## Use cases:
@@ -216,4 +217,10 @@ gaze -c 'echo "{{file}}" "{{abs}}"' .
 
 # Third-party data
 
-https://www.iconfinder.com/icons/2303106/eye_opened_public_visible_watch_icon
+- Eye, opened, public, visible, watch icon
+
+  - https://www.iconfinder.com/icons/2303106/eye_opened_public_visible_watch_icon
+  - Creative Commons (Attribution-Noncommercial 3.0 Unported)
+
+- Great Go libraries
+  - See [go.mod](https://github.com/wtetsu/gaze/blob/master/go.mod)
