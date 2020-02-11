@@ -94,15 +94,14 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 					continue
 				}
 			}
-			logger.NoticeWithBlank("[%s]", commandString)
 
 			cmd := createCommand(commandString)
 			g.commands.update(commandString, cmd)
 			go func() {
 				lastLaunched := time.Now()
+				logger.NoticeWithBlank("[%s]", commandString)
 				err := executeCommandOrTimeout(cmd, timeout)
 				if err != nil {
-					logger.NoticeObject("error command\n")
 					logger.NoticeObject(err)
 				}
 				// Handle waiting events
