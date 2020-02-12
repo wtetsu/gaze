@@ -131,7 +131,7 @@ func hasProcessExited(cmd *exec.Cmd) bool {
 	if cmd.ProcessState == nil {
 		return false
 	}
-	return cmd.ProcessState.Exited()
+	return cmd.ProcessState.Exited() || cmd.ProcessState.ExitCode() < 0
 }
 
 func matchAny(watchFiles []string, s string) bool {
