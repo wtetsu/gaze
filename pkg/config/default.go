@@ -24,12 +24,14 @@ commands:
   cmd: groovy "{{file}}"
 - ext: .php
   cmd: php "{{file}}"
-- ext: .pl
-  cmd: perl "{{file}}"
 - ext: .java
   cmd: java "{{file}}"
 - ext: .kts
   cmd: kotlinc -script "{{file}}"
+- ext: .rs
+  cmd: sh -c 'rustc "{{file}}" -o"{{base0}}.out" && ./"{{base0}}.out"'
+- ext: .cpp
+  cmd: sh -c 'gcc "{{file}}" -o"{{base0}}.out" && ./"{{base0}}.out"'  
 - re: ^Dockerfile$
   cmd: docker build -f "{{file}}" .
 `
