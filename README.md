@@ -15,7 +15,7 @@ It greatly helps you focus on writing code!
 
 - Easy to use, out-of-the-box
 - React super quickly to your file modifications
-- Language-agnostic
+- Language-agnostic, editor-agnostic
 - Flexible configuration
 - Useful advanced options
   - `-r`: restart(useful for server applications)
@@ -78,10 +78,16 @@ On another terminal, run `vi a.py` and edit it. Gaze executes a.py in response t
 
 ### Other examples:
 
-Gaze at one file.
+Gaze at one file. You can just simply specify file names.
 
 ```
 gaze a.py
+```
+
+Gaze doesn't have special options to specify files. You can use wildcards (\*, \*\*, ?) that shell users are familiar with. You don't have to remember Gaze-specific command-line options!
+
+```
+gaze '*.py'
 ```
 
 Gaze at subdirectories. Runs a modified file.
@@ -214,6 +220,18 @@ gaze -c "echo {{file}} {{ext}} {{abs}}" .
 | {{base0}} | main                    |
 | {{dir}}   | src/mod1                |
 | {{abs}}   | /my/source/mod1/main.py |
+
+## Why Gaze?
+
+Even though there are already many "update-and-run" type of tools, I had to develop Gaze in order to deal with my every day's coding.
+
+Gaze is designed as a CLI tool that accelerates your coding. I would say Gaze is the best tool for the purpose because all the technical decisions have been made for that use case.
+
+1. Simple command that you can invoke immediately.
+1. Flexible configurations
+1. Options for server, for infinite loop.
+1. Super quick reaction.
+1. Appropriate parallel handling.
 
 # Third-party data
 
