@@ -19,12 +19,14 @@ import (
 // Notify delives events to a channel when files are virtually updated.
 // "create+rename" is regarded as "update".
 type Notify struct {
-	Events        chan Event
-	Errors        chan error
-	watcher       *fsnotify.Watcher
-	isClosed      bool
-	times         map[string]int64
-	pendingPeriod int64
+	Events                  chan Event
+	Errors                  chan error
+	watcher                 *fsnotify.Watcher
+	isClosed                bool
+	times                   map[string]int64
+	pendingPeriod           int64
+	regardRenameAsModPeriod int64
+	detectCreate            bool
 }
 
 // Event represents a single file system notification.
@@ -65,11 +67,13 @@ func New(patterns []string) (*Notify, error) {
 	}
 
 	notify := &Notify{
-		Events:        make(chan Event),
-		watcher:       watcher,
-		isClosed:      false,
-		times:         make(map[string]int64),
-		pendingPeriod: 100,
+		Events:                  make(chan Event),
+		watcher:                 watcher,
+		isClosed:                false,
+		times:                   make(map[string]int64),
+		pendingPeriod:           100,
+		regardRenameAsModPeriod: 1000,
+		detectCreate:            false,
 	}
 
 	go notify.wait()
@@ -118,10 +122,12 @@ func (n *Notify) wait() {
 	}
 }
 
-const regardRenameAsMod int64 = 1000 * 1000000
-
 func (n *Notify) shouldExecute(filePath string, op Op) bool {
-	if op != fsnotify.Write && op != fsnotify.Rename {
+	const W = fsnotify.Write
+	const R = fsnotify.Rename
+	const C = fsnotify.Create
+
+	if op != W && op != R && !(n.detectCreate && op == C) {
 		return false
 	}
 
@@ -132,13 +138,13 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 	}
 
 	modifiedTime := time.GetFileModifiedTime(filePath)
-	if op == fsnotify.Write {
+	if op == W {
 		if (modifiedTime - lastExecutionTime) < n.pendingPeriod*1000000 {
 			return false
 		}
 	}
-	if op == fsnotify.Rename || op == fsnotify.Create {
-		if (time.Now() - modifiedTime) > regardRenameAsMod {
+	if op == R {
+		if (time.Now() - modifiedTime) > n.regardRenameAsModPeriod*1000000 {
 			return false
 		}
 	}

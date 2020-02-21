@@ -76,23 +76,15 @@ func TestUpdate(t *testing.T) {
 func TestCreateAndMove(t *testing.T) {
 	logger.Level(logger.VERBOSE)
 
-	rb1 := createTempFile("*.tmp", `puts "Hello from Ruby`)
-	rb2 := createTempFile("*.tmp", `puts "Hello from Ruby`)
-	py1 := createTempFile("*.tmp", `print("Hello from Python")`)
-	py2 := createTempFile("*.tmp", `print("Hello from Python")`)
+	tmpDir := createTempDir()
 
-	if rb1 == "" || rb2 == "" || py1 == "" || py2 == "" {
+	if tmpDir == "" {
 		t.Fatal("Temp files error")
 	}
 
-	pattens := []string{
-		filepath.Dir(rb1) + "/*.rb",
-		filepath.Dir(rb2) + "/*.rb",
-		filepath.Dir(py1) + "/*.py",
-		filepath.Dir(py2) + "/*.py",
-	}
-
-	notify, err := New(pattens)
+	notify, err := New([]string{tmpDir})
+	notify.regardRenameAsModPeriod = 10000
+	notify.detectCreate = true
 	if err != nil {
 		t.Fatal()
 	}
@@ -119,16 +111,12 @@ func TestCreateAndMove(t *testing.T) {
 		}
 	}()
 
-	touch(rb1)
-	os.Rename(rb1, rb1+".rb")
-	touch(rb2)
-	os.Rename(rb2, rb2+".rb")
-	touch(py1)
-	os.Rename(py1, py1+".py")
-	touch(py2)
-	os.Rename(py2, py2+".py")
-
 	for i := 0; i < 50; i++ {
+		rb := createTempFileWithDir(tmpDir, "*.tmp", `puts "Hello from Ruby`)
+		os.Rename(rb, rb+".rb")
+		py := createTempFileWithDir(tmpDir, "*.tmp", `print("Hello from Python")`)
+		os.Rename(py, py+".py")
+
 		if count >= 4 {
 			break
 		}
@@ -266,13 +254,20 @@ func TestQueue(t *testing.T) {
 	notify.Close()
 }
 
-func createTempFile(pattern string, content string) string {
+func createTempDir() string {
 	dirpath, err := ioutil.TempDir("", "_gaze")
-
 	if err != nil {
 		return ""
 	}
+	return dirpath
+}
 
+func createTempFile(pattern string, content string) string {
+	dirpath := createTempDir()
+	return createTempFileWithDir(dirpath, pattern, content)
+}
+
+func createTempFileWithDir(dirpath string, pattern string, content string) string {
 	file, err := ioutil.TempFile(dirpath, pattern)
 	if err != nil {
 		return ""
