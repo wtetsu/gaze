@@ -119,9 +119,13 @@ func TestCreateAndMove(t *testing.T) {
 		}
 	}()
 
+	touch(rb1)
 	os.Rename(rb1, rb1+".rb")
+	touch(rb2)
 	os.Rename(rb2, rb2+".rb")
+	touch(py1)
 	os.Rename(py1, py1+".py")
+	touch(py2)
 	os.Rename(py2, py2+".py")
 
 	for i := 0; i < 50; i++ {

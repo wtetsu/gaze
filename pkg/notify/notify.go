@@ -121,7 +121,7 @@ func (n *Notify) wait() {
 const regardRenameAsMod int64 = 1000 * 1000000
 
 func (n *Notify) shouldExecute(filePath string, op Op) bool {
-	if op != fsnotify.Write && op != fsnotify.Rename && op != fsnotify.Create {
+	if op != fsnotify.Write && op != fsnotify.Rename {
 		return false
 	}
 
