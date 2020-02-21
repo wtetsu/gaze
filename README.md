@@ -11,10 +11,12 @@ Gaze runs a command, **right after** you save a file.
 It greatly helps you focus on writing code!
 ![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
-## Features:
+## Why Gaze?(Features)
+
+Gaze is designed as a CLI tool that accelerates your coding.
 
 - Easy to use, out-of-the-box
-- React super quickly to your file modifications
+- Super quick reaction
 - Language-agnostic, editor-agnostic
 - Flexible configuration
 - Useful advanced options
@@ -22,6 +24,17 @@ It greatly helps you focus on writing code!
   - `-t 2000`: timeout(useful if you sometimes write infinite loops)
 - Can handle a "create-and-rename" type of save appropriately
 - Multiplatform (macOS, Windows, Linux)
+- Can deal with "create-and-rename" type of editor's save behavior
+  - Super major editors like Vim and Visual Studio are such editors
+- Appropriate parallel handling
+  - See also: [Parallel handling](/doc/parallel.md)
+  - <img src="doc/img/p04.png" width="300">
+
+---
+
+I developed Gaze in order to deal with my every day's coding.
+
+Even though there are already many "update-and-run" type of tools, I would say Gaze is the best tool for quick coding because all the technical decisions have been made for that purpose.
 
 ## Use cases:
 
@@ -220,18 +233,6 @@ gaze -c "echo {{file}} {{ext}} {{abs}}" .
 | {{base0}} | main                    |
 | {{dir}}   | src/mod1                |
 | {{abs}}   | /my/source/mod1/main.py |
-
-## Why Gaze?
-
-Even though there are already many "update-and-run" type of tools, I had to develop Gaze in order to deal with my every day's coding.
-
-Gaze is designed as a CLI tool that accelerates your coding. I would say Gaze is the best tool for the purpose because all the technical decisions have been made for that use case.
-
-1. Simple command that you can invoke immediately.
-1. Flexible configurations
-1. Options for server, for infinite loop.
-1. Super quick reaction.
-1. Appropriate parallel handling.
 
 # Third-party data
 
