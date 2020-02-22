@@ -53,7 +53,7 @@ There is a case Gaze runs the same command even when different files are updated
 gaze -c make '*.go'
 ```
 
-What should happen when you update multiple \*.go files during the first `make` stay running? The answer is below.
+What should happen when you update multiple \*.go files during the first `make` stay running? The Gaze's answer is below.
 
 ![p05](img/p05.png)
 

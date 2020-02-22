@@ -11,30 +11,19 @@ Gaze runs a command, **right after** you save a file.
 It greatly helps you focus on writing code!
 ![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
-## Why Gaze?(Features)
-
-Gaze is designed as a CLI tool that accelerates your coding.
-
-- Easy to use, out-of-the-box
-- Super quick reaction
-- Language-agnostic, editor-agnostic
-- Flexible configuration
-- Useful advanced options
-  - `-r`: restart(useful for server applications)
-  - `-t 2000`: timeout(useful if you sometimes write infinite loops)
-- Can handle a "create-and-rename" type of save appropriately
-- Multiplatform (macOS, Windows, Linux)
-- Can deal with "create-and-rename" type of editor's save behavior
-  - Super major editors like Vim and Visual Studio are such editors
-- Appropriate parallel handling
-  - See also: [Parallel handling](/doc/parallel.md)
-  - <img src="doc/img/p04.png" width="300">
-
 ---
 
-I developed Gaze in order to deal with my every day's coding.
+Gaze's usage is simple.
 
-Even though there are already many "update-and-run" type of tools, I would say Gaze is the best tool for quick coding because all the technical decisions have been made for that purpose.
+```
+gaze .
+```
+
+And invoke your favorite editor on another terminal.
+
+```
+vi a.py
+```
 
 ## Use cases:
 
@@ -49,7 +38,7 @@ You can also use Gaze for these purposes:
 
 ---
 
-Software development sometimes forces us to execute the same command again and again, by hand!
+Software development often forces us to execute the same command again and again, by hand!
 
 Let's say, you started writing a really really simple Python script. You created a.py, wrote 5 lines of code and run "python a.py".
 Since the result was not perfect, you edited a.py again, and run "python a.py" again.
@@ -62,7 +51,31 @@ That's totally waste of time and energy!
 
 ---
 
-Gaze runs a command on behalf of you, **right after** you edit files.
+👁️Gaze runs a command on behalf of you, **right after** you edit files.
+
+## Why Gaze?(Features)
+
+Gaze is designed as a CLI tool that accelerates your coding.
+
+- Easy to use, out-of-the-box
+- Super quick reaction
+- Language-agnostic, editor-agnostic
+- Flexible configuration
+- Useful advanced options
+  - `-r`: restart(useful for server applications)
+  - `-t 2000`: timeout(useful if you sometimes write infinite loops)
+- Multiplatform (macOS, Windows, Linux)
+- Can deal with "create-and-rename" type of editor's save behavior
+  - Super major editors like Vim and Visual Studio are such editors
+- Appropriate parallel handling
+  - See also: [Parallel handling](/doc/parallel.md)
+  - <img src="doc/img/p04.png" width="300">
+
+---
+
+I developed Gaze in order to deal with my every day's coding.
+
+Even though there are already many "update-and-run" type of tools, I would say Gaze is the best tool for quick coding because all the technical design decisions have been made for that purpose.
 
 # Installation
 
@@ -89,7 +102,7 @@ gaze .
 
 On another terminal, run `vi a.py` and edit it. Gaze executes a.py in response to your file modifications!
 
-### Other examples:
+### Other examples
 
 Gaze at one file. You can just simply specify file names.
 
@@ -97,11 +110,15 @@ Gaze at one file. You can just simply specify file names.
 gaze a.py
 ```
 
+---
+
 Gaze doesn't have special options to specify files. You can use wildcards (\*, \*\*, ?) that shell users are familiar with. You don't have to remember Gaze-specific command-line options!
 
 ```
 gaze '*.py'
 ```
+
+---
 
 Gaze at subdirectories. Runs a modified file.
 
@@ -109,19 +126,25 @@ Gaze at subdirectories. Runs a modified file.
 gaze 'src/**/*.rb'
 ```
 
+---
+
 Gaze at subdirectories. Runs a command to a modified file.
 
 ```
 gaze 'src/**/*.js' -c "eslint {{file}}"
 ```
 
-Kill an ongoing process, every time before it runs the next(Useful when you are writing servers)
+---
+
+Kill an ongoing process, every time before it runs the next. This is Useful when you are writing servers.
 
 ```
 gaze -r server.py
 ```
 
-Kill an ongoing process, after 1000(ms)(Useful when you like to write infinite loops)
+---
+
+Kill an ongoing process, after 1000(ms). This is useful if you like to write infinite loops.
 
 ```
 gaze -t 1000 complicated.py
@@ -133,13 +156,13 @@ Gaze is Language-agnostic.
 
 But it has useful default configurations for several languages.
 
-Due to the default configurations, the command below is valid.
+Thanks to the default configurations, the command below is valid. You don't have to specify python command.
 
 ```
 gaze a.py
 ```
 
-By default, it is the same as:
+By default, the above is the same as:
 
 ```
 gaze a.py -c 'python "{{file}}"'
