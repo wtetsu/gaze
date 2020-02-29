@@ -9,6 +9,8 @@ package gazer
 import (
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
@@ -74,39 +76,52 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 			}
 
 			g.counter++
-			commandString, err := getAppropriateCommand(event.Name, commandConfigs)
+			rawCommandString, err := getAppropriateCommand(event.Name, commandConfigs)
 			if err != nil {
 				logger.NoticeObject(err)
 				continue
 			}
-			if commandString == "" {
+
+			queueManageKey := rawCommandString
+			commandStringList := splitCommand(queueManageKey)
+			if len(commandStringList) == 0 {
 				logger.Debug("Command not found: %s", event.Name)
 				continue
 			}
 
-			ongoingCommand := g.commands.get(commandString)
+			ongoingCommand := g.commands.get(queueManageKey)
 			if ongoingCommand != nil && !hasProcessExited(ongoingCommand.cmd) {
 				if restart {
 					kill(ongoingCommand.cmd, "Restart")
-					g.commands.update(commandString, nil)
+					g.commands.update(queueManageKey, nil)
 				} else {
-					g.commands.enqueue(commandString, event)
+					g.commands.enqueue(queueManageKey, event)
 					continue
 				}
 			}
-
-			cmd := createCommand(commandString)
-			g.commands.update(commandString, cmd)
 			go func() {
 				lastLaunched := time.Now()
-				logger.NoticeWithBlank("[%s]", commandString)
-				err := executeCommandOrTimeout(cmd, timeout)
-				if err != nil {
-					logger.NoticeObject(err)
+
+				commandSize := len(commandStringList)
+				for i, commandString := range commandStringList {
+					if commandSize == 1 {
+						logger.NoticeWithBlank("[%s]", commandString)
+					} else {
+						logger.NoticeWithBlank("[%s](%d/%d)", commandString, i+1, commandSize)
+					}
+
+					err := g.invokeOneCommand(commandString, queueManageKey, timeout)
+					if err != nil {
+						if len(err.Error()) > 0 {
+							logger.NoticeObject(err)
+						}
+						break
+					}
 				}
+
 				// Handle waiting events
 				for {
-					queuedEvent := g.commands.dequeue(commandString)
+					queuedEvent := g.commands.dequeue(queueManageKey)
 					if queuedEvent == nil {
 						break
 					}
@@ -118,6 +133,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 					// Requeue
 					g.notify.Requeue(*queuedEvent)
 				}
+
 			}()
 		case <-sigInt:
 			isDisposed = true
@@ -125,6 +141,14 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 		}
 	}
 	return nil
+}
+
+func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeout int) error {
+	cmd := createCommand(commandString)
+	g.commands.update(queueManageKey, cmd)
+
+	err := executeCommandOrTimeout(cmd, timeout)
+	return err
 }
 
 func hasProcessExited(cmd *exec.Cmd) bool {
@@ -160,6 +184,19 @@ func getAppropriateCommand(filePath string, commandConfigs *config.Config) (stri
 		}
 	}
 	return result, resultError
+}
+
+var newLines = regexp.MustCompile("\r\n|\n\r|\n|\r")
+
+func splitCommand(commandString string) []string {
+	var commandList []string
+	for _, rawCmd := range newLines.Split(commandString, -1) {
+		cmd := strings.TrimSpace(rawCmd)
+		if len(cmd) > 0 {
+			commandList = append(commandList, cmd)
+		}
+	}
+	return commandList
 }
 
 // Counter returns the current execution counter

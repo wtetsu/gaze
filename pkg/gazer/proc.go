@@ -8,6 +8,7 @@ package gazer
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -41,11 +42,23 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeoutMill int) error {
 			}
 			kill(cmd, "Timeout")
 			finished = true
+			err = errors.New("")
 		case err = <-exec:
 			finished = true
 		}
 	}
-	return err
+	if err != nil {
+		return err
+	}
+
+	if cmd.ProcessState != nil {
+		exitCode := cmd.ProcessState.ExitCode()
+		if exitCode != 0 {
+			return fmt.Errorf("exitCode:%d", exitCode)
+		}
+	}
+
+	return nil
 }
 
 func executeCommandAsync(cmd *exec.Cmd) <-chan error {
