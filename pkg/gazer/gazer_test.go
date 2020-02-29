@@ -36,7 +36,7 @@ func TestBasic(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
-	go gazer.Run(c, 0, false)
+	go gazer.Run(c, 10*1000, false)
 	if gazer.Counter() != 0 {
 		t.Fatal()
 	}
@@ -79,7 +79,7 @@ print("end")
 	if err != nil {
 		t.Fatal()
 	}
-	go gazer.Run(c, 0, true)
+	go gazer.Run(c, 10*1000, true)
 
 	if gazer.Counter() != 0 {
 		t.Fatal()
@@ -121,7 +121,7 @@ func TestKill(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
-	go gazer.Run(c, 0, false)
+	go gazer.Run(c, 10*1000, false)
 	if gazer.Counter() != 0 {
 		t.Fatal()
 	}
@@ -180,7 +180,7 @@ func TestInvalidCommand(t *testing.T) {
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".rb", Cmd: "ruby {{file]]"})
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".py", Cmd: ""})
 
-	go gazer.Run(&commandConfigs, 0, false)
+	go gazer.Run(&commandConfigs, 10*1000, false)
 	if gazer.Counter() != 0 {
 		t.Fatal()
 	}

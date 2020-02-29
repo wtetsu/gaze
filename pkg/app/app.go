@@ -17,7 +17,7 @@ import (
 )
 
 // Start starts a gaze process
-func Start(watchFiles []string, userCommand string, file string, timeout int, restart bool) error {
+func Start(watchFiles []string, userCommand string, file string, timeout int64, restart bool) error {
 	watcher := gazer.New(watchFiles)
 	defer watcher.Close()
 
@@ -56,7 +56,7 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 	help := flagSet.Bool("h", false, "")
 	restart := flagSet.Bool("r", false, "")
 	userCommand := flagSet.String("c", "", "")
-	timeout := flagSet.Int("t", 0, "")
+	timeout := flagSet.Int64("t", 1<<50, "")
 	yaml := flagSet.Bool("y", false, "")
 	quiet := flagSet.Bool("q", false, "")
 	verbose := flagSet.Bool("v", false, "")

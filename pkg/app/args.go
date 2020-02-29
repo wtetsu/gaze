@@ -11,7 +11,7 @@ type Args struct {
 	help        bool
 	restart     bool
 	userCommand string
-	timeout     int
+	timeout     int64
 	yaml        bool
 	quiet       bool
 	verbose     bool
@@ -38,7 +38,7 @@ func (a *Args) UserCommand() string {
 }
 
 // Timeout returns a.timeout
-func (a *Args) Timeout() int {
+func (a *Args) Timeout() int64 {
 	return a.timeout
 }
 

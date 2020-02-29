@@ -65,7 +65,7 @@ func TestEndTopEnd(t *testing.T) {
 	watchFiles := []string{rb, py}
 	userCommand := ""
 	file := ""
-	timeout := 0
+	timeout := int64(0)
 	restart := false
 
 	go Start(watchFiles, userCommand, file, timeout, restart)
@@ -84,7 +84,7 @@ func TestEndTopEndError(t *testing.T) {
 	watchFiles := []string{rb, py}
 	userCommand := ""
 	file := "--invalid--"
-	timeout := 0
+	timeout := int64(0)
 	restart := false
 
 	err := Start(watchFiles, userCommand, file, timeout, restart)

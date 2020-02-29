@@ -32,7 +32,7 @@ func Sleep(d time.Duration) {
 }
 
 // After waits for the duration.
-func After(d int) <-chan struct{} {
+func After(d int64) <-chan struct{} {
 	ch := make(chan struct{})
 
 	go func() {

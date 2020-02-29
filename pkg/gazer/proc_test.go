@@ -7,26 +7,28 @@
 package gazer
 
 import (
+	"math"
 	"testing"
-	"time"
+
+	"github.com/wtetsu/gaze/pkg/time"
 )
 
 func TestProc1(t *testing.T) {
 	// Very normal
 	cmd := createCommand("echo hello")
-	executeCommandOrTimeout(cmd, 0)
+	executeCommandOrTimeout(cmd, time.After(math.MaxInt64))
 }
 
 func TestProc2(t *testing.T) {
 	// Kill using timeout
 	cmd := createCommand("sleep 60")
-	executeCommandOrTimeout(cmd, 100)
+	executeCommandOrTimeout(cmd, time.After(100))
 }
 
 func TestProc3(t *testing.T) {
 	// Kill using a signal
 	cmd := createCommand("sleep 60")
-	go executeCommandOrTimeout(cmd, 0)
+	go executeCommandOrTimeout(cmd, time.After(60*10000))
 
 	for {
 		time.Sleep(50)

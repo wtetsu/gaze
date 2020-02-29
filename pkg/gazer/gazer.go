@@ -7,6 +7,7 @@
 package gazer
 
 import (
+	"errors"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -55,12 +56,15 @@ func (g *Gazer) Close() {
 }
 
 // Run starts to gaze.
-func (g *Gazer) Run(configs *config.Config, timeout int, restart bool) error {
+func (g *Gazer) Run(configs *config.Config, timeout int64, restart bool) error {
+	if timeout <= 0 {
+		return errors.New("timeout must be more than 0")
+	}
 	err := g.repeatRunAndWait(configs, timeout, restart)
 	return err
 }
 
-func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, restart bool) error {
+func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, restart bool) error {
 	sigInt := sigIntChannel()
 
 	isDisposed := false
@@ -103,6 +107,8 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 				lastLaunched := time.Now()
 
 				commandSize := len(commandStringList)
+
+				timeoutCh := time.After(timeout)
 				for i, commandString := range commandStringList {
 					if commandSize == 1 {
 						logger.NoticeWithBlank("[%s]", commandString)
@@ -110,7 +116,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 						logger.NoticeWithBlank("[%s](%d/%d)", commandString, i+1, commandSize)
 					}
 
-					err := g.invokeOneCommand(commandString, queueManageKey, timeout)
+					err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
 					if err != nil {
 						if len(err.Error()) > 0 {
 							logger.NoticeObject(err)
@@ -143,11 +149,11 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int, res
 	return nil
 }
 
-func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeout int) error {
+func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) error {
 	cmd := createCommand(commandString)
 	g.commands.update(queueManageKey, cmd)
 
-	err := executeCommandOrTimeout(cmd, timeout)
+	err := executeCommandOrTimeout(cmd, timeoutCh)
 	return err
 }
 

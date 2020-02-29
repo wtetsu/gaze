@@ -20,14 +20,9 @@ import (
 	"github.com/wtetsu/gaze/pkg/time"
 )
 
-func executeCommandOrTimeout(cmd *exec.Cmd, timeoutMill int) error {
+func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) error {
 	exec := executeCommandAsync(cmd)
-	if timeoutMill <= 0 {
-		e := <-exec
-		return e
-	}
 
-	timeout := time.After(timeoutMill)
 	var err error
 	finished := false
 	for {
