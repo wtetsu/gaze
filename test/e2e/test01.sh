@@ -14,20 +14,26 @@ touch $filedir/hello.rb
 sleep 0.1
 touch $filedir/hello.py
 sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.py
+touch $filedir/hello.rs
 sleep 0.1
 touch $filedir/hello.rb
 sleep 0.1
 touch $filedir/hello.py
+sleep 0.1
+touch $filedir/hello.rs
+sleep 0.1
+touch $filedir/hello.rb
+sleep 0.1
+touch $filedir/hello.py
+sleep 0.1
+touch $filedir/hello.rs
 sleep 0.1
 
 wait
 
 num=`cat test.log | grep "hello, world!" | wc -l`
 
-if [ $num -ne 6 ]; then
+if [ $num -ne 9 ]; then
   echo "Failed:${num}"
   exit 1
 fi
