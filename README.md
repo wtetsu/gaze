@@ -150,6 +150,28 @@ Kill an ongoing process, after 1000(ms). This is useful if you like to write inf
 gaze -t 1000 complicated.py
 ```
 
+---
+
+Run multiple commands. Just simply write multiple lines. If an exit code was not 0, Gaze doesn't invoke the next command.
+
+```
+./main '*.cpp' -c "gcc {{file}} -o a.out
+ls -l a.out
+./a.out"
+```
+
+Here is output when a.cpp was updated.
+
+```
+[gcc a.cpp -o a.out](1/3)
+
+[ls -l a.out](2/3)
+-rwxr-xr-x 1 user 197609 42155 Mar  3 00:31 a.out
+
+[./a.out](3/3)
+hello, world!
+```
+
 ### Configuration
 
 Gaze is Language-agnostic.
@@ -198,12 +220,21 @@ commands:
   - ext: .kts
     cmd: kotlinc -script "{{file}}"
   - ext: .rs
-    cmd: sh -c 'rustc "{{file}}" -o"{{base0}}.out" && ./"{{base0}}.out"'
+    cmd: |
+      rustc "{{file}}" -o"{{base0}}.out"
+      ./"{{base0}}.out"
   - ext: .cpp
-    cmd: sh -c 'gcc "{{file}}" -o"{{base0}}.out" && ./"{{base0}}.out"'
+    cmd: |
+      gcc "{{file}}" -o"{{base0}}.out"
+      ./"{{base0}}.out"
   - re: ^Dockerfile$
     cmd: docker build -f "{{file}}" .
 ```
+
+Note:
+
+- To specify both ext and re for one cmd is prohibited
+- cmd can have multiple commands. In YAML, a **vertical line(|)** is used to express multiple lines
 
 You're able to have your own configuration very easily.
 
