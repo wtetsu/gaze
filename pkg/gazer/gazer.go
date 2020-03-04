@@ -122,6 +122,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 						if len(err.Error()) > 0 {
 							logger.NoticeObject(err)
 						}
+						g.commands.update(queueManageKey, nil)
 						break
 					}
 				}
@@ -153,8 +154,6 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) error {
 	cmd := createCommand(commandString)
 	g.commands.update(queueManageKey, cmd)
-	defer g.commands.update(queueManageKey, nil)
-
 	err := executeCommandOrTimeout(cmd, timeoutCh)
 	return err
 }
