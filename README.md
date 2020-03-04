@@ -27,7 +27,7 @@ vi a.py
 
 ## Use cases:
 
-🚀Gaze runs a script, **right after** you save it(e.g. Python, Ruby),
+🚀Gaze runs a script, **right after** you save it (e.g. Python, Ruby),
 
 You can also use Gaze for these purposes:
 
@@ -53,7 +53,7 @@ That's totally waste of time and energy!
 
 👁️Gaze runs a command on behalf of you, **right after** you edit files.
 
-## Why Gaze?(Features)
+## Why Gaze? (Features)
 
 Gaze is designed as a CLI tool that accelerates your coding.
 
@@ -62,8 +62,8 @@ Gaze is designed as a CLI tool that accelerates your coding.
 - Language-agnostic, editor-agnostic
 - Flexible configuration
 - Useful advanced options
-  - `-r`: restart(useful for server applications)
-  - `-t 2000`: timeout(useful if you sometimes write infinite loops)
+  - `-r`: restart (useful for server applications)
+  - `-t 2000`: timeout (useful if you sometimes write infinite loops)
 - Multiplatform (macOS, Windows, Linux)
 - Can deal with "create-and-rename" type of editor's save behavior
   - Super major editors like Vim and Visual Studio are such editors
