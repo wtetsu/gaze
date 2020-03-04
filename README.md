@@ -152,7 +152,7 @@ gaze -t 1000 complicated.py
 
 ---
 
-Run multiple commands. Just simply write multiple lines. If an exit code was not 0, Gaze doesn't invoke the next command.
+In order to run multiple commands, just simply write multiple lines (use quotations for general shells). If an exit code was not 0, Gaze doesn't invoke the next command.
 
 ```
 ./main '*.cpp' -c "gcc {{file}} -o a.out
