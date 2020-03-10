@@ -8,7 +8,6 @@ package gazer
 
 import (
 	"errors"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -94,7 +93,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 			}
 
 			ongoingCommand := g.commands.get(queueManageKey)
-			if ongoingCommand != nil && !hasProcessExited(ongoingCommand.cmd) {
+			if ongoingCommand != nil {
 				if restart {
 					kill(ongoingCommand.cmd, "Restart")
 					g.commands.update(queueManageKey, nil)
@@ -122,26 +121,23 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 						if len(err.Error()) > 0 {
 							logger.NoticeObject(err)
 						}
-						g.commands.update(queueManageKey, nil)
 						break
 					}
 				}
-
 				// Handle waiting events
-				for {
-					queuedEvent := g.commands.dequeue(queueManageKey)
-					if queuedEvent == nil {
-						break
-					}
+				queuedEvent := g.commands.dequeue(queueManageKey)
+				if queuedEvent == nil {
+					g.commands.update(queueManageKey, nil)
+				} else {
 					canAbolish := lastLaunched > queuedEvent.Time
 					if canAbolish {
 						logger.Debug("Abolish:%d, %d", lastLaunched, queuedEvent.Time)
-						continue
+					} else {
+						// Requeue
+						g.commands.update(queueManageKey, nil)
+						g.notify.Requeue(*queuedEvent)
 					}
-					// Requeue
-					g.notify.Requeue(*queuedEvent)
 				}
-
 			}()
 		case <-sigInt:
 			isDisposed = true
@@ -156,13 +152,6 @@ func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, ti
 	g.commands.update(queueManageKey, cmd)
 	err := executeCommandOrTimeout(cmd, timeoutCh)
 	return err
-}
-
-func hasProcessExited(cmd *exec.Cmd) bool {
-	if cmd.ProcessState == nil {
-		return false
-	}
-	return cmd.ProcessState.Exited() || cmd.ProcessState.ExitCode() < 0
 }
 
 func matchAny(watchFiles []string, s string) bool {
