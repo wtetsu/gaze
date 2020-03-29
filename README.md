@@ -255,10 +255,10 @@ Options:
   -f  Specify a YAML configuration file.
   -v  Verbose mode.
   -q  Quiet mode.
-  -y  Output the default configuration
-  -h  Display help
-  --color    Color(0:plain, 1:colorful)
-  --version  Output version information
+  -y  Output the default configuration.
+  -h  Display help.
+  --color    Color mode (0:plain, 1:colorful).
+  --version  Output version information.
 
 Examples:
   gaze .
