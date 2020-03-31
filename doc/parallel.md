@@ -2,7 +2,7 @@
 
 Gaze deals with multiple processes nicely.
 
-## The most simple case
+## The simplest case
 
 1. You update a.py
 2. Gaze invokes `python a.py`

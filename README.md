@@ -6,20 +6,20 @@
 
 ## What is Gaze?
 
-Gaze runs a command, **right after** you save a file.
+👁️Gaze runs a command, **right after** you save a file.
 
 It greatly helps you focus on writing code!
 ![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
 ---
 
-Gaze's usage is simple.
+Gaze's usage is quite simple.
 
 ```
 gaze .
 ```
 
-And invoke your favorite editor on another terminal.
+And invoke your favorite editor on another terminal and edit it!
 
 ```
 vi a.py
@@ -27,14 +27,14 @@ vi a.py
 
 ## Use cases:
 
-🚀Gaze runs a script, **right after** you save it (e.g. Python, Ruby),
+👁️Gaze runs a script, **right after** you save it (e.g. Python, Ruby),
 
 You can also use Gaze for these purposes:
 
-- 🚀Gaze runs tests, **right after** you save a Ruby script
-- 🚀Gaze runs linter, **right after** you save a JavaScript file
-- 🚀Gaze runs "docker build .", **right after** you save Dockerfile
-- And so forth...
+- 👁️Gaze runs tests, **right after** you save a Ruby script
+- 👁️Gaze runs linter, **right after** you save a JavaScript file
+- 👁️Gaze runs "docker build .", **right after** you save Dockerfile
+- 👁️And so forth...
 
 ---
 
@@ -112,7 +112,7 @@ gaze a.py
 
 ---
 
-Gaze doesn't have special options to specify files. You can use wildcards (\*, \*\*, ?) that shell users are familiar with. You don't have to remember Gaze-specific command-line options!
+Gaze doesn't have special options to specify files. You can use wildcards (\*, \*\*, ?) that shell users are familiar with. **You don't have to remember Gaze-specific command-line options!**
 
 ```
 gaze '*.py'
@@ -136,7 +136,7 @@ gaze 'src/**/*.js' -c "eslint {{file}}"
 
 ---
 
-Kill an ongoing process, every time before it runs the next. This is Useful when you are writing servers.
+Kill an ongoing process, every time before it runs the next. This is useful when you are writing a server.
 
 ```
 gaze -r server.py
@@ -144,7 +144,7 @@ gaze -r server.py
 
 ---
 
-Kill an ongoing process, after 1000(ms). This is useful if you like to write infinite loops.
+Kill an ongoing process, after 1000(ms). This is useful if you love to write infinite loops.
 
 ```
 gaze -t 1000 complicated.py
@@ -152,7 +152,7 @@ gaze -t 1000 complicated.py
 
 ---
 
-In order to run multiple commands, just simply write multiple lines (use quotations for general shells). If an exit code was not 0, Gaze doesn't invoke the next command.
+In order to run multiple commands for one update, just simply write multiple lines (use quotations for general shells). If an exit code was not 0, Gaze doesn't invoke the next command.
 
 ```
 ./main '*.cpp' -c "gcc {{file}} -o a.out
@@ -166,7 +166,7 @@ Here is output when a.cpp was updated.
 [gcc a.cpp -o a.out](1/3)
 
 [ls -l a.out](2/3)
--rwxr-xr-x 1 user 197609 42155 Mar  3 00:31 a.out
+-rwxr-xr-x 1 user group 42155 Mar  3 00:31 a.out
 
 [./a.out](3/3)
 hello, world!
@@ -176,7 +176,7 @@ hello, world!
 
 Gaze is Language-agnostic.
 
-But it has useful default configurations for several languages.
+But it has useful default configurations for several major languages (e.g. Go, Python, Ruby, JavaScript, D, Groovy, PHP, Java, Kotlin, Rust, C++, and Docker).
 
 Thanks to the default configurations, the command below is valid. You don't have to specify python command.
 
@@ -197,7 +197,7 @@ Gaze searches a configuration file according to it's priority rule.
 1. ~/.gaze.yml
 1. (Default)
 
-You can display the default configuration by running `gaze -y`.
+You can display the default YAML configuration by running `gaze -y`.
 
 ```yaml
 commands:
@@ -234,7 +234,7 @@ commands:
 Note:
 
 - To specify both ext and re for one cmd is prohibited
-- cmd can have multiple commands. In YAML, a **vertical line(|)** is used to express multiple lines
+- cmd can have multiple commands. In [YAML](https://en.wikipedia.org/wiki/YAML#Basic_components), a **vertical line(|)** is used to express multiple lines
 
 You're able to have your own configuration very easily.
 
@@ -255,10 +255,10 @@ Options:
   -f  Specify a YAML configuration file.
   -v  Verbose mode.
   -q  Quiet mode.
-  -y  Output the default configuration.
+  -y  Display the default YAML configuration.
   -h  Display help.
   --color    Color mode (0:plain, 1:colorful).
-  --version  Output version information.
+  --version  Display version information.
 
 Examples:
   gaze .
@@ -279,14 +279,14 @@ You can write [Mustache](<https://en.wikipedia.org/wiki/Mustache_(template_syste
 gaze -c "echo {{file}} {{ext}} {{abs}}" .
 ```
 
-| Parameter | Example                 |
-| --------- | ----------------------- |
-| {{file}}  | src/mod1/main.py        |
-| {{ext}}   | .py                     |
-| {{base}}  | main.py                 |
-| {{base0}} | main                    |
-| {{dir}}   | src/mod1                |
-| {{abs}}   | /my/source/mod1/main.py |
+| Parameter | Example                   |
+| --------- | ------------------------- |
+| {{file}}  | src/mod1/main.py          |
+| {{ext}}   | .py                       |
+| {{base}}  | main.py                   |
+| {{base0}} | main                      |
+| {{dir}}   | src/mod1                  |
+| {{abs}}   | /my/proj/src/mod1/main.py |
 
 # Third-party data
 
