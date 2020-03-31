@@ -96,10 +96,10 @@ Options:
   -f  Specify a YAML configuration file.
   -v  Verbose mode.
   -q  Quiet mode.
-  -y  Output the default configuration.
+  -y  Display the default YAML configuration.
   -h  Display help.
   --color    Color mode (0:plain, 1:colorful).
-  --version  Output version information.
+  --version  Display version information.
 
 Examples:
   gaze .
