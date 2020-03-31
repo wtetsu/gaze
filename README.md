@@ -115,7 +115,7 @@ gaze a.py
 Gaze doesn't have special options to specify files. You can use wildcards (\*, \*\*, ?) that shell users are familiar with. **You don't have to remember Gaze-specific command-line options!**
 
 ```
-gaze '*.py'
+gaze "*.py"
 ```
 
 ---
@@ -123,7 +123,7 @@ gaze '*.py'
 Gaze at subdirectories. Runs a modified file.
 
 ```
-gaze 'src/**/*.rb'
+gaze "src/**/*.rb"
 ```
 
 ---
@@ -131,7 +131,7 @@ gaze 'src/**/*.rb'
 Gaze at subdirectories. Runs a command to a modified file.
 
 ```
-gaze 'src/**/*.js' -c "eslint {{file}}"
+gaze "src/**/*.js" -c "eslint {{file}}"
 ```
 
 ---
@@ -155,7 +155,7 @@ gaze -t 1000 complicated.py
 In order to run multiple commands for one update, just simply write multiple lines (use quotations for general shells). If an exit code was not 0, Gaze doesn't invoke the next command.
 
 ```
-./main '*.cpp' -c "gcc {{file}} -o a.out
+gaze "*.cpp" -c "gcc {{file}} -o a.out
 ls -l a.out
 ./a.out"
 ```
@@ -170,6 +170,20 @@ Here is output when a.cpp was updated.
 
 [./a.out](3/3)
 hello, world!
+```
+
+When compilation failed:
+
+```
+[gcc a.cpp -o a.out](1/3)
+a.cpp: In function 'int main()':
+a.cpp:5:28: error: expected ';' before '}' token
+   printf("hello, world!\n")
+                            ^
+                            ;
+ }
+ ~
+exit status 1
 ```
 
 ### Configuration
