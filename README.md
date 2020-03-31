@@ -278,8 +278,8 @@ Examples:
   gaze .
   gaze main.go
   gaze a.rb b.rb
-  gaze -c make '**/*.c'
-  gaze -c "eslint {{file}}" 'src/**/*.js'
+  gaze -c make "**/*.c"
+  gaze -c "eslint {{file}}" "src/**/*.js"
   gaze -r server.py
   gaze -t 1000 complicated.py
 
