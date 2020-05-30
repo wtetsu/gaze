@@ -36,6 +36,10 @@ commands:
   cmd: |
     gcc "{{file}}" -o"{{base0}}.out"
     ./"{{base0}}.out"
+- ext: .ts
+  cmd: |
+    tsc "{{file}}" --out "{{base0}}.out"
+    node ./"{{base0}}.out"
 - re: ^Dockerfile$
   cmd: docker build -f "{{file}}" .
 `
