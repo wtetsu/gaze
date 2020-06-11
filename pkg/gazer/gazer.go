@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
@@ -26,6 +27,7 @@ type Gazer struct {
 	isClosed bool
 	counter  uint64
 	commands commands
+	mutexes  map[string]*sync.Mutex
 }
 
 // New returns a new Gazer.
@@ -42,6 +44,7 @@ func New(patterns []string) *Gazer {
 		isClosed: false,
 		counter:  0,
 		commands: newCommands(),
+		mutexes:  make(map[string]*sync.Mutex),
 	}
 }
 
@@ -68,11 +71,11 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 
 	isDisposed := false
 	for {
-		if isDisposed {
-			break
-		}
 		select {
 		case event := <-g.notify.Events:
+			if isDisposed {
+				break
+			}
 			logger.Debug("Receive: %s", event.Name)
 			if !matchAny(g.patterns, event.Name) {
 				continue
@@ -103,48 +106,60 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 				}
 			}
 
+			mutex, ok := g.mutexes[queueManageKey]
+			if !ok {
+				mutex = &sync.Mutex{}
+				g.mutexes[queueManageKey] = mutex
+			}
+			mutex.Lock()
 			go func() {
-				lastLaunched := time.Now()
-
-				commandSize := len(commandStringList)
-
-				timeoutCh := time.After(timeout)
-				for i, commandString := range commandStringList {
-					if commandSize == 1 {
-						logger.NoticeWithBlank("[%s]", commandString)
-					} else {
-						logger.NoticeWithBlank("[%s](%d/%d)", commandString, i+1, commandSize)
-					}
-
-					err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
-					if err != nil {
-						if len(err.Error()) > 0 {
-							logger.NoticeObject(err)
-						}
-						break
-					}
-				}
-				// Handle waiting events
-				queuedEvent := g.commands.dequeue(queueManageKey)
-				if queuedEvent == nil {
-					g.commands.update(queueManageKey, nil)
-				} else {
-					canAbolish := lastLaunched > queuedEvent.Time
-					if canAbolish {
-						logger.Debug("Abolish:%d, %d", lastLaunched, queuedEvent.Time)
-					} else {
-						// Requeue
-						g.commands.update(queueManageKey, nil)
-						g.notify.Requeue(*queuedEvent)
-					}
-				}
+				g.invoke(commandStringList, queueManageKey, timeout)
+				mutex.Unlock()
 			}()
+
 		case <-sigInt:
 			isDisposed = true
 			return nil
 		}
 	}
 	return nil
+}
+
+func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64) {
+	lastLaunched := time.Now()
+
+	commandSize := len(commandStringList)
+
+	timeoutCh := time.After(timeout)
+	for i, commandString := range commandStringList {
+		if commandSize == 1 {
+			logger.NoticeWithBlank("[%s]", commandString)
+		} else {
+			logger.NoticeWithBlank("[%s](%d/%d)", commandString, i+1, commandSize)
+		}
+
+		err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
+		if err != nil {
+			if len(err.Error()) > 0 {
+				logger.NoticeObject(err)
+			}
+			break
+		}
+	}
+	// Handle waiting events
+	queuedEvent := g.commands.dequeue(queueManageKey)
+	if queuedEvent == nil {
+		g.commands.update(queueManageKey, nil)
+	} else {
+		canAbolish := lastLaunched > queuedEvent.Time
+		if canAbolish {
+			logger.Debug("Abolish:%d, %d", lastLaunched, queuedEvent.Time)
+		} else {
+			// Requeue
+			g.commands.update(queueManageKey, nil)
+			g.notify.Requeue(*queuedEvent)
+		}
+	}
 }
 
 func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) error {
