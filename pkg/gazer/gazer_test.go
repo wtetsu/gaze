@@ -208,14 +208,14 @@ func TestGetAppropriateCommandOk(t *testing.T) {
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: "", Cmd: "echo"})
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".txt", Cmd: ""})
 
-	command, err = getAppropriateCommand("a.txt", &commandConfigs)
+	command, err = getMatchedCommand("a.txt", &commandConfigs)
 	if command != "" {
 		t.Fatal()
 	}
 
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".txt", Cmd: "echo"})
 
-	command, err = getAppropriateCommand("", &commandConfigs)
+	command, err = getMatchedCommand("", &commandConfigs)
 	if command == "a.txt" || err != nil {
 		t.Fatal()
 	}
@@ -230,16 +230,16 @@ func TestGetAppropriateCommandError(t *testing.T) {
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".rb", Cmd: "ruby {{file]]"})
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".py", Cmd: "python {{file]]"})
 
-	command, err = getAppropriateCommand("a.txt", &commandConfigs)
+	command, err = getMatchedCommand("a.txt", &commandConfigs)
 	if command != "" || err != nil {
 		t.Fatal()
 	}
 
-	command, err = getAppropriateCommand("a.rb", &commandConfigs)
+	command, err = getMatchedCommand("a.rb", &commandConfigs)
 	if command != "" || err == nil {
 		t.Fatal()
 	}
-	command, err = getAppropriateCommand("a.py", &commandConfigs)
+	command, err = getMatchedCommand("a.py", &commandConfigs)
 	if command != "" || err == nil {
 		t.Fatal()
 	}

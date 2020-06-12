@@ -77,41 +77,29 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 				break
 			}
 			logger.Debug("Receive: %s", event.Name)
-			if !matchAny(g.patterns, event.Name) {
-				continue
-			}
-
 			g.counter++
-			rawCommandString, err := getAppropriateCommand(event.Name, commandConfigs)
-			if err != nil {
-				logger.NoticeObject(err)
+
+			commandStringList := g.tryToFindCommand(event.Name, commandConfigs)
+			if commandStringList == nil {
 				continue
 			}
 
-			queueManageKey := rawCommandString
-			commandStringList := splitCommand(queueManageKey)
-			if len(commandStringList) == 0 {
-				logger.Debug("Command not found: %s", event.Name)
-				continue
-			}
+			queueManageKey := strings.Join(commandStringList, "\n")
 
 			ongoingCommand := g.commands.get(queueManageKey)
-			if ongoingCommand != nil {
-				if restart {
-					kill(ongoingCommand.cmd, "Restart")
-					g.commands.update(queueManageKey, nil)
-				} else {
-					g.commands.enqueue(queueManageKey, event)
-					continue
-				}
+
+			if ongoingCommand != nil && restart {
+				kill(ongoingCommand.cmd, "Restart")
+				g.commands.update(queueManageKey, nil)
 			}
 
-			mutex, ok := g.mutexes[queueManageKey]
-			if !ok {
-				mutex = &sync.Mutex{}
-				g.mutexes[queueManageKey] = mutex
+			if ongoingCommand != nil && !restart {
+				g.commands.enqueue(queueManageKey, event)
+				continue
 			}
-			mutex.Lock()
+
+			mutex := g.lock(queueManageKey)
+
 			go func() {
 				g.invoke(commandStringList, queueManageKey, timeout)
 				mutex.Unlock()
@@ -123,6 +111,36 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 		}
 	}
 	return nil
+}
+
+func (g *Gazer) tryToFindCommand(filePath string, commandConfigs *config.Config) []string {
+	if !matchAny(g.patterns, filePath) {
+		return nil
+	}
+
+	rawCommandString, err := getMatchedCommand(filePath, commandConfigs)
+	if err != nil {
+		logger.NoticeObject(err)
+		return nil
+	}
+
+	commandStringList := splitCommand(rawCommandString)
+	if len(commandStringList) == 0 {
+		logger.Debug("Command not found: %s", filePath)
+		return nil
+	}
+
+	return commandStringList
+}
+
+func (g *Gazer) lock(queueManageKey string) *sync.Mutex {
+	mutex, ok := g.mutexes[queueManageKey]
+	if !ok {
+		mutex = &sync.Mutex{}
+		g.mutexes[queueManageKey] = mutex
+	}
+	mutex.Lock()
+	return mutex
 }
 
 func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64) {
@@ -180,7 +198,7 @@ func matchAny(watchFiles []string, s string) bool {
 	return result
 }
 
-func getAppropriateCommand(filePath string, commandConfigs *config.Config) (string, error) {
+func getMatchedCommand(filePath string, commandConfigs *config.Config) (string, error) {
 	var result string
 	var resultError error
 	for _, c := range commandConfigs.Commands {
