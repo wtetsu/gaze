@@ -190,7 +190,7 @@ exit status 1
 
 Gaze is Language-agnostic.
 
-But it has useful default configurations for several major languages (e.g. Go, Python, Ruby, JavaScript, D, Groovy, PHP, Java, Kotlin, Rust, C++, and Docker).
+But it has useful default configurations for several major languages (e.g. Go, Python, Ruby, JavaScript, D, Groovy, PHP, Java, Kotlin, Rust, C++, TypeScript, and Docker).
 
 Thanks to the default configurations, the command below is valid. You don't have to specify python command.
 
