@@ -100,16 +100,18 @@ func (n *Notify) wait() {
 	for {
 		select {
 		case event, ok := <-n.watcher.Events:
+			normalizedName := filepath.Clean(event.Name)
+
 			if !ok {
 				continue
 			}
-			if !n.shouldExecute(event.Name, event.Op) {
+			if !n.shouldExecute(normalizedName, event.Op) {
 				continue
 			}
 			now := time.Now()
-			n.times[event.Name] = now
+			n.times[normalizedName] = now
 			e := Event{
-				Name: event.Name,
+				Name: normalizedName,
 				Time: now,
 			}
 			n.Events <- e
