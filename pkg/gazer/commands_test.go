@@ -45,8 +45,8 @@ func TestCommandsBasic2(t *testing.T) {
 	if commands.dequeue(pyCommand) != nil {
 		t.Fatal()
 	}
-	commands.enqueue(rbCommand, notify.Event{rbCommand, 1})
-	commands.enqueue(pyCommand, notify.Event{pyCommand, 2})
+	commands.enqueue(rbCommand, notify.Event{Name: rbCommand, Time: 1})
+	commands.enqueue(pyCommand, notify.Event{Name: pyCommand, Time: 2})
 
 	if commands.dequeue(rbCommand) == nil {
 		t.Fatal()

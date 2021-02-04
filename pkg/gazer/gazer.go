@@ -110,7 +110,6 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 			return nil
 		}
 	}
-	return nil
 }
 
 func (g *Gazer) tryToFindCommand(filePath string, commandConfigs *config.Config) []string {
