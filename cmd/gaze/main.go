@@ -69,7 +69,7 @@ func usage1() string {
 	return `Usage: gaze [options...] file(s)
 
 Options(excerpt):
-  -c  A command string.
+  -c  Command(s).
   -r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
   -t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
   -h  Display help.
@@ -90,7 +90,7 @@ func usage2() string {
 	return `Usage: gaze [options...] file(s)
 
 Options:
-  -c  A command string.
+  -c  Command(s).
   -r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
   -t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
   -f  Specify a YAML configuration file.

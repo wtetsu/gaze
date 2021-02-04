@@ -267,7 +267,7 @@ vi ~/.gaze.yml
 Usage: gaze [options...] file(s)
 
 Options:
-  -c  A command string.
+  -c  Command(s).
   -r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
   -t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
   -f  Specify a YAML configuration file.
