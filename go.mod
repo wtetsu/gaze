@@ -1,6 +1,6 @@
 module github.com/wtetsu/gaze
 
-go 1.13
+go 1.16
 
 require (
 	github.com/bmatcuk/doublestar v1.3.4
@@ -8,5 +8,5 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/mattn/go-shellwords v1.0.11
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
