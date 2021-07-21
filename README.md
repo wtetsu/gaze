@@ -45,7 +45,7 @@ Since the result was not perfect, you edited a.py again, and run "python a.py" a
 
 Again and again...
 
-Before you realized, you've saved the same file and type the same command thousands of times.
+Then, you found yourself modifying the same file and typing the same command thousands of times.
 
 That's totally waste of time and energy!
 
