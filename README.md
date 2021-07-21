@@ -13,7 +13,7 @@ It greatly helps you focus on writing code!
 
 ---
 
-Gaze's usage is quite simple.
+The usage of Gaze is quite simple.
 
 ```
 gaze .
