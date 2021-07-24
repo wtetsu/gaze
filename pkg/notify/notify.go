@@ -73,7 +73,7 @@ func New(patterns []string) (*Notify, error) {
 		times:                   make(map[string]int64),
 		pendingPeriod:           100,
 		regardRenameAsModPeriod: 1000,
-		detectCreate:            false,
+		detectCreate:            true,
 	}
 
 	go notify.wait()
@@ -100,14 +100,17 @@ func (n *Notify) wait() {
 	for {
 		select {
 		case event, ok := <-n.watcher.Events:
+
 			normalizedName := filepath.Clean(event.Name)
 
 			if !ok {
 				continue
 			}
 			if !n.shouldExecute(normalizedName, event.Op) {
+				logger.Debug("notified: %s: %s (skipped)", event.Name, event.Op)
 				continue
 			}
+			logger.Debug("notified: %s: %s (skipped)", event.Name, event.Op)
 			now := time.Now()
 			n.times[normalizedName] = now
 			e := Event{
