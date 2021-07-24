@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        go: ["1.16"]
+        go: ["1.14", "1.15", "1.16"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install Go
@@ -17,19 +17,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Make
-        run: make build-all
+        run: make build-all-amd
       - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: darwin
-          path: dist/darwin
+          name: macos_amd
+          path: dist/macos_amd
       - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: linux
           path: dist/linux
       - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: windows
           path: dist/windows
