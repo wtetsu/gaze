@@ -9,6 +9,7 @@ package logger
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/fatih/color"
 )
@@ -30,6 +31,8 @@ var printNotice func(format string, a ...interface{})
 var printError func(format string, a ...interface{})
 
 var initialized = false
+
+var mutex = &sync.Mutex{}
 
 func initialize() {
 	if initialized {
@@ -74,8 +77,10 @@ func Error(format string, a ...interface{}) {
 	if logLevel < QUIET {
 		return
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
 	initialize()
-	space()
+	newLine()
 	printError(format, a...)
 	fmt.Println()
 	count++
@@ -105,11 +110,15 @@ func notice(enableSpace bool, format string, a ...interface{}) {
 	if logLevel < NORMAL {
 		return
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
 	initialize()
 	if enableSpace {
-		space()
+		newLine()
+		printNotice(format, a...)
+	} else {
+		printNotice(format, a...)
 	}
-	printNotice(format, a...)
 	fmt.Println()
 	count++
 }
@@ -119,6 +128,8 @@ func Info(format string, a ...interface{}) {
 	if logLevel < VERBOSE {
 		return
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
 	initialize()
 	printInfo(format, a...)
 	fmt.Println()
@@ -130,6 +141,8 @@ func Debug(format string, a ...interface{}) {
 	if logLevel < DEBUG {
 		return
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
 	initialize()
 	fmt.Printf(format, a...)
 	fmt.Println()
@@ -141,7 +154,7 @@ func DebugObject(a ...interface{}) {
 	Debug("%v", a...)
 }
 
-func space() {
+func newLine() {
 	count++
 	if count <= 1 {
 		return
