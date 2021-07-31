@@ -187,14 +187,12 @@ func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, ti
 }
 
 func matchAny(watchFiles []string, s string) bool {
-	result := false
 	for _, f := range watchFiles {
 		if fs.GlobMatch(f, s) {
-			result = true
-			break
+			return true
 		}
 	}
-	return result
+	return false
 }
 
 func getMatchedCommand(filePath string, commandConfigs *config.Config) (string, error) {
