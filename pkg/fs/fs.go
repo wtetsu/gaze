@@ -15,7 +15,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
-// Find returns
+// Find returns a list of files and directories that match the pattern.
 func Find(pattern string) ([]string, []string) {
 	foundFiles, err := doublestar.Glob(pattern)
 	if err != nil {

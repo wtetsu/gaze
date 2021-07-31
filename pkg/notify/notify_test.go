@@ -12,11 +12,72 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
 )
+
+func TestUtilFunctions(t *testing.T) {
+	logger.Level(logger.VERBOSE)
+
+	tmpDir := createTempDir()
+
+	if tmpDir == "" {
+		t.Fatal("Temp files error")
+	}
+
+	os.MkdirAll(tmpDir+"/dir0", os.ModePerm)
+	os.MkdirAll(tmpDir+"/dir1/dir2a/dir3a", os.ModePerm)
+	os.MkdirAll(tmpDir+"/dir1/dir2a/dir3b", os.ModePerm)
+	os.MkdirAll(tmpDir+"/dir1/dir2a/dir3c", os.ModePerm)
+	os.MkdirAll(tmpDir+"/dir1/dir2b/dir3a", os.ModePerm)
+	os.MkdirAll(tmpDir+"/dir1/dir2b/dir3b", os.ModePerm)
+	os.MkdirAll(tmpDir+"/dir1/dir2b/dir3c", os.ModePerm)
+
+	createTempFileWithDir(tmpDir+"/dir1/dir2b/dir3b", "*.tmp", `puts "Hello from Ruby`)
+
+	actual1 := findDirs([]string{tmpDir + "/*"})
+	sort.Strings(actual1)
+
+	expected1 := []string{
+		tmpDir,
+		tmpDir + "/dir0",
+		tmpDir + "/dir1",
+	}
+
+	for i := 0; i < len(expected1); i++ {
+
+		if filepath.Clean(actual1[i]) != filepath.Clean(expected1[i]) {
+			t.Fatalf("%s != %s", actual1[i], expected1[i])
+		}
+	}
+
+	actual2 := findDirs([]string{tmpDir + "/**"})
+	sort.Strings(actual2)
+
+	expected2 := []string{
+		tmpDir,
+		tmpDir + "/dir0",
+		tmpDir + "/dir1",
+		tmpDir + "/dir1/dir2a",
+		tmpDir + "/dir1/dir2a/dir3a",
+		tmpDir + "/dir1/dir2a/dir3b",
+		tmpDir + "/dir1/dir2a/dir3c",
+		tmpDir + "/dir1/dir2b",
+		tmpDir + "/dir1/dir2b/dir3a",
+		tmpDir + "/dir1/dir2b/dir3b",
+		tmpDir + "/dir1/dir2b/dir3c",
+	}
+
+	for i := 0; i < len(expected2); i++ {
+
+		if filepath.Clean(actual2[i]) != filepath.Clean(expected2[i]) {
+			t.Fatalf("%s != %s", actual2[i], expected2[i])
+		}
+	}
+}
 
 func TestUpdate(t *testing.T) {
 	logger.Level(logger.VERBOSE)

@@ -85,11 +85,18 @@ func findDirs(patterns []string) []string {
 	targets := uniq.New()
 	for _, pattern := range patterns {
 		patternDir := filepath.Dir(pattern)
+
 		if fs.IsDir(patternDir) {
 			targets.Add(patternDir)
 		}
-		_, dirs := fs.Find(pattern)
-		for _, d := range dirs {
+
+		_, dirs1 := fs.Find(pattern)
+		for _, d := range dirs1 {
+			targets.Add(d)
+		}
+
+		_, dirs2 := fs.Find(patternDir)
+		for _, d := range dirs2 {
 			targets.Add(d)
 		}
 	}
