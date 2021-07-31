@@ -110,7 +110,7 @@ func (n *Notify) wait() {
 				logger.Debug("notified: %s: %s (skipped)", event.Name, event.Op)
 				continue
 			}
-			logger.Debug("notified: %s: %s (skipped)", event.Name, event.Op)
+			logger.Debug("notified: %s: %s", event.Name, event.Op)
 			now := time.Now()
 			n.times[normalizedName] = now
 			e := Event{
