@@ -17,3 +17,6 @@
 test/**/*.log
 coverage.txt
 /work/
+
+?.py
+?.rb
