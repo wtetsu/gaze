@@ -86,8 +86,9 @@ func findDirs(patterns []string) []string {
 	for _, pattern := range patterns {
 		patternDir := filepath.Dir(pattern)
 
-		if fs.IsDir(patternDir) {
-			targets.Add(patternDir)
+		realDir := findRealDirectory(patternDir)
+		if len(realDir) > 0 {
+			targets.Add(realDir)
 		}
 
 		_, dirs1 := fs.Find(pattern)
@@ -103,12 +104,32 @@ func findDirs(patterns []string) []string {
 	return targets.List()
 }
 
+func findRealDirectory(path string) string {
+	searchingDir := path
+	for i := 0; i < 5; i++ {
+		if fs.IsDir(searchingDir) {
+			return searchingDir
+		}
+		next := filepath.Dir(searchingDir)
+		if next == searchingDir {
+			return ""
+		}
+		searchingDir = next
+	}
+	return ""
+}
+
 func (n *Notify) wait() {
 	for {
 		select {
 		case event, ok := <-n.watcher.Events:
 
 			normalizedName := filepath.Clean(event.Name)
+
+			if event.Op == fsnotify.Create && fs.IsDir(normalizedName) {
+				logger.Info("gazing at: %s", normalizedName)
+				n.watcher.Add(normalizedName)
+			}
 
 			if !ok {
 				continue
