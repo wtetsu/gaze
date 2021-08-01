@@ -28,6 +28,7 @@ var count = 0
 
 var printInfo func(format string, a ...interface{})
 var printNotice func(format string, a ...interface{})
+var printDebug func(format string, a ...interface{})
 var printError func(format string, a ...interface{})
 
 var initialized = false
@@ -50,6 +51,7 @@ func Level(newLogLevel int) {
 func Colorful() {
 	printInfo = color.New(color.FgHiCyan).PrintfFunc()
 	printNotice = color.New(color.FgCyan).PrintfFunc()
+	printDebug = color.New(color.FgHiMagenta).PrintfFunc()
 
 	f := color.New(color.FgRed).FprintfFunc()
 	printError = func(format string, a ...interface{}) {
@@ -64,6 +66,9 @@ func Plain() {
 		fmt.Printf(format, a...)
 	}
 	printNotice = func(format string, a ...interface{}) {
+		fmt.Printf(format, a...)
+	}
+	printDebug = func(format string, a ...interface{}) {
 		fmt.Printf(format, a...)
 	}
 	printError = func(format string, a ...interface{}) {
@@ -144,7 +149,7 @@ func Debug(format string, a ...interface{}) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	initialize()
-	fmt.Printf(format, a...)
+	printDebug(format, a...)
 	fmt.Println()
 	count++
 }
