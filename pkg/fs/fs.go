@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
+	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
@@ -62,6 +63,7 @@ func GlobMatch(rawPattern string, rawFilePath string) bool {
 
 	ok, _ := doublestar.Match(pattern, filePath)
 	if ok {
+		logger.Debug("rawPattern:%s, rawFilePath:%s, true(file)", rawPattern, rawFilePath)
 		return true
 	}
 
@@ -69,8 +71,11 @@ func GlobMatch(rawPattern string, rawFilePath string) bool {
 
 	ok, _ = doublestar.Match(dirPath, pattern)
 	if ok {
+		logger.Debug("rawPattern:%s, rawFilePath:%s, true(dir)", rawPattern, rawFilePath)
 		return true
 	}
+
+	logger.Debug("rawPattern:%s, rawFilePath:%s, false", rawPattern, rawFilePath)
 	return false
 }
 

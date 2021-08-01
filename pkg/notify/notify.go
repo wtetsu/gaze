@@ -114,10 +114,9 @@ func (n *Notify) wait() {
 				continue
 			}
 			if !n.shouldExecute(normalizedName, event.Op) {
-				logger.Debug("notified: %s: %s (skipped)", event.Name, event.Op)
 				continue
 			}
-			logger.Debug("notified: %s: %s", event.Name, event.Op)
+			logger.Debug("notified: %s: %s", normalizedName, event.Op)
 			now := time.Now()
 			n.times[normalizedName] = now
 			e := Event{
@@ -140,23 +139,27 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 	const C = fsnotify.Create
 
 	if op != W && op != R && !(n.detectCreate && op == C) {
+		logger.Debug("skipped: %s: %s (Op is not applicable)", filePath, op)
 		return false
 	}
 
 	lastExecutionTime := n.times[filePath]
 
 	if !fs.IsFile(filePath) {
+		logger.Debug("skipped: %s: %s (not a file)", filePath, op)
 		return false
 	}
 
 	modifiedTime := time.GetFileModifiedTime(filePath)
 	if op == W {
 		if (modifiedTime - lastExecutionTime) < n.pendingPeriod*1000000 {
+			logger.Debug("skipped: %s: %s (too frequent)", filePath, op)
 			return false
 		}
 	}
 	if op == R {
 		if (time.Now() - modifiedTime) > n.regardRenameAsModPeriod*1000000 {
+			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, op)
 			return false
 		}
 	}
