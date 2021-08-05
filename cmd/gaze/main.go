@@ -22,6 +22,16 @@ func main() {
 		fmt.Println(usage2())
 	})
 
+	if !args.Debug() {
+		// panic handler
+		defer func() {
+			if err := recover(); err != nil {
+				logger.ErrorObject(err)
+				os.Exit(1)
+			}
+		}()
+	}
+
 	if args.Help() {
 		fmt.Println(usage2())
 		return
