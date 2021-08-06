@@ -26,7 +26,7 @@ func TestBasic(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	gazer := New([]string{py1, rb1})
+	gazer, _ := New([]string{py1, rb1})
 	if gazer == nil {
 		t.Fatal()
 	}
@@ -69,7 +69,7 @@ print("end")
 		t.Fatal("Temp files error")
 	}
 
-	gazer := New([]string{py1})
+	gazer, _ := New([]string{py1})
 	if gazer == nil {
 		t.Fatal()
 	}
@@ -111,7 +111,7 @@ func TestKill(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	gazer := New([]string{py1, rb1})
+	gazer, _ := New([]string{py1, rb1})
 	if gazer == nil {
 		t.Fatal()
 	}
@@ -169,7 +169,7 @@ func TestInvalidCommand(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	gazer := New([]string{py1, rb1})
+	gazer, _ := New([]string{py1, rb1})
 	if gazer == nil {
 		t.Fatal()
 	}
