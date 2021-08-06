@@ -79,6 +79,58 @@ func TestUtilFunctions(t *testing.T) {
 	}
 }
 
+func TestFindRealDirectory(t *testing.T) {
+	tmpDir := createTempDir()
+
+	if tmpDir == "" {
+		t.Fatal("Temp files error")
+	}
+
+	os.MkdirAll(tmpDir+"/dir0/dir1/dir2/dir3", os.ModePerm)
+
+	var r string
+
+	r = findRealDirectory(tmpDir + "/dir0/dir1/dir2/dir3")
+	if r != filepath.Clean(tmpDir+"/dir0/dir1/dir2/dir3") {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory(tmpDir + "/dir0/dir1/dir2/**")
+	if r != filepath.Clean(tmpDir+"/dir0/dir1/dir2") {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory(tmpDir + "/dir0/dir1/")
+	if r != filepath.Clean(tmpDir+"/dir0/dir1") {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory(tmpDir + "/dir0/dir1/**/dir3")
+	if r != filepath.Clean(tmpDir+"/dir0/dir1") {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory(tmpDir + "/?ir?/dir1/dir2/dir3")
+	if r != filepath.Clean(tmpDir) {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory(tmpDir + "/dir0/dir1/\\*\\?\\[\\]/dir3")
+	if r != filepath.Clean(tmpDir+"/dir0/dir1") {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory("/")
+	if r != "" {
+		t.Fatal("Unexpected result:" + r)
+	}
+
+	r = findRealDirectory("invalid/path/")
+	if r != "" {
+		t.Fatal("Unexpected result:" + r)
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	logger.Level(logger.VERBOSE)
 

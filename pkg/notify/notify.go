@@ -124,18 +124,26 @@ func findDirs(patterns []string) []string {
 }
 
 func findRealDirectory(path string) string {
-	searchingDir := path
-	for i := 0; i < 5; i++ {
-		if fs.IsDir(searchingDir) {
-			return searchingDir
+	entries := strings.Split(filepath.ToSlash(filepath.Clean(path)), "/")
+
+	currentPath := ""
+	for i := 0; i < len(entries); i++ {
+		globIndex := strings.IndexAny(entries[i], "*?[{\\")
+		if globIndex != -1 {
+			break
 		}
-		next := filepath.Dir(searchingDir)
-		if next == searchingDir {
-			return ""
+
+		if len(currentPath) >= 1 {
+			currentPath += string(filepath.Separator)
 		}
-		searchingDir = next
+		currentPath += entries[i]
 	}
-	return ""
+
+	if fs.IsDir(currentPath) {
+		return currentPath
+	} else {
+		return ""
+	}
 }
 
 func (n *Notify) wait() {
