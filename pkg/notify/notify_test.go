@@ -126,6 +126,35 @@ func TestFindRealDirectory(t *testing.T) {
 	}
 }
 
+func TestTooManyDirectories(t *testing.T) {
+	tmpDir := createTempDir()
+
+	if tmpDir == "" {
+		t.Fatal("Temp files error")
+	}
+
+	for i := 0; i < 9; i++ {
+		for j := 0; j < 10; j++ {
+			path := fmt.Sprintf("%s/%d/%d", tmpDir, i, j)
+			os.MkdirAll(path, os.ModePerm)
+		}
+	}
+
+	_, err := New([]string{tmpDir + "/**"})
+	if err != nil {
+		t.Fatal("Temp files error")
+	}
+
+	// Exceeds 100 directories
+	path := fmt.Sprintf("%s/%d/%d/%d", tmpDir, 99, 99, 99)
+	os.MkdirAll(path, os.ModePerm)
+
+	_, err = New([]string{tmpDir + "/**"})
+	if err == nil {
+		t.Fatal("Temp files error")
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	logger.Level(logger.VERBOSE)
 
