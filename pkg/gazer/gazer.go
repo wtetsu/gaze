@@ -31,13 +31,16 @@ type Gazer struct {
 }
 
 // New returns a new Gazer.
-func New(patterns []string) *Gazer {
+func New(patterns []string) (*Gazer, error) {
 	cleanPatterns := make([]string, len(patterns))
 	for i, p := range patterns {
 		cleanPatterns[i] = filepath.Clean(p)
 	}
 
-	notify, _ := notify.New(cleanPatterns)
+	notify, err := notify.New(cleanPatterns)
+	if err != nil {
+		return nil, err
+	}
 	return &Gazer{
 		patterns: cleanPatterns,
 		notify:   notify,
@@ -45,7 +48,7 @@ func New(patterns []string) *Gazer {
 		counter:  0,
 		commands: newCommands(),
 		mutexes:  make(map[string]*sync.Mutex),
-	}
+	}, nil
 }
 
 // Close disposes internal resources.

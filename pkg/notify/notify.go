@@ -7,6 +7,7 @@
 package notify
 
 import (
+	"errors"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
@@ -47,15 +48,25 @@ func (n *Notify) Close() {
 	n.isClosed = true
 }
 
+const MAX_WATCH_DIRS = 100
+
 // New creates a Notify
 func New(patterns []string) (*Notify, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logger.ErrorObject(err)
 		return nil, err
+
 	}
 
 	watchDirs := findDirs(patterns)
+
+	if len(watchDirs) > MAX_WATCH_DIRS {
+		for _, wd := range watchDirs {
+			logger.Error(wd)
+		}
+		return nil, errors.New("too many watchDirs")
+	}
 
 	for _, t := range watchDirs {
 		err = watcher.Add(t)
