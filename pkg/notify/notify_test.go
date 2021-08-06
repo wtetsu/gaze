@@ -120,11 +120,6 @@ func TestFindRealDirectory(t *testing.T) {
 		t.Fatal("Unexpected result:" + r)
 	}
 
-	r = findRealDirectory("/")
-	if r != "" {
-		t.Fatal("Unexpected result:" + r)
-	}
-
 	r = findRealDirectory("invalid/path/")
 	if r != "" {
 		t.Fatal("Unexpected result:" + r)
