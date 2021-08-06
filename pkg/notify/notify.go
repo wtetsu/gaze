@@ -9,6 +9,7 @@ package notify
 import (
 	"errors"
 	"path/filepath"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/fs"
@@ -62,9 +63,7 @@ func New(patterns []string) (*Notify, error) {
 	watchDirs := findDirs(patterns)
 
 	if len(watchDirs) > MAX_WATCH_DIRS {
-		for _, wd := range watchDirs {
-			logger.Error(wd)
-		}
+		logger.Error(strings.Join(watchDirs[:MAX_WATCH_DIRS], "\n") + "\n...")
 		return nil, errors.New("too many watchDirs")
 	}
 
@@ -94,6 +93,7 @@ func New(patterns []string) (*Notify, error) {
 
 func findDirs(patterns []string) []string {
 	targets := uniq.New()
+
 	for _, pattern := range patterns {
 		patternDir := filepath.Dir(pattern)
 
@@ -101,15 +101,24 @@ func findDirs(patterns []string) []string {
 		if len(realDir) > 0 {
 			targets.Add(realDir)
 		}
+		if targets.Len() > MAX_WATCH_DIRS {
+			return targets.List()
+		}
 
 		_, dirs1 := fs.Find(pattern)
 		for _, d := range dirs1 {
 			targets.Add(d)
 		}
+		if targets.Len() > MAX_WATCH_DIRS {
+			return targets.List()
+		}
 
 		_, dirs2 := fs.Find(patternDir)
 		for _, d := range dirs2 {
 			targets.Add(d)
+		}
+		if targets.Len() > MAX_WATCH_DIRS {
+			return targets.List()
 		}
 	}
 	return targets.List()
