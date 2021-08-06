@@ -57,7 +57,6 @@ func New(patterns []string) (*Notify, error) {
 	if err != nil {
 		logger.ErrorObject(err)
 		return nil, err
-
 	}
 
 	watchDirs := findDirs(patterns)
