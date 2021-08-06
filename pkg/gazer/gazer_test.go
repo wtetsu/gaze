@@ -245,6 +245,22 @@ func TestGetAppropriateCommandError(t *testing.T) {
 	}
 }
 
+func TestInvalidTimeout(t *testing.T) {
+	gazer, _ := New([]string{})
+
+	var err error
+
+	err = gazer.Run(nil, 0, false)
+	if err == nil {
+		t.Fatal()
+	}
+
+	err = gazer.Run(nil, -1, false)
+	if err == nil {
+		t.Fatal()
+	}
+}
+
 func createTempFile(pattern string, content string) string {
 	dirpath, err := ioutil.TempDir("", "_gaze")
 
