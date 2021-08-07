@@ -8,6 +8,7 @@ package gazer
 
 import (
 	"math"
+	"os/exec"
 	"testing"
 
 	"github.com/wtetsu/gaze/pkg/time"
@@ -61,6 +62,14 @@ func TestProc4(t *testing.T) {
 		t.Fatal()
 	}
 	if kill(cmd3, "test") {
+		t.Fatal()
+	}
+}
+
+func TestProc5(t *testing.T) {
+	var cmd *exec.Cmd = nil
+	err := executeCommandOrTimeout(cmd, time.After(100))
+	if err == nil {
 		t.Fatal()
 	}
 }
