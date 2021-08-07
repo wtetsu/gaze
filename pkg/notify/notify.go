@@ -8,7 +8,6 @@ package notify
 
 import (
 	"errors"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -61,9 +60,6 @@ func New(patterns []string) (*Notify, error) {
 	}
 
 	watchDirs := findDirs(patterns)
-
-	l := len(watchDirs)
-	fmt.Println(l)
 
 	if len(watchDirs) > MAX_WATCH_DIRS {
 		logger.Error(strings.Join(watchDirs[:MAX_WATCH_DIRS], "\n") + "\n...")
