@@ -7,8 +7,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/wtetsu/gaze/pkg/app"
 	"github.com/wtetsu/gaze/pkg/config"
@@ -67,14 +69,36 @@ func main() {
 		logger.Level(logger.DEBUG)
 	}
 
-	appOptions := app.NewAppOptions(args.Timeout(), args.Restart(), 100)
+	err := validate(args)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
-	err := app.Start(args.Targets(), args.UserCommand(), args.File(), appOptions)
+	appOptions := app.NewAppOptions(args.Timeout(), args.Restart(), args.MaxWatchDirs())
+
+	err = app.Start(args.Targets(), args.UserCommand(), args.File(), appOptions)
 	if err != nil {
 		logger.ErrorObject(err)
 		os.Exit(1)
 	}
+}
 
+func validate(args *app.Args) error {
+	var errorList []string
+	if args.Timeout() <= 0 {
+		errorList = append(errorList, "timeout must be more than 0")
+	}
+	if args.Color() != 0 && args.Color() != 1 {
+		errorList = append(errorList, "color must be 0 or 1")
+	}
+	if args.MaxWatchDirs() <= 0 {
+		errorList = append(errorList, "maxWatchDirs must be more than 0")
+	}
+	if len(errorList) >= 1 {
+		return errors.New(strings.Join(errorList, "\n"))
+	}
+	return nil
 }
 
 func usage1() string {

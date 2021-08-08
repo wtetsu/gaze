@@ -67,6 +67,7 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 	color := flagSet.Int("color", 1, "")
 	debug := flagSet.Bool("debug", false, "")
 	version := flagSet.Bool("version", false, "")
+	maxWatchDirs := flagSet.Int("w", 100, "")
 
 	files := []string{}
 	optionStartIndex := len(osArgs)
@@ -87,18 +88,19 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 	u.AddAll(flagSet.Args())
 
 	args := Args{
-		help:        *help,
-		restart:     *restart,
-		userCommand: *userCommand,
-		timeout:     *timeout,
-		yaml:        *yaml,
-		quiet:       *quiet,
-		verbose:     *verbose,
-		debug:       *debug,
-		file:        *file,
-		color:       *color,
-		version:     *version,
-		targets:     u.List(),
+		help:         *help,
+		restart:      *restart,
+		userCommand:  *userCommand,
+		timeout:      *timeout,
+		yaml:         *yaml,
+		quiet:        *quiet,
+		verbose:      *verbose,
+		debug:        *debug,
+		file:         *file,
+		color:        *color,
+		version:      *version,
+		targets:      u.List(),
+		maxWatchDirs: *maxWatchDirs,
 	}
 
 	return &args

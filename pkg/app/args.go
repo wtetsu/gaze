@@ -8,18 +8,19 @@ package app
 
 // Args has application arguments
 type Args struct {
-	help        bool
-	restart     bool
-	userCommand string
-	timeout     int64
-	yaml        bool
-	quiet       bool
-	verbose     bool
-	file        string
-	color       int
-	debug       bool
-	version     bool
-	targets     []string
+	help         bool
+	restart      bool
+	userCommand  string
+	timeout      int64
+	yaml         bool
+	quiet        bool
+	verbose      bool
+	file         string
+	color        int
+	debug        bool
+	version      bool
+	targets      []string
+	maxWatchDirs int
 }
 
 // Help returns a.help
@@ -80,4 +81,9 @@ func (a *Args) Version() bool {
 // Targets returns a.targets
 func (a *Args) Targets() []string {
 	return a.targets
+}
+
+// MaxWatchDirs returns a.maxWatchDirs
+func (a *Args) MaxWatchDirs() int {
+	return a.maxWatchDirs
 }
