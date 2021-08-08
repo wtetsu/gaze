@@ -61,7 +61,7 @@ func executeCommandAsync(cmd *exec.Cmd) <-chan error {
 
 	go func() {
 		if cmd == nil {
-			ch <- errors.New("Failed: cmd is nil")
+			ch <- errors.New("failed: cmd is nil")
 			return
 		}
 		err := executeCommand(cmd)

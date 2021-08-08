@@ -209,7 +209,7 @@ func TestGetAppropriateCommandOk(t *testing.T) {
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".txt", Cmd: ""})
 
 	command, err = getMatchedCommand("a.txt", &commandConfigs)
-	if command != "" {
+	if command != "" || err != nil {
 		t.Fatal()
 	}
 
