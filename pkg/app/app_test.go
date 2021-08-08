@@ -65,10 +65,9 @@ func TestEndTopEnd(t *testing.T) {
 	watchFiles := []string{rb, py}
 	userCommand := ""
 	file := ""
-	timeout := int64(0)
-	restart := false
+	appOptions := NewAppOptions(0, false, 100)
 
-	go Start(watchFiles, userCommand, file, timeout, restart)
+	go Start(watchFiles, userCommand, file, appOptions)
 
 	time.Sleep(100)
 	touch(rb)
@@ -84,10 +83,9 @@ func TestEndTopEndError(t *testing.T) {
 	watchFiles := []string{rb, py}
 	userCommand := ""
 	file := "--invalid--"
-	timeout := int64(0)
-	restart := false
+	appOptions := NewAppOptions(0, false, 100)
 
-	err := Start(watchFiles, userCommand, file, timeout, restart)
+	err := Start(watchFiles, userCommand, file, appOptions)
 	if err == nil {
 		t.Fatal()
 	}

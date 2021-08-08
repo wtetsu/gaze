@@ -38,7 +38,7 @@ func TestUtilFunctions(t *testing.T) {
 
 	createTempFileWithDir(tmpDir+"/dir1/dir2b/dir3b", "*.tmp", `puts "Hello from Ruby`)
 
-	actual1 := findDirs([]string{tmpDir + "/*"})
+	actual1 := findDirs([]string{tmpDir + "/*"}, 100)
 	sort.Strings(actual1)
 
 	expected1 := []string{
@@ -54,7 +54,7 @@ func TestUtilFunctions(t *testing.T) {
 		}
 	}
 
-	actual2 := findDirs([]string{tmpDir + "/**"})
+	actual2 := findDirs([]string{tmpDir + "/**"}, 100)
 	sort.Strings(actual2)
 
 	expected2 := []string{
@@ -133,6 +133,7 @@ func TestTooManyDirectories(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
+	// 100 directories
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 10; j++ {
 			path := fmt.Sprintf("%s/%d/%d", tmpDir, i, j)
@@ -140,8 +141,15 @@ func TestTooManyDirectories(t *testing.T) {
 		}
 	}
 
-	_, err := New([]string{tmpDir + "/**"})
+	// Safe
+	_, err := New([]string{tmpDir + "/**"}, 100)
 	if err != nil {
+		t.Fatal("Temp files error")
+	}
+
+	// Out
+	_, err = New([]string{tmpDir + "/**"}, 99)
+	if err == nil {
 		t.Fatal("Temp files error")
 	}
 
@@ -149,8 +157,15 @@ func TestTooManyDirectories(t *testing.T) {
 	path := fmt.Sprintf("%s/%d/%d/%d", tmpDir, 99, 99, 99)
 	os.MkdirAll(path, os.ModePerm)
 
-	_, err = New([]string{tmpDir + "/**"})
+	// Out
+	_, err = New([]string{tmpDir + "/**"}, 100)
 	if err == nil {
+		t.Fatal("Temp files error")
+	}
+
+	// Safe
+	_, err = New([]string{tmpDir + "/**"}, 103)
+	if err != nil {
 		t.Fatal("Temp files error")
 	}
 }
@@ -167,7 +182,7 @@ func TestUpdate(t *testing.T) {
 
 	pattens := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
 
-	notify, err := New(pattens)
+	notify, err := New(pattens, 100)
 	if err != nil {
 		t.Fatal()
 	}
@@ -219,7 +234,7 @@ func TestCreateAndMove(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	notify, err := New([]string{tmpDir})
+	notify, err := New([]string{tmpDir}, 100)
 	notify.regardRenameAsModPeriod = 10000
 	notify.detectCreate = true
 	if err != nil {
@@ -287,7 +302,7 @@ func TestDelete(t *testing.T) {
 		filepath.Dir(py2) + "/*.py",
 	}
 
-	notify, err := New(pattens)
+	notify, err := New(pattens, 100)
 	if err != nil {
 		t.Fatal()
 	}
@@ -344,7 +359,7 @@ func TestQueue(t *testing.T) {
 
 	pattens := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
 
-	notify, err := New(pattens)
+	notify, err := New(pattens, 100)
 	if err != nil {
 		t.Fatal()
 	}

@@ -49,20 +49,18 @@ func (n *Notify) Close() {
 	n.isClosed = true
 }
 
-const MAX_WATCH_DIRS = 100
-
 // New creates a Notify
-func New(patterns []string) (*Notify, error) {
+func New(patterns []string, maxWatchDirs int) (*Notify, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		logger.ErrorObject(err)
 		return nil, err
 	}
 
-	watchDirs := findDirs(patterns)
+	watchDirs := findDirs(patterns, maxWatchDirs)
 
-	if len(watchDirs) > MAX_WATCH_DIRS {
-		logger.Error(strings.Join(watchDirs[:MAX_WATCH_DIRS], "\n") + "\n...")
+	if len(watchDirs) > maxWatchDirs {
+		logger.Error(strings.Join(watchDirs[:maxWatchDirs], "\n") + "\n...")
 		return nil, errors.New("too many watchDirs")
 	}
 
@@ -90,7 +88,7 @@ func New(patterns []string) (*Notify, error) {
 	return notify, nil
 }
 
-func findDirs(patterns []string) []string {
+func findDirs(patterns []string, maxWatchDirs int) []string {
 	targets := uniq.New()
 
 	for _, pattern := range patterns {
@@ -100,7 +98,7 @@ func findDirs(patterns []string) []string {
 		if len(realDir) > 0 {
 			targets.Add(realDir)
 		}
-		if targets.Len() > MAX_WATCH_DIRS {
+		if targets.Len() > maxWatchDirs {
 			return targets.List()
 		}
 
@@ -108,7 +106,7 @@ func findDirs(patterns []string) []string {
 		for _, d := range dirs1 {
 			targets.Add(d)
 		}
-		if targets.Len() > MAX_WATCH_DIRS {
+		if targets.Len() > maxWatchDirs {
 			return targets.List()
 		}
 
@@ -116,7 +114,7 @@ func findDirs(patterns []string) []string {
 		for _, d := range dirs2 {
 			targets.Add(d)
 		}
-		if targets.Len() > MAX_WATCH_DIRS {
+		if targets.Len() > maxWatchDirs {
 			return targets.List()
 		}
 	}

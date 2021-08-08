@@ -31,13 +31,13 @@ type Gazer struct {
 }
 
 // New returns a new Gazer.
-func New(patterns []string) (*Gazer, error) {
+func New(patterns []string, maxWatchDirs int) (*Gazer, error) {
 	cleanPatterns := make([]string, len(patterns))
 	for i, p := range patterns {
 		cleanPatterns[i] = filepath.Clean(p)
 	}
 
-	notify, err := notify.New(cleanPatterns)
+	notify, err := notify.New(cleanPatterns, maxWatchDirs)
 	if err != nil {
 		return nil, err
 	}

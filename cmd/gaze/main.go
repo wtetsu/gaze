@@ -67,7 +67,9 @@ func main() {
 		logger.Level(logger.DEBUG)
 	}
 
-	err := app.Start(args.Targets(), args.UserCommand(), args.File(), args.Timeout(), args.Restart())
+	appOptions := app.NewAppOptions(args.Timeout(), args.Restart(), 100)
+
+	err := app.Start(args.Targets(), args.UserCommand(), args.File(), appOptions)
 	if err != nil {
 		logger.ErrorObject(err)
 		os.Exit(1)
