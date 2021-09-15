@@ -31,7 +31,7 @@ type Command struct {
 	re  *regexp.Regexp
 }
 
-// New returns
+// New returns a new Config.
 func New(command string) *Config {
 	fixedCommand := Command{Re: ".", Cmd: command}
 	config := Config{Commands: []Command{fixedCommand}}
