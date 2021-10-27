@@ -314,4 +314,4 @@ gaze -c "echo {{file}} {{ext}} {{abs}}" .
   - Creative Commons (Attribution-Noncommercial 3.0 Unported)
 
 - Great Go libraries
-  - See [go.mod](https://github.com/wtetsu/gaze/blob/master/go.mod)
+  - See [go.mod](https://github.com/wtetsu/gaze/blob/master/go.mod) and [license.json](https://github.com/wtetsu/gaze/actions/workflows/license.yml)

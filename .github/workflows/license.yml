@@ -1,0 +1,29 @@
+name: License
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        go-version: ["1.17"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Licenses tool
+        run: go get github.com/google/go-licenses
+      - name: License
+        run: go-licenses save ./... --save_path=license
+      - name: License Summary
+        run: go-licenses csv ./... | tee license/license.csv
+      - name: Upload Build as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: license
+          path: license
