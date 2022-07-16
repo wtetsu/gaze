@@ -32,7 +32,7 @@ func TestBasic(t *testing.T) {
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig([]string{".gaze.yml", ".gaze.yaml"})
+	c, err := config.InitConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -75,7 +75,7 @@ print("end")
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig([]string{".gaze.yml", ".gaze.yaml"})
+	c, err := config.InitConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -117,7 +117,7 @@ func TestKill(t *testing.T) {
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig([]string{".gaze.yml", ".gaze.yaml"})
+	c, err := config.InitConfig()
 	if err != nil {
 		t.Fatal()
 	}

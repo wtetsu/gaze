@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	InitConfig([]string{".gaze.yml", ".gaze.yaml"})
+	InitConfig()
 }
 
 func TestMatch(t *testing.T) {
