@@ -207,7 +207,7 @@ gaze a.py -c 'python "{{file}}"'
 Gaze searches a configuration file according to it's priority rule.
 
 1. A file specified by -f option
-1. ./.gaze.yml
+1. ~/.config/gaze/gaze.yml
 1. ~/.gaze.yml
 1. (Default)
 

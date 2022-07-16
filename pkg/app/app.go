@@ -43,7 +43,7 @@ func createCommandConfig(userCommand string, file string) (*config.Config, error
 		return config.LoadConfig(file)
 	}
 
-	return config.InitConfig([]string{".gaze.yml", ".gaze.yaml"})
+	return config.InitConfig()
 }
 
 // ParseArgs parses command arguments.

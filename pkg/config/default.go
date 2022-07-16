@@ -8,7 +8,7 @@ package config
 
 // Default returns the default configuration
 func Default() string {
-	return `# Gaze configuration(priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
+	return `# Gaze configuration(priority: default < ~/.gaze.yml < ~/.config/gaze/gaze.yml < -f option)
 commands:
 - ext: .go
   cmd: go run "{{file}}"

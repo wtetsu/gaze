@@ -39,9 +39,9 @@ func New(command string) *Config {
 }
 
 // InitConfig loads a configuration file.
-// Priority: default < ~/.gaze.yml < ./.gaze.yaml < -f option)
-func InitConfig(fileNameList []string) (*Config, error) {
-	configPath := searchConfigPath(fileNameList)
+// Priority: default < ~/.gaze.yml < ~/.config/gaze.yaml < -f option)
+func InitConfig() (*Config, error) {
+	configPath := searchConfigPath()
 	return makeConfigFromFile(configPath)
 }
 
@@ -68,7 +68,6 @@ func defaultConfig() (*Config, error) {
 
 // LoadConfig loads a configuration file.
 func LoadConfig(configPath string) (*Config, error) {
-	logger.Info("config: " + configPath)
 	bytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		return nil, err
@@ -100,22 +99,24 @@ func prepare(configs *Config) *Config {
 	return configs
 }
 
-func searchConfigPath(fileNameList []string) string {
-	candidates := []string{}
-	for _, n := range fileNameList {
-		candidates = append(candidates, "./"+n)
-	}
-
+func searchConfigPath() string {
 	home := homeDirPath()
 	if home != "" {
-		for _, n := range fileNameList {
-			candidates = append(candidates, path.Join(home, n))
+		configDir := path.Join(home, ".config", "gaze")
+		for _, n := range []string{"gaze.yml", "gaze.yaml"} {
+			candidate := path.Join(configDir, n)
+			if fs.IsFile(candidate) {
+				return candidate
+			}
 		}
-	}
-	for _, c := range candidates {
-		if fs.IsFile(c) {
-			return c
+
+		for _, n := range []string{".gaze.yml", ".gaze.yaml"} {
+			candidate := path.Join(home, n)
+			if fs.IsFile(candidate) {
+				return candidate
+			}
 		}
+
 	}
 	return ""
 }
