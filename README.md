@@ -1,6 +1,6 @@
-# Gaze is gazing at you
+<img src="https://user-images.githubusercontent.com/515948/179385932-48ea38a3-3bbb-4f45-8d68-63dc076e757d.png" width="500" />
 
-![GAZE](https://user-images.githubusercontent.com/515948/71816598-828a9700-30c6-11ea-92c8-ca0154e98794.png)
+Gaze is gazing at you
 
 [![Test](https://github.com/wtetsu/gaze/workflows/Test/badge.svg)](https://github.com/wtetsu/gaze/actions?query=workflow%3ATest) [![Go Report Card](https://goreportcard.com/badge/github.com/wtetsu/gaze)](https://goreportcard.com/report/github.com/wtetsu/gaze) [![Maintainability](https://api.codeclimate.com/v1/badges/bd322b9104f5fcd3e37e/maintainability)](https://codeclimate.com/github/wtetsu/gaze/maintainability) [![codecov](https://codecov.io/gh/wtetsu/gaze/branch/master/graph/badge.svg)](https://codecov.io/gh/wtetsu/gaze)
 
@@ -307,11 +307,6 @@ gaze -c "echo {{file}} {{ext}} {{abs}}" .
 | {{abs}}   | /my/proj/src/mod1/main.py |
 
 # Third-party data
-
-- Eye, opened, public, visible, watch icon
-
-  - https://www.iconfinder.com/icons/2303106/eye_opened_public_visible_watch_icon
-  - Creative Commons (Attribution-Noncommercial 3.0 Unported)
 
 - Great Go libraries
   - See [go.mod](https://github.com/wtetsu/gaze/blob/master/go.mod) and [license.json](https://github.com/wtetsu/gaze/actions/workflows/license.yml)
