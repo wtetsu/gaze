@@ -4,7 +4,7 @@ Gaze is gazing at you
 
 [![Test](https://github.com/wtetsu/gaze/workflows/Test/badge.svg)](https://github.com/wtetsu/gaze/actions?query=workflow%3ATest) [![Go Report Card](https://goreportcard.com/badge/github.com/wtetsu/gaze)](https://goreportcard.com/report/github.com/wtetsu/gaze) [![Maintainability](https://api.codeclimate.com/v1/badges/bd322b9104f5fcd3e37e/maintainability)](https://codeclimate.com/github/wtetsu/gaze/maintainability) [![codecov](https://codecov.io/gh/wtetsu/gaze/branch/master/graph/badge.svg)](https://codecov.io/gh/wtetsu/gaze)
 
-## What is Gaze?
+# What is Gaze?
 
 👁️Gaze runs a command, **right after** you save a file.
 
@@ -24,6 +24,17 @@ And invoke your favorite editor on another terminal and edit it!
 ```
 vi a.py
 ```
+
+## Installation
+
+### Brew (Only for OSX)
+
+```
+brew tap wtetsu/gaze
+brew install gaze
+```
+
+Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
 ## Use cases:
 
@@ -76,19 +87,6 @@ Gaze is designed as a CLI tool that accelerates your coding.
 I developed Gaze in order to deal with my every day's coding.
 
 Even though there are already many "update-and-run" type of tools, I would say Gaze is the best tool for quick coding because all the technical design decisions have been made for that purpose.
-
-# Installation
-
-## Brew (Only for OSX)
-
-```
-brew tap wtetsu/gaze
-brew install gaze
-```
-
-## Download binary
-
-https://github.com/wtetsu/gaze/releases
 
 # How to use Gaze
 
