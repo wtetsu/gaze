@@ -17,4 +17,3 @@ for p in macos_amd macos_arm windows linux; do
   mv ${p} gaze_${p}_${version}
   zip -r gaze_${p}_${version}.zip ./gaze_${p}_${version}
 done
-
