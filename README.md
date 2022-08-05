@@ -39,7 +39,6 @@ vi a.py
 ### Brew (Only for OSX)
 
 ```
-brew tap wtetsu/gaze
 brew install gaze
 ```
 
