@@ -36,7 +36,7 @@ vi a.py
 
 ## Installation
 
-### Brew (Only for OSX)
+### Brew (for macOS)
 
 ```
 brew install gaze
