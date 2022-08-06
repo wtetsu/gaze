@@ -14,7 +14,7 @@ No controversial point.
 
 ## Update twice in a row
 
-In case you update a.py again during the first process stays running, what should occur?
+In case you update a.py again during the first process stays running,
 
 - Gaze waits until the first process finishes.
 - Right after the first process finished, a second process launches.
@@ -25,7 +25,7 @@ Since a.py was modified after the first `python a.py` launched, running `python 
 
 ## Update more than twice in a row
 
-In case you update a.py **multiple times** during the first process stays running, what should occur?
+In case you update a.py **multiple times** during the first process stays running,
 
 - Gaze waits until the first process finishes.
 - Right after the first process finished, a second process launches.
@@ -39,7 +39,7 @@ Note that **Gaze doesn't invoke the third process** in this case. Since there is
 
 Gaze deals with multiple processes nicely.
 
-In case you update another file during the first process stays running, what should occur? **Gaze runs a second process**.
+In case you update another file during the first process stays running, what should occur? **Gaze runs a second process in parallel**.
 
 ![p04](img/p04.png)
 
