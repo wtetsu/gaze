@@ -12,11 +12,15 @@ timeout -sKILL 3 gaze -v files/*.* | tee test.log &
 sleep 0.1
 touch $filedir/hello.rb
 sleep 0.1
+touch $filedir/hello.go
+sleep 0.1
 touch $filedir/hello.py
 sleep 0.1
 touch $filedir/hello.rs
 sleep 0.1
 touch $filedir/hello.rb
+sleep 0.1
+touch $filedir/hello.go
 sleep 0.1
 touch $filedir/hello.py
 sleep 0.1
@@ -33,7 +37,7 @@ wait
 
 num=`cat test.log | grep "hello, world!" | wc -l`
 
-if [ $num -ne 9 ]; then
+if [ $num -ne 11 ]; then
   echo "Failed:${num}"
   exit 1
 fi
