@@ -22,16 +22,10 @@ jobs:
       - name: Install Licenses tool
         run: go get github.com/google/go-licenses
       - name: License
-        run: go-licenses save ./... --save_path=license
-      - name: License Summary
-        run: go-licenses csv ./... | tee license/license.csv
-      - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: license
-          path: license
-      - name: Compress
-        run: zip -r ./license.zip ./license
+        run: |
+          go-licenses save ./... --save_path=license
+          go-licenses csv ./... | tee license/license.csv
+          zip -r ./license.zip ./license
       - name: Upload
         uses: softprops/action-gh-release@v1
         with:
