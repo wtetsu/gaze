@@ -1,9 +1,12 @@
 name: License
 
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
-  test:
+  license:
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -27,3 +30,9 @@ jobs:
         with:
           name: license
           path: license
+      - name: Compress
+        run: zip -r ./license.zip ./license
+      - name: Upload
+        uses: softprops/action-gh-release@v1
+        with:
+          files: license.zip
