@@ -56,7 +56,7 @@ func getOrCreateTemplate(sourceString string) (*mustache.Template, error) {
 		return cachedTemplate, nil
 	}
 
-	template, err := mustache.ParseString(sourceString)
+	template, err := mustache.ParseStringRaw(sourceString, true)
 	if err != nil {
 		return nil, fmt.Errorf("%v(%s)", err, sourceString)
 	}
