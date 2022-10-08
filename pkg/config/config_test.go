@@ -8,6 +8,8 @@ package config
 
 import (
 	"io/ioutil"
+	"os"
+	"path"
 	"testing"
 )
 
@@ -81,6 +83,40 @@ func TestInvalidYaml(t *testing.T) {
 		t.Fatal()
 	}
 	if c != nil {
+		t.Fatal()
+	}
+}
+
+func TestSearchConfigPath(t *testing.T) {
+	tempDir, _ := ioutil.TempDir("", "__gaze_test")
+
+	if searchConfigPath("") != "" {
+		t.Fatal()
+	}
+
+	// Should be not found
+	if searchConfigPath(tempDir) != "" {
+		t.Fatal()
+	}
+
+	os.Create(path.Join(tempDir, ".gaze.yaml"))
+	if searchConfigPath(tempDir) != path.Join(tempDir, ".gaze.yaml") {
+		t.Fatal()
+	}
+
+	os.Create(path.Join(tempDir, ".gaze.yml"))
+	if searchConfigPath(tempDir) != path.Join(tempDir, ".gaze.yml") {
+		t.Fatal()
+	}
+
+	os.MkdirAll(path.Join(tempDir, ".config", "gaze"), os.ModePerm)
+	os.Create(path.Join(tempDir, ".config", "gaze", "gaze.yaml"))
+	if searchConfigPath(tempDir) != path.Join(tempDir, ".config", "gaze", "gaze.yaml") {
+		t.Fatal()
+	}
+
+	os.Create(path.Join(tempDir, ".config", "gaze", "gaze.yml"))
+	if searchConfigPath(tempDir) != path.Join(tempDir, ".config", "gaze", "gaze.yml") {
 		t.Fatal()
 	}
 }
