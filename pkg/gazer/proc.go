@@ -112,10 +112,10 @@ func kill(cmd *exec.Cmd, reason string) bool {
 }
 
 func createCommand(commandString string) *exec.Cmd {
-	perser := shellwords.NewParser()
-	// perser.ParseBacktick = true
-	// perser.ParseEnv = true
-	args, err := perser.Parse(commandString)
+	parser := shellwords.NewParser()
+	// parser.ParseBacktick = true
+	// parser.ParseEnv = true
+	args, err := parser.Parse(commandString)
 	if err != nil {
 		return nil
 	}
