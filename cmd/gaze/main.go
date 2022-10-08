@@ -17,7 +17,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/logger"
 )
 
-const version = "v1.1.3"
+const version = "v1.1.4"
 
 func main() {
 	args := app.ParseArgs(os.Args, func() {
