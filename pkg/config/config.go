@@ -39,7 +39,7 @@ func New(command string) *Config {
 }
 
 // InitConfig loads a configuration file.
-// Priority: default < ~/.gaze.yml < ~/.config/gaze.yaml < -f option)
+// Priority: default < ~/.gaze.yml < ~/.config/gaze/gaze.yml < -f option)
 func InitConfig() (*Config, error) {
 	home := homeDirPath()
 	configPath := searchConfigPath(home)
