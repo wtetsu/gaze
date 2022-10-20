@@ -195,14 +195,19 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 	}
 
 	modifiedTime := time.GetFileModifiedTime(filePath)
-	if op == W {
-		if (modifiedTime - lastExecutionTime) < n.pendingPeriod*1000000 {
+
+	if op == W || op == C {
+		elapsed := modifiedTime - lastExecutionTime
+		logger.Debug("lastExecutionTime(%s): %d, %d", op, lastExecutionTime, elapsed)
+		if elapsed < n.pendingPeriod*1000000 {
 			logger.Debug("skipped: %s: %s (too frequent)", filePath, op)
 			return false
 		}
 	}
 	if op == R {
-		if (time.Now() - modifiedTime) > n.regardRenameAsModPeriod*1000000 {
+		elapsed := time.Now() - modifiedTime
+		logger.Debug("lastExecutionTime(%s): %d, %d", op, lastExecutionTime, elapsed)
+		if elapsed > n.regardRenameAsModPeriod*1000000 {
 			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, op)
 			return false
 		}
