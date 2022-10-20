@@ -1,5 +1,7 @@
 #! /bin/sh
 
+gaze="${1:-gaze}"
+
 dir=$(cd $(dirname $0); pwd)
 filedir=$dir/files
 
@@ -9,20 +11,20 @@ rm -f test.*.log
 cp $filedir/hello.py "$filedir/he'llo.py"
 cp $filedir/hello.py "$filedir/he&llo.py"
 
-timeout -sKILL 3 ./main -v files/*.* | tee test.log &
+timeout -sKILL 3 ${gaze} -v files/*.* | tee test.log &
 
-sleep 0.1
-touch "$filedir/he'llo.py"
-sleep 0.1
-touch "$filedir/he&llo.py"
-sleep 0.1
-touch "$filedir/he'llo.py"
-sleep 0.1
-touch "$filedir/he&llo.py"
-sleep 0.1
-touch "$filedir/he'llo.py"
-sleep 0.1
-touch "$filedir/he&llo.py"
+sleep 0.2
+echo >> "$filedir/he'llo.py"
+sleep 0.2
+echo >> "$filedir/he&llo.py"
+sleep 0.2
+echo >> "$filedir/he'llo.py"
+sleep 0.2
+echo >> "$filedir/he&llo.py"
+sleep 0.2
+echo >> "$filedir/he'llo.py"
+sleep 0.2
+echo >> "$filedir/he&llo.py"
 
 wait
 

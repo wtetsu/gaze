@@ -1,5 +1,6 @@
 #! /bin/sh
 
+gaze="${1:-gaze}"
 
 dir=$(cd $(dirname $0); pwd)
 filedir=$dir/files
@@ -7,28 +8,28 @@ filedir=$dir/files
 cd $dir
 rm -f test.*.log
 
-timeout -sKILL 3 gaze -v -c "ruby {{file}} 1" -r files/*.*  | tee test.log &
+timeout -sKILL 3 ${gaze} -v -c "ruby {{file}} 1" -r files/*.*  | tee test.log &
 
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
 
 wait
 
@@ -38,6 +39,8 @@ if [ $num -ne 1 ]; then
   echo "Failed:${num}"
   exit 1
 fi
+
+git checkout -- files
 
 echo "OK"
 exit 0

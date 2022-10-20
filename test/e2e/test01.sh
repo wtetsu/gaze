@@ -1,5 +1,6 @@
 #! /bin/sh
 
+gaze="${1:-gaze}"
 
 dir=$(cd $(dirname $0); pwd)
 filedir=$dir/files
@@ -7,31 +8,31 @@ filedir=$dir/files
 cd $dir
 rm -f test.*.log
 
-timeout -sKILL 3 gaze -v files/*.* | tee test.log &
+timeout -sKILL 3 ${gaze} -v files/*.* | tee test.log &
 
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.go
-sleep 0.1
-touch $filedir/hello.py
-sleep 0.1
-touch $filedir/hello.rs
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.go
-sleep 0.1
-touch $filedir/hello.py
-sleep 0.1
-touch $filedir/hello.rs
-sleep 0.1
-touch $filedir/hello.rb
-sleep 0.1
-touch $filedir/hello.py
-sleep 0.1
-touch $filedir/hello.rs
-sleep 0.1
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.go
+sleep 0.2
+echo >> $filedir/hello.py
+sleep 0.2
+echo >> $filedir/hello.rs
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.go
+sleep 0.2
+echo >> $filedir/hello.py
+sleep 0.2
+echo >> $filedir/hello.rs
+sleep 0.2
+echo >> $filedir/hello.rb
+sleep 0.2
+echo >> $filedir/hello.py
+sleep 0.2
+echo >> $filedir/hello.rs
+sleep 0.2
 
 wait
 
@@ -41,6 +42,8 @@ if [ $num -ne 11 ]; then
   echo "Failed:${num}"
   exit 1
 fi
+
+git checkout -- files
 
 echo "OK"
 exit 0
