@@ -246,6 +246,13 @@ Note:
 - To specify both ext and re for one cmd is prohibited
 - cmd can have multiple commands. Use vertical line(|) to write multiple commands
 
+If you want to customize it, please set up your own configuration file.
+
+```
+gaze -y > ~/.gaze.yml
+vi ~/.gaze.yml
+```
+
 Gaze searches a configuration file according to its priority rule.
 
 1. A file specified by -f option
@@ -253,12 +260,6 @@ Gaze searches a configuration file according to its priority rule.
 1. ~/.gaze.yml
 1. (Default)
 
-If you want to customize it, please set up your own configuration file.
-
-```
-gaze -y > ~/.gaze.yml
-vi ~/.gaze.yml
-```
 
 ### Options:
 
