@@ -18,18 +18,18 @@
 
 👁️Gaze runs a command, **right after** you save a file.
 
-It greatly helps you focus on writing code!
+It greatly helps you to focus on writing code!
 ![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
 ---
 
-The usage of Gaze is quite simple.
+Setting up Gaze is easy.
 
 ```
 gaze .
 ```
 
-And invoke your favorite editor on another terminal and edit it!
+Then, invoke your favorite editor on another terminal and edit it!
 
 ```
 vi a.py
@@ -47,14 +47,11 @@ Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
 ## Use cases:
 
-👁️Gaze runs a script, **right after** you save it (e.g. Python, Ruby),
-
-You can also use Gaze for these purposes:
-
-- 👁️Gaze runs tests, **right after** you save a Ruby script
-- 👁️Gaze runs linter, **right after** you save a JavaScript file
-- 👁️Gaze runs "docker build .", **right after** you save Dockerfile
-- 👁️And so forth...
+- 👁️Runs a script right after any .py file is modified
+- 👁️Runs tests right after any .rb file is modified
+- 👁️Runs linter right after any .js is modified
+- 👁️Runs `docker build .` right after you save Dockerfile
+- And so forth...
 
 ---
 
@@ -67,11 +64,11 @@ Again and again...
 
 Then, you found yourself going back and forth between the editor and terminal and typing the same command thousands of times.
 
-That's totally waste of time and energy!
+That's totally waste of time and energy🙄
 
 ---
 
-👁️Gaze runs a command on behalf of you, **right after** you edit files.
+👁️Gaze runs a command for you, **right after** you save a file.
 
 ## Why Gaze? (Features)
 
@@ -93,25 +90,23 @@ Gaze is designed as a CLI tool that accelerates your coding.
 
 ---
 
-I developed Gaze in order to deal with my every day's coding.
+Gaze was developed in order to support daily coding.
 
-Even though there are already many "update-and-run" type of tools, I would say Gaze is the best tool for quick coding because all the technical design decisions have been made for that purpose.
+Even though there are already many "update-and-run" type of tools, I would say Gaze is the best for quick coding because all the technical design decisions have been made for that purpose.
 
 # How to use Gaze
 
 The top priority of the Gaze's design is "easy to invoke".
 
-By this command, Gaze starts watching the files in the current directory.
-
 ```
 gaze .
 ```
 
-On another terminal, run `vi a.py` and edit it. Gaze executes a.py in response to your file modifications!
+Then, switch to another terminal and run `vi a.py`. Gaze executes a.py in response to your file modifications.
 
 ### Other examples
 
-Gaze at one file. You can just simply specify file names.
+Gaze at one file.
 
 ```
 gaze a.py
@@ -119,7 +114,7 @@ gaze a.py
 
 ---
 
-Gaze doesn't have special options to specify files. You can use wildcards (\*, \*\*, ?) that shell users are familiar with. **You don't have to remember Gaze-specific command-line options!**
+ You can use wildcards (\*, \*\*, ?) to specify files.
 
 ```
 gaze "*.py"
@@ -127,7 +122,7 @@ gaze "*.py"
 
 ---
 
-Gaze at subdirectories. Runs a modified file.
+Files in deep subdirectories.
 
 ```
 gaze "src/**/*.rb"
@@ -135,7 +130,7 @@ gaze "src/**/*.rb"
 
 ---
 
-Gaze at subdirectories. Runs a command to a modified file.
+Specify an arbitrary command by `-c` option.
 
 ```
 gaze "src/**/*.js" -c "eslint {{file}}"
@@ -143,7 +138,7 @@ gaze "src/**/*.js" -c "eslint {{file}}"
 
 ---
 
-Kill an ongoing process, every time before it runs the next. This is useful when you are writing a server.
+Kill the previous one before launching a new process. This is useful if you are writing a server.
 
 ```
 gaze -r server.py
@@ -151,7 +146,7 @@ gaze -r server.py
 
 ---
 
-Kill an ongoing process, after 1000(ms). This is useful if you love to write infinite loops.
+Kill an ongoing process after 1000(ms). This is useful if you love infinite loops.
 
 ```
 gaze -t 1000 complicated.py
@@ -159,7 +154,7 @@ gaze -t 1000 complicated.py
 
 ---
 
-In order to run multiple commands for one update, just simply write multiple lines (use quotations for general shells). If an exit code was not 0, Gaze doesn't invoke the next command.
+Specify multiple commands by using quotations.
 
 ```
 gaze "*.cpp" -c "gcc {{file}} -o a.out
@@ -167,7 +162,7 @@ ls -l a.out
 ./a.out"
 ```
 
-Here is output when a.cpp was updated.
+Output when a.cpp was updated.
 
 ```
 [gcc a.cpp -o a.out](1/3)
@@ -179,7 +174,7 @@ Here is output when a.cpp was updated.
 hello, world!
 ```
 
-When compilation failed:
+If a certain command exited with non-zero, Gaze doesn't invoke the next command.
 
 ```
 [gcc a.cpp -o a.out](1/3)
@@ -197,28 +192,18 @@ exit status 1
 
 Gaze is Language-agnostic.
 
-But it has useful default configurations for several major languages (e.g. Go, Python, Ruby, JavaScript, D, Groovy, PHP, Java, Kotlin, Rust, C++, TypeScript, and Docker).
+For convenience, it has useful default configurations for some major languages (e.g. Go, Python, Ruby, JavaScript, Rust, and so forth)
 
-Thanks to the default configurations, the command below is valid. You don't have to specify python command.
+Thanks to the default configurations, the command below is valid.
 
 ```
 gaze a.py
 ```
 
-By default, the above is the same as:
+The above command is equivalent to `gaze a.py -c 'python "{{file}}"'`.
 
-```
-gaze a.py -c 'python "{{file}}"'
-```
 
-Gaze searches a configuration file according to its priority rule.
-
-1. A file specified by -f option
-1. ~/.config/gaze/gaze.yml
-1. ~/.gaze.yml
-1. (Default)
-
-You can display the default YAML configuration by running `gaze -y`.
+You can display the default YAML configuration by `gaze -y`.
 
 ```yaml
 commands:
@@ -259,9 +244,16 @@ commands:
 Note:
 
 - To specify both ext and re for one cmd is prohibited
-- cmd can have multiple commands. In [YAML](https://en.wikipedia.org/wiki/YAML#Basic_components), a **vertical line(|)** is used to express multiple lines
+- cmd can have multiple commands. Use vertical line(|) to write multiple commands
 
-You're able to have your own configuration very easily.
+Gaze searches a configuration file according to its priority rule.
+
+1. A file specified by -f option
+1. ~/.config/gaze/gaze.yml
+1. ~/.gaze.yml
+1. (Default)
+
+If you want to customize it, please set up your own configuration file.
 
 ```
 gaze -y > ~/.gaze.yml
