@@ -47,10 +47,11 @@ Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
 ## Use cases:
 
-- 👁️Runs a script right after any .py file is modified
-- 👁️Runs tests right after any .rb file is modified
-- 👁️Runs linter right after any .js is modified
-- 👁️Runs `docker build .` right after you save Dockerfile
+- Modify a.py -> 👁️Runs `python a.py`
+- Modify a.rb -> 👁️Runs tests 
+- Modify a.js -> 👁️Runs linter
+- Modify a.go -> 👁️Runs `make build`
+- Modify Dockerfile -> 👁️Runs `docker build`
 - And so forth...
 
 ---
