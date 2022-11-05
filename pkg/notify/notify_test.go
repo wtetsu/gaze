@@ -12,7 +12,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -38,7 +40,7 @@ func TestUtilFunctions(t *testing.T) {
 
 	createTempFileWithDir(tmpDir+"/dir1/dir2b/dir3b", "*.tmp", `puts "Hello from Ruby`)
 
-	actual1 := findDirs([]string{tmpDir + "/*"}, 100)
+	actual1 := findActualDirs([]string{tmpDir + "/*"}, 100)
 	sort.Strings(actual1)
 
 	expected1 := []string{
@@ -54,7 +56,7 @@ func TestUtilFunctions(t *testing.T) {
 		}
 	}
 
-	actual2 := findDirs([]string{tmpDir + "/**"}, 100)
+	actual2 := findActualDirs([]string{tmpDir + "/**"}, 100)
 	sort.Strings(actual2)
 
 	expected2 := []string{
@@ -133,7 +135,7 @@ func TestTooManyDirectories(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	// 100 directories
+	// Create 100 directories
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 10; j++ {
 			path := fmt.Sprintf("%s/%d/%d", tmpDir, i, j)
@@ -141,14 +143,16 @@ func TestTooManyDirectories(t *testing.T) {
 		}
 	}
 
+	os.Chdir(tmpDir)
+
 	// Safe
-	_, err := New([]string{tmpDir + "/**"}, 100)
+	_, err := New([]string{"**"}, 100)
 	if err != nil {
-		t.Fatal("Temp files error")
+		t.Fatal("Temp files error:" + err.Error())
 	}
 
 	// Out
-	_, err = New([]string{tmpDir + "/**"}, 99)
+	_, err = New([]string{"**"}, 99)
 	if err == nil {
 		t.Fatal("Temp files error")
 	}
@@ -157,16 +161,135 @@ func TestTooManyDirectories(t *testing.T) {
 	path := fmt.Sprintf("%s/%d/%d/%d", tmpDir, 99, 99, 99)
 	os.MkdirAll(path, os.ModePerm)
 
-	// Out
-	_, err = New([]string{tmpDir + "/**"}, 100)
-	if err == nil {
+	// Safe
+	_, err = New([]string{"**"}, 103)
+	if err != nil {
 		t.Fatal("Temp files error")
 	}
 
-	// Safe
-	_, err = New([]string{tmpDir + "/**"}, 103)
-	if err != nil {
+	// Out
+	_, err = New([]string{"**"}, 102)
+	if err == nil {
 		t.Fatal("Temp files error")
+	}
+}
+
+func TestFindCandidatesDirectories(t *testing.T) {
+	type testData struct {
+		args     []string
+		expected []string
+	}
+	testDataList := []testData{
+		{[]string{"aaa/bbb/ccc"}, []string{".", "aaa", "aaa/bbb", "aaa/bbb/ccc"}},
+		{[]string{"../aaa/bbb/ccc"}, []string{"..", "../aaa", "../aaa/bbb", "../aaa/bbb/ccc"}},
+		{[]string{"/aaa/bbb/ccc"}, []string{"/", "/aaa", "/aaa/bbb", "/aaa/bbb/ccc"}},
+		{[]string{"aaa/bbb/ccc", "aaa/bbb/ddd", "."}, []string{".", "aaa", "aaa/bbb", "aaa/bbb/ccc", "aaa/bbb/ddd"}},
+
+		{[]string{"aaa\\bbb\\ccc"}, []string{".", "aaa", "aaa\\bbb", "aaa\\bbb\\ccc"}},
+	}
+
+	if os.PathSeparator == '\\' {
+		testDataList = append(testDataList, testData{[]string{"c:\\aaa\\bbb\\ccc"}, []string{"c:\\", "c:\\aaa", "c:\\aaa\\bbb", "c:\\aaa\\bbb\\ccc"}})
+	}
+
+	for _, rawData := range testDataList {
+		actual := findCandidatesDirectories(rawData.args)
+		if !reflect.DeepEqual(actual, rawData.expected) {
+			t.Fatal(fmt.Sprintf("param: %s, actual:%s, expected:%s",
+				strings.Join(rawData.args, ","),
+				strings.Join(actual, ","),
+				strings.Join(rawData.expected, ","),
+			))
+		}
+	}
+}
+
+func TestParsePathPattern(t *testing.T) {
+	type testData struct {
+		arg      string
+		expected []string
+	}
+
+	testDataList := []testData{
+		{"*", []string{"*", "."}},
+		{"*/aaa", []string{"*/aaa", "*", "."}},
+		{"aaa/*/bbb/ccc/*", []string{"aaa/*/bbb/ccc/*", "aaa/*/bbb/ccc", "aaa/*/bbb", "aaa/*", "aaa", "."}},
+		{"*/aaa/*/bbb/ccc/*", []string{"*/aaa/*/bbb/ccc/*", "*/aaa/*/bbb/ccc", "*/aaa/*/bbb", "*/aaa/*", "*/aaa", "*", "."}},
+
+		{"**", []string{"**", "."}},
+		{"**/aaa", []string{"**/aaa", "**", "."}},
+		{"aaa/**/bbb/ccc/**", []string{"aaa/**/bbb/ccc/**", "aaa/**/bbb/ccc", "aaa/**/bbb", "aaa/**", "aaa", "."}},
+		{"**/aaa/**/bbb/ccc/**", []string{"**/aaa/**/bbb/ccc/**", "**/aaa/**/bbb/ccc", "**/aaa/**/bbb", "**/aaa/**", "**/aaa", "**", "."}},
+
+		{"?", []string{"?", "."}},
+		{"?/aaa", []string{"?/aaa", "?", "."}},
+		{"aaa/?/bbb/ccc/?", []string{"aaa/?/bbb/ccc/?", "aaa/?/bbb/ccc", "aaa/?/bbb", "aaa/?", "aaa", "."}},
+		{"?/aaa/?/bbb/ccc/?", []string{"?/aaa/?/bbb/ccc/?", "?/aaa/?/bbb/ccc", "?/aaa/?/bbb", "?/aaa/?", "?/aaa", "?", "."}},
+
+		{"aaa/bbb/ccc/*/ddd/eee/*", []string{"aaa/bbb/ccc/*/ddd/eee/*", "aaa/bbb/ccc/*/ddd/eee", "aaa/bbb/ccc/*/ddd", "aaa/bbb/ccc/*", "aaa/bbb/ccc", "aaa/bbb", "aaa", "."}},
+		{"aaa/bbb/ccc/?/ddd/eee/*", []string{"aaa/bbb/ccc/?/ddd/eee/*", "aaa/bbb/ccc/?/ddd/eee", "aaa/bbb/ccc/?/ddd", "aaa/bbb/ccc/?", "aaa/bbb/ccc", "aaa/bbb", "aaa", "."}},
+		{"aaa/bbb/ccc/**/ddd/eee/*", []string{"aaa/bbb/ccc/**/ddd/eee/*", "aaa/bbb/ccc/**/ddd/eee", "aaa/bbb/ccc/**/ddd", "aaa/bbb/ccc/**", "aaa/bbb/ccc", "aaa/bbb", "aaa", "."}},
+
+		{"../aaa", []string{"../aaa", ".."}},
+		{"../aaa/bbb", []string{"../aaa/bbb", "../aaa", ".."}},
+		{"../aaa/bbb/ccc", []string{"../aaa/bbb/ccc", "../aaa/bbb", "../aaa", ".."}},
+		{"../aaa/bbb/ccc/ddd", []string{"../aaa/bbb/ccc/ddd", "../aaa/bbb/ccc", "../aaa/bbb", "../aaa", ".."}},
+
+		{"./aaa", []string{"./aaa", "."}},
+		{"./aaa/bbb", []string{"./aaa/bbb", "./aaa", "."}},
+		{"./aaa/bbb/ccc", []string{"./aaa/bbb/ccc", "./aaa/bbb", "./aaa", "."}},
+		{"./aaa/bbb/ccc/ddd", []string{"./aaa/bbb/ccc/ddd", "./aaa/bbb/ccc", "./aaa/bbb", "./aaa", "."}},
+
+		{"", []string{}},
+		{"/", []string{"/"}},
+		{".", []string{"."}},
+		{"..", []string{".."}},
+
+		{"/aaa", []string{"/aaa", "/"}},
+		{"/aaa/bbb", []string{"/aaa/bbb", "/aaa", "/"}},
+		{"/aaa/bbb/ccc", []string{"/aaa/bbb/ccc", "/aaa/bbb", "/aaa", "/"}},
+		{"/aaa/bbb/ccc/ddd", []string{"/aaa/bbb/ccc/ddd", "/aaa/bbb/ccc", "/aaa/bbb", "/aaa", "/"}},
+
+		{"aaa", []string{"aaa", "."}},
+		{"aaa/bbb", []string{"aaa/bbb", "aaa", "."}},
+		{"aaa/bbb/ccc", []string{"aaa/bbb/ccc", "aaa/bbb", "aaa", "."}},
+		{"aaa/bbb/ccc/ddd", []string{"aaa/bbb/ccc/ddd", "aaa/bbb/ccc", "aaa/bbb", "aaa", "."}},
+
+		{"aaa", []string{"aaa", "."}},
+		{"aaa\\bbb", []string{"aaa\\bbb", "aaa", "."}},
+		{"aaa\\bbb\\ccc", []string{"aaa\\bbb\\ccc", "aaa\\bbb", "aaa", "."}},
+		{"aaa\\bbb\\ccc\\ddd", []string{"aaa\\bbb\\ccc\\ddd", "aaa\\bbb\\ccc", "aaa\\bbb", "aaa", "."}},
+
+		{"..\\aaa", []string{"..\\aaa", ".."}},
+		{"..\\aaa\\bbb", []string{"..\\aaa\\bbb", "..\\aaa", ".."}},
+		{"..\\aaa\\bbb\\ccc", []string{"..\\aaa\\bbb\\ccc", "..\\aaa\\bbb", "..\\aaa", ".."}},
+		{"..\\aaa\\bbb\\ccc\\ddd", []string{"..\\aaa\\bbb\\ccc\\ddd", "..\\aaa\\bbb\\ccc", "..\\aaa\\bbb", "..\\aaa", ".."}},
+
+		{".\\aaa", []string{".\\aaa", "."}},
+		{".\\aaa\\bbb", []string{".\\aaa\\bbb", ".\\aaa", "."}},
+		{".\\aaa\\bbb\\ccc", []string{".\\aaa\\bbb\\ccc", ".\\aaa\\bbb", ".\\aaa", "."}},
+		{".\\aaa\\bbb\\ccc\\ddd", []string{".\\aaa\\bbb\\ccc\\ddd", ".\\aaa\\bbb\\ccc", ".\\aaa\\bbb", ".\\aaa", "."}},
+	}
+
+	if filepath.IsAbs("c:\\aaa") {
+		testDataList = append(testDataList, []testData{
+			{"c:\\aaa", []string{"c:\\aaa", "c:\\"}},
+			{"c:\\aaa\\bbb", []string{"c:\\aaa\\bbb", "c:\\aaa", "c:\\"}},
+			{"c:\\aaa\\bbb\\ccc", []string{"c:\\aaa\\bbb\\ccc", "c:\\aaa\\bbb", "c:\\aaa", "c:\\"}},
+			{"c:\\aaa\\bbb\\ccc\\ddd", []string{"c:\\aaa\\bbb\\ccc\\ddd", "c:\\aaa\\bbb\\ccc", "c:\\aaa\\bbb", "c:\\aaa", "c:\\"}},
+		}...)
+	}
+
+	for _, rawData := range testDataList {
+		actual := parsePathPattern(rawData.arg)
+
+		if !reflect.DeepEqual(actual, rawData.expected) {
+			t.Fatal(fmt.Sprintf("param: %s, actual:%s, expected:%s",
+				rawData.arg,
+				strings.Join(actual, ","),
+				strings.Join(rawData.expected, ","),
+			))
+		}
 	}
 }
 

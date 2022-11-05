@@ -69,7 +69,7 @@ func GlobMatch(rawPattern string, rawFilePath string) bool {
 
 	dirPath := filepath.ToSlash(filepath.Dir(filePath))
 
-	ok, _ = doublestar.Match(dirPath, pattern)
+	ok, _ = doublestar.Match(pattern, dirPath)
 	if ok {
 		logger.Debug("rawPattern:%s, rawFilePath:%s, true(dir)", rawPattern, rawFilePath)
 		return true
