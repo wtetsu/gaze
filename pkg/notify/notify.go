@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -18,7 +19,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
-// Notify delives events to a channel when files are virtually updated.
+// Notify delivers events to a channel when files are virtually updated.
 // "create+rename" is regarded as "update".
 type Notify struct {
 	Events                  chan Event
@@ -29,6 +30,7 @@ type Notify struct {
 	pendingPeriod           int64
 	regardRenameAsModPeriod int64
 	detectCreate            bool
+	candidates              []string
 }
 
 // Event represents a single file system notification.
@@ -57,7 +59,8 @@ func New(patterns []string, maxWatchDirs int) (*Notify, error) {
 		return nil, err
 	}
 
-	watchDirs := findDirs(patterns, maxWatchDirs)
+	candidates := findCandidatesDirectories(patterns)
+	watchDirs := findActualDirs(candidates, maxWatchDirs)
 
 	if len(watchDirs) > maxWatchDirs {
 		logger.Error(strings.Join(watchDirs[:maxWatchDirs], "\n") + "\n...")
@@ -81,6 +84,7 @@ func New(patterns []string, maxWatchDirs int) (*Notify, error) {
 		pendingPeriod:           100,
 		regardRenameAsModPeriod: 1000,
 		detectCreate:            true,
+		candidates:              candidates,
 	}
 
 	go notify.wait()
@@ -88,37 +92,111 @@ func New(patterns []string, maxWatchDirs int) (*Notify, error) {
 	return notify, nil
 }
 
-func findDirs(patterns []string, maxWatchDirs int) []string {
+func findActualDirs(patterns []string, maxWatchDirs int) []string {
 	targets := uniq.New()
 
 	for _, pattern := range patterns {
-		patternDir := filepath.Dir(pattern)
+		dirs := findDirsByPattern(pattern)
+		targets.AddAll(dirs)
 
-		realDir := findRealDirectory(patternDir)
-		if len(realDir) > 0 {
-			targets.Add(realDir)
-		}
 		if targets.Len() > maxWatchDirs {
-			return targets.List()
-		}
-
-		_, dirs1 := fs.Find(pattern)
-		for _, d := range dirs1 {
-			targets.Add(d)
-		}
-		if targets.Len() > maxWatchDirs {
-			return targets.List()
-		}
-
-		_, dirs2 := fs.Find(patternDir)
-		for _, d := range dirs2 {
-			targets.Add(d)
-		}
-		if targets.Len() > maxWatchDirs {
-			return targets.List()
+			break
 		}
 	}
 	return targets.List()
+}
+
+// ["aaa/bbb/ccc"] -> [".", "aaa", "aaa/bbb", "aaa/bbb/ccc"]
+// ["../aaa/bbb/ccc"] -> ["..", "../aaa", "../aaa/bbb", "../aaa/bbb/ccc"]
+// ["/aaa/bbb/ccc"] -> ["/", "/aaa", "/aaa/bbb", "/aaa/bbb/ccc"]
+func findCandidatesDirectories(patterns []string) []string {
+	targets := uniq.New()
+
+	for _, pattern := range patterns {
+		paths := parsePathPattern(pattern)
+		for i := len(paths) - 1; i >= 0; i-- {
+			targets.Add(paths[i])
+		}
+	}
+	return targets.List()
+}
+
+// "aaa/bbb/ccc/*/ddd/eee/*" -> ["aaa/bbb/ccc/*/ddd/eee/*", "aaa/bbb/ccc/*/ddd/eee", "aaa/bbb/ccc/*/ddd", "aaa/bbb/ccc/*", "aaa/bbb/ccc", "aaa/bbb", "aaa", "."]
+func parsePathPattern(pathPattern string) []string {
+	result := []string{}
+
+	if len(pathPattern) == 0 {
+		return result
+	}
+	if pathPattern == "/" || pathPattern == "\\" || pathPattern == "." || pathPattern == ".." {
+		return []string{pathPattern}
+	}
+
+	result = append(result, pathPattern)
+
+	isAbs := filepath.IsAbs(pathPattern) || pathPattern[0] == '/'
+	isParent := strings.HasPrefix(pathPattern, "..")
+	isWinAbs := pathPattern[0] != '/' && isAbs
+	isExplicitCurrent := false
+	isCurrent := !isAbs && !isParent
+	if isCurrent {
+		isExplicitCurrent = strings.HasPrefix(pathPattern, ".")
+	}
+
+	winFirstDelimiter := -1
+	if isWinAbs {
+		winFirstDelimiter = strings.Index(pathPattern, "\\")
+	}
+
+	for i := len(pathPattern) - 1; i >= 0; i-- {
+		ch := pathPattern[i]
+
+		if ch == '/' || ch == '\\' {
+
+			if i > 0 {
+				p := pathPattern[0:i]
+				if winFirstDelimiter == i {
+					p += "\\"
+				}
+				result = append(result, p)
+			} else {
+				result = append(result, "/")
+			}
+		}
+	}
+
+	if len(result) <= 1 {
+		if !isAbs && !isExplicitCurrent {
+			result = append(result, ".")
+		}
+	} else {
+		if isCurrent && !isExplicitCurrent {
+			result = append(result, ".")
+		}
+	}
+
+	return result
+}
+
+func findDirsByPattern(pattern string) []string {
+	patternDir := filepath.Dir(pattern)
+	logger.Debug("pattern: %s", pattern)
+	logger.Debug("patternDir: %s", patternDir)
+
+	var targets []string
+
+	realDir := findRealDirectory(patternDir)
+	if len(realDir) > 0 {
+		targets = append(targets, realDir)
+	}
+
+	_, dirs1 := fs.Find(pattern)
+	targets = append(targets, dirs1...)
+
+	_, dirs2 := fs.Find(patternDir)
+	targets = append(targets, dirs2...)
+
+	return targets
 }
 
 func findRealDirectory(path string) string {
@@ -126,8 +204,7 @@ func findRealDirectory(path string) string {
 
 	currentPath := ""
 	for i := 0; i < len(entries); i++ {
-		globIndex := strings.IndexAny(entries[i], "*?[{\\")
-		if globIndex != -1 {
+		if containsWildcard(entries[i]) {
 			break
 		}
 
@@ -142,6 +219,27 @@ func findRealDirectory(path string) string {
 	}
 }
 
+func containsWildcard(path string) bool {
+	return strings.ContainsAny(path, "*?[{")
+}
+
+func shouldWatch(dirPath string, candidates []string) bool {
+	dirPathSlash := filepath.ToSlash(dirPath)
+	if !fs.IsDir(dirPathSlash) {
+		return false
+	}
+
+	for _, pattern := range candidates {
+		patternSlash := filepath.ToSlash(pattern)
+		ok, _ := doublestar.Match(patternSlash, dirPathSlash)
+		if ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (n *Notify) wait() {
 	for {
 		select {
@@ -149,7 +247,8 @@ func (n *Notify) wait() {
 
 			normalizedName := filepath.Clean(event.Name)
 
-			if event.Op == fsnotify.Create && fs.IsDir(normalizedName) {
+			logger.Debug("fs.IsDir: %s", fs.IsDir(normalizedName))
+			if event.Op == fsnotify.Create && shouldWatch(normalizedName, n.candidates) {
 				logger.Info("gazing at: %s", normalizedName)
 				n.watcher.Add(normalizedName)
 			}

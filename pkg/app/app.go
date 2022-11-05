@@ -67,7 +67,7 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 	color := flagSet.Int("color", 1, "")
 	debug := flagSet.Bool("debug", false, "")
 	version := flagSet.Bool("version", false, "")
-	maxWatchDirs := flagSet.Int("w", 100, "")
+	maxWatchDirs := flagSet.Int("w", 1000, "")
 
 	files := []string{}
 	optionStartIndex := len(osArgs)
