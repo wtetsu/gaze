@@ -45,11 +45,11 @@ brew install gaze
 
 Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
-## Use cases:
+## Usage examples
 
 - Modify a.py -> 👁️Runs `python a.py`
-- Modify a.rb -> 👁️Runs tests 
-- Modify a.js -> 👁️Runs linter
+- Modify a.rb -> 👁️Runs `rubocop` 
+- Modify a.js -> 👁️Runs `npm run lint`
 - Modify a.go -> 👁️Runs `make build`
 - Modify Dockerfile -> 👁️Runs `docker build`
 - And so forth...
