@@ -293,6 +293,11 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 		return false
 	}
 
+	if strings.Contains(filePath, "'") || strings.Contains(filePath, "\"") {
+		logger.Debug("skipped: %s: %s (unsupported character)", filePath, op)
+		return false
+	}
+
 	modifiedTime := time.GetFileModifiedTime(filePath)
 
 	if op == W || op == C {

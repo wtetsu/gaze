@@ -10,6 +10,8 @@ rm -f test.*.log
 
 cp $filedir/hello.py "$filedir/he'llo.py"
 cp $filedir/hello.py "$filedir/he&llo.py"
+cp $filedir/hello.py "$filedir/he llo.py"
+cp $filedir/hello.py "$filedir/he(llo.py"
 
 timeout -sKILL 3 ${gaze} -v files/*.* | tee test.log &
 
@@ -18,22 +20,36 @@ echo >> "$filedir/he'llo.py"
 sleep 0.2
 echo >> "$filedir/he&llo.py"
 sleep 0.2
+echo >> "$filedir/he llo.py"
+sleep 0.2
+echo >> "$filedir/he(llo.py"
+sleep 0.2
 echo >> "$filedir/he'llo.py"
 sleep 0.2
 echo >> "$filedir/he&llo.py"
 sleep 0.2
+echo >> "$filedir/he llo.py"
+sleep 0.2
 echo >> "$filedir/he'llo.py"
 sleep 0.2
+echo >> "$filedir/he(llo.py"
+sleep 0.2
 echo >> "$filedir/he&llo.py"
+sleep 0.2
+echo >> "$filedir/he llo.py"
+sleep 0.2
+echo >> "$filedir/he(llo.py"
 
 wait
 
 rm "$filedir/he'llo.py"
 rm "$filedir/he&llo.py"
+rm "$filedir/he llo.py"
+rm "$filedir/he(llo.py"
 
 num=`cat test.log | grep "hello, world!" | wc -l`
 
-if [ $num -ne 6 ]; then
+if [ $num -ne 9 ]; then
   echo "Failed:${num}"
   exit 1
 fi
