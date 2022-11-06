@@ -249,8 +249,17 @@ func (n *Notify) wait() {
 
 			logger.Debug("fs.IsDir: %s", fs.IsDir(normalizedName))
 			if event.Op == fsnotify.Create && shouldWatch(normalizedName, n.candidates) {
+				err := n.watcher.Remove(normalizedName)
+				if err != nil {
+					if !strings.HasPrefix(err.Error(), "can't remove non-existent watch for:") {
+						logger.Error("watcher.Remove: %s", err)
+					}
+				}
 				logger.Info("gazing at: %s", normalizedName)
-				n.watcher.Add(normalizedName)
+				err = n.watcher.Add(normalizedName)
+				if err != nil {
+					logger.Error("watcher.Add: %s", err)
+				}
 			}
 
 			if !ok {
