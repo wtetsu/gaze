@@ -8,6 +8,7 @@ package app
 
 import (
 	"flag"
+	"runtime"
 	"strings"
 
 	"github.com/wtetsu/gaze/pkg/config"
@@ -56,6 +57,13 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 		}
 	}
 
+	var defaultMaxWatchDirs int
+	if runtime.GOOS == "darwin" {
+		defaultMaxWatchDirs = 100
+	} else {
+		defaultMaxWatchDirs = 10000
+	}
+
 	help := flagSet.Bool("h", false, "")
 	restart := flagSet.Bool("r", false, "")
 	userCommand := flagSet.String("c", "", "")
@@ -67,7 +75,7 @@ func ParseArgs(osArgs []string, usage func()) *Args {
 	color := flagSet.Int("color", 1, "")
 	debug := flagSet.Bool("debug", false, "")
 	version := flagSet.Bool("version", false, "")
-	maxWatchDirs := flagSet.Int("w", 1000, "")
+	maxWatchDirs := flagSet.Int("w", defaultMaxWatchDirs, "")
 
 	files := []string{}
 	optionStartIndex := len(osArgs)
