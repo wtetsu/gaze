@@ -251,7 +251,7 @@ func (n *Notify) wait() {
 			if event.Op == fsnotify.Create && shouldWatch(normalizedName, n.candidates) {
 				err := n.watcher.Remove(normalizedName)
 				if err != nil {
-					if !strings.HasPrefix(err.Error(), "can't remove non-existent watch for:") {
+					if !strings.HasPrefix(err.Error(), "can't remove non-existent") {
 						logger.Error("watcher.Remove: %s", err)
 					}
 				}
