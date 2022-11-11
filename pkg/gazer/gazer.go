@@ -22,12 +22,12 @@ import (
 
 // Gazer gazes filesystem.
 type Gazer struct {
-	patterns []string
-	notify   *notify.Notify
-	isClosed bool
-	counter  uint64
-	commands commands
-	mutexes  map[string]*sync.Mutex
+	patterns    []string
+	notify      *notify.Notify
+	isClosed    bool
+	invokeCount uint64
+	commands    commands
+	mutexes     map[string]*sync.Mutex
 }
 
 // New returns a new Gazer.
@@ -42,12 +42,12 @@ func New(patterns []string, maxWatchDirs int) (*Gazer, error) {
 		return nil, err
 	}
 	return &Gazer{
-		patterns: cleanPatterns,
-		notify:   notify,
-		isClosed: false,
-		counter:  0,
-		commands: newCommands(),
-		mutexes:  make(map[string]*sync.Mutex),
+		patterns:    cleanPatterns,
+		notify:      notify,
+		isClosed:    false,
+		invokeCount: 0,
+		commands:    newCommands(),
+		mutexes:     make(map[string]*sync.Mutex),
 	}, nil
 }
 
@@ -80,7 +80,6 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 				break
 			}
 			logger.Debug("Receive: %s", event.Name)
-			g.counter++
 
 			commandStringList := g.tryToFindCommand(event.Name, commandConfigs)
 			if commandStringList == nil {
@@ -102,6 +101,8 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 			}
 
 			mutex := g.lock(queueManageKey)
+
+			g.invokeCount++
 
 			go func() {
 				g.invoke(commandStringList, queueManageKey, timeout)
@@ -228,7 +229,7 @@ func splitCommand(commandString string) []string {
 	return commandList
 }
 
-// Counter returns the current execution counter
-func (g *Gazer) Counter() uint64 {
-	return g.counter
+// InvokeCount returns the current execution counter
+func (g *Gazer) InvokeCount() uint64 {
+	return g.invokeCount
 }

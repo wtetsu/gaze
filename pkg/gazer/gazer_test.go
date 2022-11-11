@@ -37,20 +37,106 @@ func TestBasic(t *testing.T) {
 		t.Fatal()
 	}
 	go gazer.Run(c, 10*1000, false)
-	if gazer.Counter() != 0 {
+	if gazer.InvokeCount() != 0 {
 		t.Fatal()
 	}
 
 	for i := 0; i < 100; i++ {
 		touch(py1)
 		touch(rb1)
-		if gazer.Counter() >= 4 {
+		if gazer.InvokeCount() >= 4 {
 			break
 		}
 		time.Sleep(50)
 	}
 
-	if gazer.Counter() < 4 {
+	if gazer.InvokeCount() < 4 {
+		t.Fatal()
+	}
+}
+
+func TestDoNothing(t *testing.T) {
+	py1 := createTempFile("a'aa*.py", `import datetime; print(datetime.datetime.now())`)
+	rb1 := createTempFile("b'bb.*.rb", `print(Time.new)`)
+
+	if py1 == "" || rb1 == "" {
+		t.Fatal("Temp files error")
+	}
+
+	gazer, _ := New([]string{py1, rb1}, 100)
+	if gazer == nil {
+		t.Fatal()
+	}
+	defer gazer.Close()
+
+	c, err := config.InitConfig()
+	if err != nil {
+		t.Fatal()
+	}
+	go gazer.Run(c, 10*1000, false)
+	if gazer.InvokeCount() != 0 {
+		t.Fatal()
+	}
+
+	for i := 0; i < 100; i++ {
+		touch(py1)
+		touch(rb1)
+		if gazer.InvokeCount() >= 4 {
+			break
+		}
+		time.Sleep(5)
+	}
+
+	if gazer.InvokeCount() > 0 {
+		t.Fatal()
+	}
+}
+
+func TestRename(t *testing.T) {
+	py1 := createTempFile("*.py", `import datetime; print(datetime.datetime.now())`)
+	rb1 := createTempFile("*.rb", `print(Time.new)`)
+
+	py2 := py1 + ".tmp"
+	rb2 := rb1 + ".tmp"
+
+	if py1 == "" || rb1 == "" {
+		t.Fatal("Temp files error")
+	}
+
+	gazer, _ := New([]string{py1, rb1}, 100)
+	if gazer == nil {
+		t.Fatal()
+	}
+	defer gazer.Close()
+
+	c, err := config.InitConfig()
+	if err != nil {
+		t.Fatal()
+	}
+	go gazer.Run(c, 10*1000, false)
+	if gazer.InvokeCount() != 0 {
+		t.Fatal()
+	}
+
+	for i := 0; i < 20; i++ {
+		if gazer.InvokeCount() >= 10 {
+			break
+		}
+
+		os.Rename(py1, py2)
+		os.Rename(rb1, rb2)
+
+		time.Sleep(50)
+
+		touch(py1)
+		os.Rename(py2, py1)
+		touch(rb2)
+		os.Rename(rb2, rb1)
+
+		time.Sleep(50)
+	}
+
+	if gazer.InvokeCount() < 10 {
 		t.Fatal()
 	}
 }
@@ -81,7 +167,7 @@ print("end")
 	}
 	go gazer.Run(c, 10*1000, true)
 
-	if gazer.Counter() != 0 {
+	if gazer.InvokeCount() != 0 {
 		t.Fatal()
 	}
 
@@ -89,14 +175,14 @@ print("end")
 		touch(py1)
 		touch(py1)
 		touch(py1)
-		if gazer.Counter() >= 2 {
+		if gazer.InvokeCount() >= 2 {
 			break
 		}
 		time.Sleep(10)
 	}
 
-	if gazer.Counter() < 2 {
-		t.Fatalf("count:%d", gazer.Counter())
+	if gazer.InvokeCount() < 2 {
+		t.Fatalf("count:%d", gazer.InvokeCount())
 	}
 
 	gazer.Close()
@@ -122,7 +208,7 @@ func TestKill(t *testing.T) {
 		t.Fatal()
 	}
 	go gazer.Run(c, 10*1000, false)
-	if gazer.Counter() != 0 {
+	if gazer.InvokeCount() != 0 {
 		t.Fatal()
 	}
 
@@ -181,20 +267,20 @@ func TestInvalidCommand(t *testing.T) {
 	commandConfigs.Commands = append(commandConfigs.Commands, config.Command{Ext: ".py", Cmd: ""})
 
 	go gazer.Run(&commandConfigs, 10*1000, false)
-	if gazer.Counter() != 0 {
+	if gazer.InvokeCount() != 0 {
 		t.Fatal()
 	}
 
 	for i := 0; i < 100; i++ {
 		touch(py1)
 		touch(rb1)
-		if gazer.Counter() >= 4 {
+		if gazer.InvokeCount() >= 1 {
 			break
 		}
-		time.Sleep(50)
+		time.Sleep(5)
 	}
 
-	if gazer.Counter() < 4 {
+	if gazer.InvokeCount() > 0 {
 		t.Fatal()
 	}
 }

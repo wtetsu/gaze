@@ -120,6 +120,9 @@ func TestParseArgs(t *testing.T) {
 	if ParseArgs([]string{"", "-c", "1"}, usage).Color() != 1 {
 		t.Fatal()
 	}
+	if ParseArgs([]string{"", "-w", "9999"}, usage).MaxWatchDirs() != 9999 {
+		t.Fatal()
+	}
 	if !ParseArgs([]string{"", "--debug"}, usage).Debug() {
 		t.Fatal()
 	}
