@@ -249,17 +249,8 @@ func (n *Notify) wait() {
 
 			logger.Debug("fs.IsDir: %s", fs.IsDir(normalizedName))
 			if event.Op == fsnotify.Create && shouldWatch(normalizedName, n.candidates) {
-				err := n.watcher.Remove(normalizedName)
-				if err != nil {
-					if !strings.HasPrefix(err.Error(), "can't remove non-existent") {
-						logger.Error("watcher.Remove: %s", err)
-					}
-				}
 				logger.Info("gazing at: %s", normalizedName)
-				err = n.watcher.Add(normalizedName)
-				if err != nil {
-					logger.Error("watcher.Add: %s", err)
-				}
+				n.watchNewDir(normalizedName)
 			}
 
 			if !ok {
@@ -282,6 +273,19 @@ func (n *Notify) wait() {
 			}
 			n.Errors <- err
 		}
+	}
+}
+
+func (n *Notify) watchNewDir(normalizedName string) {
+	err := n.watcher.Remove(normalizedName)
+	if err != nil {
+		if !strings.HasPrefix(err.Error(), "can't remove non-existent") {
+			logger.Error("watcher.Remove: %s", err)
+		}
+	}
+	err = n.watcher.Add(normalizedName)
+	if err != nil {
+		logger.Error("watcher.Add: %s", err)
 	}
 }
 
