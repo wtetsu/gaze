@@ -4,4 +4,4 @@ checks:
     config:
       threshold: 5
 exclude_patterns:
-  - "*_test.go"
+  - "pkg/**/*_test.go"
