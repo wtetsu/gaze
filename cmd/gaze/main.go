@@ -34,40 +34,13 @@ func main() {
 		}()
 	}
 
-	if args.Help() {
-		fmt.Println(usage2())
+	done, exitCode := earlyExit(args)
+	if done {
+		os.Exit(exitCode)
 		return
 	}
 
-	if args.Version() {
-		fmt.Println("gaze " + version)
-		return
-	}
-
-	if args.Yaml() {
-		fmt.Println(config.Default())
-		return
-	}
-
-	if len(args.Targets()) == 0 {
-		fmt.Println(usage1())
-		return
-	}
-
-	if args.Color() == 0 {
-		logger.Plain()
-	} else {
-		logger.Colorful()
-	}
-	if args.Quiet() {
-		logger.Level(logger.QUIET)
-	}
-	if args.Verbose() {
-		logger.Level(logger.VERBOSE)
-	}
-	if args.Debug() {
-		logger.Level(logger.DEBUG)
-	}
+	initLogger(args)
 
 	err := validate(args)
 	if err != nil {
@@ -81,6 +54,46 @@ func main() {
 	if err != nil {
 		logger.ErrorObject(err)
 		os.Exit(1)
+	}
+}
+
+func earlyExit(args *app.Args) (bool, int) {
+	if args.Help() {
+		fmt.Println(usage2())
+		return true, 0
+	}
+
+	if args.Version() {
+		fmt.Println("gaze " + version)
+		return true, 0
+	}
+
+	if args.Yaml() {
+		fmt.Println(config.Default())
+		return true, 0
+	}
+
+	if len(args.Targets()) == 0 {
+		fmt.Println(usage1())
+		return true, 1
+	}
+	return false, 0
+}
+
+func initLogger(args *app.Args) {
+	if args.Color() == 0 {
+		logger.Plain()
+	} else {
+		logger.Colorful()
+	}
+	if args.Quiet() {
+		logger.Level(logger.QUIET)
+	}
+	if args.Verbose() {
+		logger.Level(logger.VERBOSE)
+	}
+	if args.Debug() {
+		logger.Level(logger.DEBUG)
 	}
 }
 
