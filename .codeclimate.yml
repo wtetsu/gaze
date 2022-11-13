@@ -1,7 +1,6 @@
 version: "2"
 checks:
   return-statements:
-    config:
-      threshold: 5
+    enabled: false
 exclude_patterns:
   - "pkg/**/*_test.go"
