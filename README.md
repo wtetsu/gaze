@@ -56,16 +56,18 @@ Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
 ---
 
-Software development often forces us to execute the same command again and again, by hand!
+Software development often requires us to execute the same command by hand!
 
-Let's say, you started writing a really really simple Python script. You created a.py, wrote 5 lines of code and run "python a.py".
-Since the result was not perfect, you edited a.py again, and run "python a.py" again.
+Let's say you're writing a simple Python script. You create a.py, write five lines of code, and run `python a.py`. If the result isn't perfect, you edit a.py and run `python a.py` again.
 
 Again and again...
 
-Then, you found yourself going back and forth between the editor and terminal and typing the same command thousands of times.
+Then you may find yourself switching back and forth between the editor and terminal, typing the same command over and over.
 
 That's totally waste of time and energy🙄
+
+
+
 
 ---
 
@@ -91,7 +93,7 @@ Gaze is designed as a CLI tool that accelerates your coding.
 
 ---
 
-Gaze was developed in order to support daily coding.
+Gaze was developed for supporting daily coding.
 
 Even though there are already many "update-and-run" type of tools, I would say Gaze is the best for quick coding because all the technical design decisions have been made for that purpose.
 
