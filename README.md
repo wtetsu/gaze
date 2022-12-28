@@ -56,18 +56,15 @@ Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
 ---
 
-Software development often requires us to execute the same command by hand!
+Software development often requires us to repeatedly execute the same command manually.
 
-Let's say you're writing a simple Python script. You create a.py, write five lines of code, and run `python a.py`. If the result isn't perfect, you edit a.py and run `python a.py` again.
+For example, when writing a simple Python script, you may create a.py file, write a few lines of code, and run `python a.py`. If the result isn't what you expected, you edit a.py and run `python a.py` again.
 
 Again and again...
 
-Then you may find yourself switching back and forth between the editor and terminal, typing the same command over and over.
+As a result, you may find yourself constantly switching between the editor and terminal, typing the same command repeatedly.
 
-That's totally waste of time and energy🙄
-
-
-
+This can be frustrating and a waste of time and energy🙄
 
 ---
 
