@@ -22,6 +22,3 @@ jobs:
         run: go test -v -coverprofile=coverage.txt -covermode=atomic ./pkg/...
       - name: Codecov
         uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: true
-          verbose: true
