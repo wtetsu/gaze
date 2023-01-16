@@ -74,13 +74,13 @@ This can be frustrating and a waste of time and energy🙄
 
 Gaze is designed as a CLI tool that accelerates your coding.
 
-- 📦Easy to use, out-of-the-box
-- ⚡Super quick reaction
-- 🌎Language-agnostic, editor-agnostic
-- 🔧Flexible configuration
-- 💻Multiplatform (macOS, Windows, Linux)
-- 📝Create-and-rename file actions handling
-- 🔍Advanced options for more control
+- 📦 Easy to use, out-of-the-box
+- ⚡ Super quick reaction
+- 🌎 Language-agnostic, editor-agnostic
+- 🔧 Flexible configuration
+- 💻 Multiplatform (macOS, Windows, Linux)
+- 📝 Create-and-rename file actions handling
+- 🔍 Advanced options for more control
   - `-r`: restart (useful for server applications)
   - `-t 2000`: timeout (useful if you sometimes write infinite loops)
 - 🚀 Optimal parallel handling
