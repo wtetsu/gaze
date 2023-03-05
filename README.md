@@ -113,18 +113,18 @@ gaze a.py
 
 ---
 
- You can use wildcards (\*, \*\*, ?) to specify files.
+Specify files with pattern matching (\*, \*\*, ?, {, })
 
 ```
 gaze "*.py"
 ```
 
----
-
-Files in deep subdirectories.
-
 ```
 gaze "src/**/*.rb"
+```
+
+```
+gaze "{aaa,bbb}/*.{rb,py}"
 ```
 
 ---
