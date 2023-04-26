@@ -70,7 +70,11 @@ func New(patterns []string, maxWatchDirs int) (*Notify, error) {
 	for _, t := range watchDirs {
 		err = watcher.Add(t)
 		if err != nil {
-			logger.Error("%s: %v", t, err)
+			if err.Error() == "bad file descriptor" {
+				logger.Info("%s: %v", t, err)
+			} else {
+				logger.Error("%s: %v", t, err)
+			}
 		} else {
 			logger.Info("gazing at: %s", t)
 		}
