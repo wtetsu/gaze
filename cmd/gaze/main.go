@@ -118,10 +118,10 @@ func usage1() string {
 	return `Usage: gaze [options...] file(s)
 
 Options(excerpt):
-  -c  Command(s).
-  -r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
-  -t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
-  -h  Display help.
+  -c  Command(s) to run when files are changed.
+  -r  Restart mode. Sends SIGTERM to the ongoing process before invoking the next command.
+  -t  Timeout(ms). Sends SIGTERM to the ongoing process after the specified time has elapsed.
+  -h  Displays help.
 
 Examples:
   gaze .
@@ -139,14 +139,14 @@ func usage2() string {
 	return `Usage: gaze [options...] file(s)
 
 Options:
-  -c  Command(s).
-  -r  Restart mode. Send SIGTERM to an ongoing process before invoking next.
-  -t  Timeout(ms). Send SIGTERM to an ongoing process after this time.
+  -c  Command(s) to run when files are changed.
+  -r  Restart mode. Sends SIGTERM to the ongoing process before invoking the next command.
+  -t  Timeout(ms). Sends SIGTERM to the ongoing process after the specified time has elapsed.
   -f  Specify a YAML configuration file.
-  -v  Verbose mode.
-  -q  Quiet mode.
-  -y  Display the default YAML configuration.
-  -h  Display help.
+  -v  Verbose mode. Displays additional information.
+  -q  Quiet mode. Suppresses normal output.
+  -y  Displays the default YAML configuration.
+  -h  Displays help.
   --color    Color mode (0:plain, 1:colorful).
   --version  Display version information.
 
