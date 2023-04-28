@@ -309,4 +309,4 @@ gaze -c "echo {{file}} {{ext}} {{abs}}" .
 # Third-party data
 
 - Great Go libraries
-  - See [go.mod](https://github.com/wtetsu/gaze/blob/master/go.mod) and [license.json](https://github.com/wtetsu/gaze/actions/workflows/license.yml)
+  - See [go.mod](https://github.com/wtetsu/gaze/blob/master/go.mod) and [license.zip](https://github.com/wtetsu/gaze/releases)
