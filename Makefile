@@ -18,9 +18,8 @@ build-linux:
 ut:
 	go test github.com/wtetsu/gaze/pkg/...
 e2e:
-	go build -ldflags "-s -w" -o test/e2e -v ${CMD}
+	go build -ldflags "-s -w" -o test/e2e/ -v ${CMD}
 	cd test/e2e && sh test_all.sh
-	
 cov:
 	go test -coverprofile=coverage.txt -covermode=atomic github.com/wtetsu/gaze/pkg/...
 clean:

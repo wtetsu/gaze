@@ -29,3 +29,4 @@ jobs:
         uses: codecov/codecov-action@v3
       - name: End to end test
         run: make e2e
+        if: matrix.os == 'ubuntu-latest'

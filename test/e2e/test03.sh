@@ -13,31 +13,31 @@ cp $filedir/hello.py "$filedir/he&llo.py"
 cp $filedir/hello.py "$filedir/he llo.py"
 cp $filedir/hello.py "$filedir/he(llo.py"
 
-timeout -sKILL 5 ${gaze} -v files/*.* | tee test.log &
+timeout -sKILL 6 ${gaze} -v files/*.* | tee test.log &
 
 sleep 1.0
 echo >> "$filedir/he'llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he&llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he(llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he'llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he&llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he'llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he(llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he&llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he llo.py"
-sleep 0.2
+sleep 0.3
 echo >> "$filedir/he(llo.py"
 
 wait

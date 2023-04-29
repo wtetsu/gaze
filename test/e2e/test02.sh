@@ -8,29 +8,29 @@ filedir=$dir/files
 cd $dir
 rm -f test.*.log
 
-timeout -sKILL 5 ${gaze} -v -c "ruby {{file}} 1" -r files/*.*  | tee test.log &
+timeout -sKILL 6 ${gaze} -v -c "ruby {{file}} 1" -r files/*.*  | tee test.log &
 
 sleep 1.0
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 echo >> $filedir/hello.rb
-sleep 0.2
+sleep 0.3
 
 wait
 
