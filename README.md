@@ -153,7 +153,7 @@ gaze -t 1000 complicated.py
 
 ---
 
-Specify multiple commands by using quotations.
+Specify multiple commands in quotations, separated by newlines.
 
 ```
 gaze "*.cpp" -c "gcc {{file}} -o a.out
