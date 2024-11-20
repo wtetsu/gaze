@@ -7,29 +7,29 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        go-version: ["1.19", "1.20"]
+        go-version: ["1.22", "1.23"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Make
         run: make build-all-amd
       - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: macos_amd
-          path: dist/macos_amd
+          name: macos_amd-${{ matrix.go-version }}
+          path: dist/macos_amd-${{ matrix.go-version }}
       - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: linux
-          path: dist/linux
+          name: linux-${{ matrix.go-version }}
+          path: dist/linux-${{ matrix.go-version }}
       - name: Upload Build as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: dist/windows
+          name: windows-${{ matrix.go-version }}
+          path: dist/windows-${{ matrix.go-version }}
