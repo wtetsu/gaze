@@ -48,7 +48,7 @@ Or, [download binary](https://github.com/wtetsu/gaze/releases)
 ## Usage examples
 
 - Modify a.py -> 👁️Runs `python a.py`
-- Modify a.rb -> 👁️Runs `rubocop` 
+- Modify a.rb -> 👁️Runs `rubocop`
 - Modify a.js -> 👁️Runs `npm run lint`
 - Modify a.go -> 👁️Runs `make build`
 - Modify Dockerfile -> 👁️Runs `docker build`
@@ -236,6 +236,8 @@ commands:
     cmd: |
       tsc "{{file}}" --out "{{base0}}.out"
       node ./"{{base0}}.out"
+  - ext: .zig
+    cmd: zig run "{{file}}"
   - re: ^Dockerfile$
     cmd: docker build -f "{{file}}" .
 ```
