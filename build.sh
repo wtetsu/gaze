@@ -1,6 +1,6 @@
 #! /bin/sh -eu
 
-if [ $# == 0 ]; then
+if [ $# -eq 0 ]; then
   echo "Usage: build.sh <version>"
   exit 1
 fi

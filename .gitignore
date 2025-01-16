@@ -19,3 +19,4 @@ coverage.txt
 
 ?.py
 ?.rb
+_*.*

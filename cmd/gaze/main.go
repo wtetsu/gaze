@@ -19,6 +19,13 @@ import (
 
 const version = "v1.1.7"
 
+const (
+	errTimeout      = "timeout must be more than 0"
+	errColor        = "color must be 0 or 1"
+	errMaxWatchDirs = "maxWatchDirs must be more than 0"
+	versionInfo     = "gaze " + version
+)
+
 func main() {
 	args := app.ParseArgs(os.Args, func() {
 		fmt.Println(usage2())
@@ -64,7 +71,7 @@ func earlyExit(args *app.Args) (bool, int) {
 	}
 
 	if args.Version() {
-		fmt.Println("gaze " + version)
+		fmt.Println(versionInfo)
 		return true, 0
 	}
 
@@ -100,13 +107,13 @@ func initLogger(args *app.Args) {
 func validate(args *app.Args) error {
 	var errorList []string
 	if args.Timeout() <= 0 {
-		errorList = append(errorList, "timeout must be more than 0")
+		errorList = append(errorList, errTimeout)
 	}
 	if args.Color() != 0 && args.Color() != 1 {
-		errorList = append(errorList, "color must be 0 or 1")
+		errorList = append(errorList, errColor)
 	}
 	if args.MaxWatchDirs() <= 0 {
-		errorList = append(errorList, "maxWatchDirs must be more than 0")
+		errorList = append(errorList, errMaxWatchDirs)
 	}
 	if len(errorList) >= 1 {
 		return errors.New(strings.Join(errorList, "\n"))

@@ -14,7 +14,7 @@ No controversial point.
 
 ## Update twice in a row
 
-In case you update a.py again during the first process stays running,
+In case you update a.py again during the first process is still running,
 
 - Gaze waits until the first process finishes.
 - Right after the first process finished, a second process launches.
@@ -25,7 +25,7 @@ Since a.py was modified after the first `python a.py` launched, running `python 
 
 ## Update more than twice in a row
 
-In case you update a.py **multiple times** during the first process stays running,
+In case you update a.py **multiple times** during the first process is still running,
 
 - Gaze waits until the first process finishes.
 - Right after the first process finished, a second process launches.
@@ -39,7 +39,7 @@ Note that **Gaze doesn't invoke the third process** in this case. Since there is
 
 Gaze deals with multiple processes nicely.
 
-In case you update another file during the first process stays running, what should occur? **Gaze runs a second process in parallel**.
+In case you update another file during the first process is still running, what should occur? **Gaze runs a second process in parallel**.
 
 ![p04](img/p04.png)
 
@@ -53,7 +53,7 @@ There is a case Gaze runs the same command even when different files are updated
 gaze -c make '*.go'
 ```
 
-What should happen when you update multiple \*.go files during the first `make` stays running? The Gaze's answer is below.
+What should happen when you update multiple \*.go files during the first `make` is still running? The Gaze's answer is below.
 
 ![p05](img/p05.png)
 
