@@ -18,7 +18,7 @@
 
 👁️Gaze runs a command, **right after** you save a file.
 
-It greatly helps you to focus on writing code!
+It significantly enhances your coding efficiency by allowing you to focus on writing code!
 ![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
 
 ---
@@ -64,7 +64,7 @@ Again and again...
 
 As a result, you may find yourself constantly switching between the editor and terminal, typing the same command repeatedly.
 
-This can be frustrating and a waste of time and energy🙄
+This can be a frustrating and time-consuming process that drains your energy🙄
 
 ---
 
@@ -78,7 +78,6 @@ Gaze is designed as a CLI tool that accelerates your coding.
 - ⚡ Super quick reaction
 - 🌎 Language-agnostic, editor-agnostic
 - 🔧 Flexible configuration
-- 💻 Multiplatform (macOS, Windows, Linux)
 - 📝 Create-and-rename file actions handling
 - 🔍 Advanced options for more control
   - `-r`: restart (useful for server applications)
@@ -86,12 +85,13 @@ Gaze is designed as a CLI tool that accelerates your coding.
 - 🚀 Optimal parallel handling
   - See also: [Parallel handling](/doc/parallel.md)
   - <img src="doc/img/p04.png" width="300">
+- 💻 Multiplatform (macOS, Windows, Linux)
 
 ---
 
 Gaze was developed for supporting daily coding.
 
-Even though there are already many "update-and-run" type of tools, I would say Gaze is the best for quick coding because all the technical design decisions have been made for that purpose.
+While many "update-and-run" tools exist, Gaze stands out for its focus on rapid coding, thanks to its carefully considered technical design.
 
 # How to use Gaze
 
@@ -173,7 +173,7 @@ Output when a.cpp was updated.
 hello, world!
 ```
 
-If a certain command exited with non-zero, Gaze doesn't invoke the next command.
+If a command exited with non-zero, Gaze won't execute the subsequent commands.
 
 ```
 [gcc a.cpp -o a.out](1/3)
@@ -202,7 +202,7 @@ gaze a.py
 The above command is equivalent to `gaze a.py -c 'python "{{file}}"'`.
 
 
-You can display the default YAML configuration by `gaze -y`.
+You can view the default YAML configuration using `gaze -y`.
 
 ```yaml
 commands:
@@ -244,8 +244,8 @@ commands:
 
 Note:
 
-- To specify both ext and re for one cmd is prohibited
-- cmd can have multiple commands. Use vertical line(|) to write multiple commands
+- It's prohibited to specify both 'ext' and 're' for a single command
+- 'cmd' can accept multiple commands. Use vertical line(|) to write multiple commands
 
 If you want to customize it, please set up your own configuration file.
 

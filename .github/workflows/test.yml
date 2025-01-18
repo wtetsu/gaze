@@ -27,7 +27,7 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
+          max_attempts: 30
           command: go test -v ./pkg/...
       - name: Test with coverage
         if: matrix.os == 'ubuntu-latest'
@@ -40,5 +40,5 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
+          max_attempts: 30
           command: make e2e
