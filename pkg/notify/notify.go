@@ -8,6 +8,7 @@ package notify
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -244,17 +245,31 @@ func shouldWatch(dirPath string, candidates []string) bool {
 	return false
 }
 
+func (n *Notify) watchNewDirRecursive(dirPath string) {
+	n.watchNewDir(dirPath)
+	subDirs, err := os.ReadDir(dirPath)
+	if err != nil {
+		logger.Error("ReadDir: %s", err)
+		return
+	}
+	for _, subDir := range subDirs {
+		if subDir.IsDir() {
+			subDirPath := filepath.Join(dirPath, subDir.Name())
+			n.watchNewDirRecursive(subDirPath)
+		}
+	}
+}
+
 func (n *Notify) wait() {
 	for {
 		select {
 		case event, ok := <-n.watcher.Events:
-
 			normalizedName := filepath.Clean(event.Name)
 
 			logger.Debug("fs.IsDir: %s", fs.IsDir(normalizedName))
-			if event.Op == fsnotify.Create && shouldWatch(normalizedName, n.candidates) {
+			if event.Has(fsnotify.Create) && shouldWatch(normalizedName, n.candidates) {
 				logger.Info("gazing at: %s", normalizedName)
-				n.watchNewDir(normalizedName)
+				n.watchNewDirRecursive(normalizedName)
 			}
 
 			if !ok {
@@ -283,7 +298,9 @@ func (n *Notify) wait() {
 func (n *Notify) watchNewDir(normalizedName string) {
 	err := n.watcher.Remove(normalizedName)
 	if err != nil {
-		if !strings.HasPrefix(err.Error(), "can't remove non-existent") {
+		if strings.HasPrefix(err.Error(), "fsnotify: can't remove non-existent") {
+			logger.Debug("watcher.Remove: %s", err)
+		} else {
 			logger.Error("watcher.Remove: %s", err)
 		}
 	}
