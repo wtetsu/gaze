@@ -10,6 +10,7 @@ import (
 	"errors"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -96,8 +97,8 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 }
 
 // handleEvent processes the received file system event.
-func (g *Gazer) handleEvent(commandConfigs *config.Config, timeout int64, restart bool, event notify.Event) {
-	commandStringList := g.tryToFindCommand(event.Name, commandConfigs)
+func (g *Gazer) handleEvent(config *config.Config, timeout int64, restart bool, event notify.Event) {
+	commandStringList := g.tryToFindCommand(event.Name, config.Commands)
 	if commandStringList == nil {
 		return
 	}
@@ -121,13 +122,13 @@ func (g *Gazer) handleEvent(commandConfigs *config.Config, timeout int64, restar
 	g.invokeCount++
 
 	go func() {
-		g.invoke(commandStringList, queueManageKey, timeout)
+		g.invoke(commandStringList, queueManageKey, timeout, config.Log)
 		logger.Debug("Unlock: %s", queueManageKey)
 		mutex.Unlock()
 	}()
 }
 
-func (g *Gazer) tryToFindCommand(filePath string, commandConfigs *config.Config) []string {
+func (g *Gazer) tryToFindCommand(filePath string, commandConfigs []config.Command) []string {
 	if !matchAny(g.patterns, filePath) {
 		return nil
 	}
@@ -160,20 +161,20 @@ func (g *Gazer) lock(queueManageKey string) *sync.Mutex {
 }
 
 // invoke executes commands, handles timeouts, and processes queued events.
-func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64) {
-	lastLaunched := time.Now()
+func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64, logConfig *config.Log) {
+	lastLaunched := time.UnixNano()
 
 	commandSize := len(commandStringList)
 
 	timeoutCh := time.After(timeout)
 	for i, commandString := range commandStringList {
-		if commandSize == 1 {
-			logger.NoticeWithBlank("[%s]", commandString)
-		} else {
-			logger.NoticeWithBlank("[%s](%d/%d)", commandString, i+1, commandSize)
-		}
+		logCommandStart(logConfig, commandString, commandSize, i)
 
+		startTime := time.UnixNano()
 		err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
+
+		duration := (time.UnixNano() - startTime) / 1_000_000
+		logCommandEnd(logConfig, commandString, duration)
 		if err != nil {
 			if len(err.Error()) > 0 {
 				logger.NoticeObject(err)
@@ -197,6 +198,42 @@ func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeou
 	}
 }
 
+func logCommandStart(logConfig *config.Log, commandString string, commandSize int, i int) {
+	params := makeCommonLogParams(commandString)
+
+	if commandSize >= 2 {
+		params["step"] = "(" + strconv.Itoa(i+1) + "/" + strconv.Itoa(commandSize) + ")"
+	}
+
+	log := logConfig.RenderStart(params)
+	if log != "" {
+		logger.NoticeWithBlank(log)
+	}
+}
+
+func logCommandEnd(logConfig *config.Log, commandString string, duration int64) {
+	params := makeCommonLogParams(commandString)
+	params["elapsed_ms"] = strconv.FormatInt(duration, 10)
+	log := logConfig.RenderEnd(params)
+	if log != "" {
+		logger.Notice(log)
+	}
+}
+
+func makeCommonLogParams(makeCommonLogParams string) map[string]string {
+	now := time.Now()
+	return map[string]string{
+		"command": makeCommonLogParams,
+		"YYYY":    now.Format("2006"),
+		"MM":      now.Format("01"),
+		"DD":      now.Format("02"),
+		"HH":      now.Format("15"),
+		"mm":      now.Format("04"),
+		"ss":      now.Format("05"),
+		"SSS":     now.Format(".000")[1:], // Remove the leading dot
+	}
+}
+
 func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) error {
 	cmd := createCommand(commandString)
 	g.commands.update(queueManageKey, cmd)
@@ -213,10 +250,10 @@ func matchAny(watchFiles []string, s string) bool {
 	return false
 }
 
-func getMatchedCommand(filePath string, commandConfigs *config.Config) (string, error) {
+func getMatchedCommand(filePath string, commandConfigs []config.Command) (string, error) {
 	var result string
 	var resultError error
-	for _, c := range commandConfigs.Commands {
+	for _, c := range commandConfigs {
 		if c.Cmd == "" || c.Ext == "" && c.Re == "" {
 			continue
 		}

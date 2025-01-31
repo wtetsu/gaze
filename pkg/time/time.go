@@ -21,9 +21,13 @@ func GetFileModifiedTime(filePath string) int64 {
 	return fileInfo.ModTime().UnixNano()
 }
 
-// Now returns current time as a int64 value.
-func Now() int64 {
+// UnixNano returns current time as a int64 value.
+func UnixNano() int64 {
 	return time.Now().UnixNano()
+}
+
+func Now() time.Time {
+	return time.Now()
 }
 
 // Sleep sleeps milliseconds time

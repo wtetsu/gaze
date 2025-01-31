@@ -41,7 +41,7 @@ func (c *commands) update(key string, cmd *exec.Cmd) {
 		delete(c.commands, key)
 		return
 	}
-	c.commands[key] = command{cmd: cmd, lastLaunched: time.Now()}
+	c.commands[key] = command{cmd: cmd, lastLaunched: time.UnixNano()}
 }
 
 func (c *commands) get(key string) *command {
