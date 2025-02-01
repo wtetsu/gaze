@@ -20,10 +20,16 @@ import (
 	"github.com/wtetsu/gaze/pkg/time"
 )
 
-func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) error {
+type CmdResult struct {
+	Elapsed int64
+	Err     error
+}
+
+func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) (int64, error) {
 	exec := executeCommandAsync(cmd)
 
 	var err error
+	var cmdResult CmdResult
 	finished := false
 	for {
 		if finished {
@@ -38,45 +44,48 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) error {
 			kill(cmd, "Timeout")
 			finished = true
 			err = errors.New("")
-		case err = <-exec:
+		case cmdResult = <-exec:
+			err = cmdResult.Err
 			finished = true
 		}
 	}
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if cmd.ProcessState != nil {
 		exitCode := cmd.ProcessState.ExitCode()
 		if exitCode != 0 {
-			return fmt.Errorf("exitCode:%d", exitCode)
+			return cmdResult.Elapsed, fmt.Errorf("exitCode:%d", exitCode)
 		}
 	}
 
-	return nil
+	return cmdResult.Elapsed, nil
 }
 
-func executeCommandAsync(cmd *exec.Cmd) <-chan error {
-	ch := make(chan error)
+func executeCommandAsync(cmd *exec.Cmd) <-chan CmdResult {
+	ch := make(chan CmdResult)
 
 	go func() {
 		if cmd == nil {
-			ch <- errors.New("failed: cmd is nil")
+			ch <- CmdResult{Err: errors.New("failed: cmd is nil")}
 			return
 		}
-		err := executeCommand(cmd)
+		elapsed, err := executeCommand(cmd)
 		if err != nil {
-			ch <- err
+			ch <- CmdResult{Err: err}
 			return
 		}
-		ch <- nil
+		ch <- CmdResult{Elapsed: elapsed, Err: nil}
 	}()
 	return ch
 }
 
-func executeCommand(cmd *exec.Cmd) error {
+func executeCommand(cmd *exec.Cmd) (int64, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
+	start := time.UnixNano()
 	cmd.Start()
 
 	if cmd.Process != nil {
@@ -85,7 +94,9 @@ func executeCommand(cmd *exec.Cmd) error {
 		logger.Info("Pid: ????")
 	}
 	err := cmd.Wait()
-	return err
+
+	elapsed := time.UnixNano() - start
+	return elapsed, err
 }
 
 func kill(cmd *exec.Cmd, reason string) bool {

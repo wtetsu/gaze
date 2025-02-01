@@ -68,7 +68,7 @@ func TestProc4(t *testing.T) {
 
 func TestProc5(t *testing.T) {
 	var cmd *exec.Cmd = nil
-	err := executeCommandOrTimeout(cmd, time.After(100))
+	_, err := executeCommandOrTimeout(cmd, time.After(100))
 	if err == nil {
 		t.Fatal()
 	}
