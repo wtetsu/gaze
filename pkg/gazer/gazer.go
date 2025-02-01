@@ -170,11 +170,9 @@ func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeou
 	for i, commandString := range commandStringList {
 		logCommandStart(logConfig, commandString, commandSize, i)
 
-		startTime := time.UnixNano()
-		err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
+		elapsed, err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
 
-		duration := (time.UnixNano() - startTime) / 1_000_000
-		logCommandEnd(logConfig, commandString, duration)
+		logCommandEnd(logConfig, commandString, elapsed/1_000_000)
 		if err != nil {
 			if len(err.Error()) > 0 {
 				logger.NoticeObject(err)
@@ -211,9 +209,9 @@ func logCommandStart(logConfig *config.Log, commandString string, commandSize in
 	}
 }
 
-func logCommandEnd(logConfig *config.Log, commandString string, duration int64) {
+func logCommandEnd(logConfig *config.Log, commandString string, elapsedMs int64) {
 	params := makeCommonLogParams(commandString)
-	params["elapsed_ms"] = strconv.FormatInt(duration, 10)
+	params["elapsed_ms"] = strconv.FormatInt(elapsedMs, 10)
 	log := logConfig.RenderEnd(params)
 	if log != "" {
 		logger.Notice(log)
@@ -234,11 +232,10 @@ func makeCommonLogParams(makeCommonLogParams string) map[string]string {
 	}
 }
 
-func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) error {
+func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) (int64, error) {
 	cmd := createCommand(commandString)
 	g.commands.update(queueManageKey, cmd)
-	err := executeCommandOrTimeout(cmd, timeoutCh)
-	return err
+	return executeCommandOrTimeout(cmd, timeoutCh)
 }
 
 func matchAny(watchFiles []string, s string) bool {

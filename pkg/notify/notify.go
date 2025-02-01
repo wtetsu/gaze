@@ -275,7 +275,7 @@ func (n *Notify) wait() {
 			if !ok {
 				continue
 			}
-			if !n.shouldExecute(normalizedName, event.Op) {
+			if !n.shouldExecute(normalizedName, event) {
 				continue
 			}
 			logger.Debug("notified: %s: %s", normalizedName, event.Op)
@@ -310,43 +310,43 @@ func (n *Notify) watchNewDir(normalizedName string) {
 	}
 }
 
-func (n *Notify) shouldExecute(filePath string, op Op) bool {
+func (n *Notify) shouldExecute(filePath string, ev fsnotify.Event) bool {
 	const W = fsnotify.Write
 	const R = fsnotify.Rename
 	const C = fsnotify.Create
 
-	if op != W && op != R && !(n.detectCreate && op == C) {
-		logger.Debug("skipped: %s: %s (Op is not applicable)", filePath, op)
+	if !ev.Has(W) && !ev.Has(R) && !(n.detectCreate && ev.Has(C)) {
+		logger.Debug("skipped: %s: %s (Op is not applicable)", filePath, ev.Op)
 		return false
 	}
 
 	lastExecutionTime := n.times[filePath]
 
 	if !fs.IsFile(filePath) {
-		logger.Debug("skipped: %s: %s (not a file)", filePath, op)
+		logger.Debug("skipped: %s: %s (not a file)", filePath, ev.Op)
 		return false
 	}
 
 	if strings.Contains(filePath, "'") || strings.Contains(filePath, "\"") {
-		logger.Debug("skipped: %s: %s (unsupported character)", filePath, op)
+		logger.Debug("skipped: %s: %s (unsupported character)", filePath, ev.Op)
 		return false
 	}
 
 	modifiedTime := time.GetFileModifiedTime(filePath)
 
-	if op == W || op == C {
+	if ev.Has(W) || ev.Has(C) {
 		elapsed := modifiedTime - lastExecutionTime
-		logger.Debug("lastExecutionTime(%s): %d, %d", op, lastExecutionTime, elapsed)
+		logger.Debug("lastExecutionTime(%s): %d, %d", ev.Op, lastExecutionTime, elapsed)
 		if elapsed < n.pendingPeriod*1000000 {
-			logger.Debug("skipped: %s: %s (too frequent)", filePath, op)
+			logger.Debug("skipped: %s: %s (too frequent)", filePath, ev.Op)
 			return false
 		}
 	}
-	if op == R {
+	if ev.Has(R) {
 		elapsed := time.UnixNano() - modifiedTime
-		logger.Debug("lastExecutionTime(%s): %d, %d", op, lastExecutionTime, elapsed)
+		logger.Debug("lastExecutionTime(%s): %d, %d", ev.Op, lastExecutionTime, elapsed)
 		if elapsed > n.regardRenameAsModPeriod*1000000 {
-			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, op)
+			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, ev.Op)
 			return false
 		}
 	}
