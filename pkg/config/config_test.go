@@ -7,10 +7,11 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/cbroglie/mustache" // 追加
 )
 
 func TestNew(t *testing.T) {
@@ -88,7 +89,10 @@ func TestInvalidYaml(t *testing.T) {
 }
 
 func TestSearchConfigPath(t *testing.T) {
-	tempDir, _ := ioutil.TempDir("", "__gaze_test")
+	tempDir, err := os.MkdirTemp("", "__gaze_test")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if searchConfigPath("") != "" {
 		t.Fatal()
@@ -148,7 +152,7 @@ commands:
 }
 
 func createTempFile(pattern string, content string) string {
-	file, err := ioutil.TempFile("", pattern)
+	file, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return ""
 	}
@@ -156,4 +160,64 @@ func createTempFile(pattern string, content string) string {
 	file.Close()
 
 	return file.Name()
+}
+
+func TestRenderStartEnd(t *testing.T) {
+	logConf := &Log{
+		Start: "Start: {{key}}",
+		End:   "End: {{key}}",
+	}
+	startTmpl, err := mustache.ParseString(logConf.Start)
+	if err != nil {
+		t.Fatalf("failed to parse start template: %s", err)
+	}
+	logConf.start = startTmpl
+
+	endTmpl, err := mustache.ParseString(logConf.End)
+	if err != nil {
+		t.Fatalf("failed to parse end template: %s", err)
+	}
+	logConf.end = endTmpl
+
+	params := map[string]string{"key": "value1"}
+	startResult := logConf.RenderStart(params)
+	expectedStart := "Start: value1"
+	if startResult != expectedStart {
+		t.Fatalf("expected %q but got %q", expectedStart, startResult)
+	}
+
+	params = map[string]string{"key": "value2"}
+	endResult := logConf.RenderEnd(params)
+	expectedEnd := "End: value2"
+	if endResult != expectedEnd {
+		t.Fatalf("expected %q but got %q", expectedEnd, endResult)
+	}
+
+	startResult = logConf.RenderStart(nil)
+	expectedStart = "Start: "
+	if startResult != expectedStart {
+		t.Fatalf("expected %q but got %q", expectedStart, startResult)
+	}
+}
+
+func TestRenderLog(t *testing.T) {
+	templateStr := "Hello, {{name}}!"
+	tmpl, err := mustache.ParseString(templateStr)
+	if err != nil {
+		t.Fatalf("failed to parse template: %s", err)
+	}
+	params := map[string]string{
+		"name": "World",
+	}
+	result := renderLog(tmpl, params)
+	expected := "Hello, World!"
+	if result != expected {
+		t.Fatalf("expected %q but got %q", expected, result)
+	}
+
+	result = renderLog(tmpl, nil)
+	expected = "Hello, !"
+	if result != expected {
+		t.Fatalf("expected %q but got %q", expected, result)
+	}
 }

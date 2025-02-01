@@ -34,7 +34,11 @@ jobs:
         run: go test -v -coverprofile=coverage.txt -covermode=atomic ./pkg/...
       - name: Codecov
         if: matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: End to end test
         if: matrix.os == 'ubuntu-latest'
         uses: nick-fields/retry@v2

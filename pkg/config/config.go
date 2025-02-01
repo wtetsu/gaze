@@ -192,24 +192,17 @@ func (c *Command) Match(filePath string) bool {
 }
 
 func (l *Log) RenderStart(params map[string]string) string {
-	if l.start == nil {
-		return ""
-	}
-	log, err := l.start.Render(params)
-	if err != nil {
-		logger.Error("Failed to render start: %s", err)
-		return ""
-	}
-	return log
+	return renderLog(l.start, params)
 }
 
 func (l *Log) RenderEnd(params map[string]string) string {
-	if l.end == nil {
-		return ""
-	}
-	log, err := l.end.Render(params)
+	return renderLog(l.end, params)
+}
+
+func renderLog(tmpl *mustache.Template, params map[string]string) string {
+	log, err := tmpl.Render(params)
 	if err != nil {
-		logger.Error("Failed to render end: %s", err)
+		logger.Error("Failed to render log: %s", err)
 		return ""
 	}
 	return log

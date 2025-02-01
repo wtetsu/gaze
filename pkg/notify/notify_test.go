@@ -8,7 +8,6 @@ package notify
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,6 +16,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/time"
 )
@@ -530,7 +530,7 @@ func TestQueue(t *testing.T) {
 }
 
 func createTempDir() string {
-	dirpath, err := ioutil.TempDir("", "_gaze")
+	dirpath, err := os.MkdirTemp("", "_gaze")
 	if err != nil {
 		return ""
 	}
@@ -543,7 +543,7 @@ func createTempFile(pattern string, content string) string {
 }
 
 func createTempFileWithDir(dirpath string, pattern string, content string) string {
-	file, err := ioutil.TempFile(dirpath, pattern)
+	file, err := os.CreateTemp(dirpath, pattern)
 	if err != nil {
 		return ""
 	}
@@ -560,4 +560,74 @@ func touch(fileName string) {
 	}
 	file.WriteString(" ")
 	file.Close()
+}
+
+func TestShouldExecute_Frequency(t *testing.T) {
+	// Create a temporary file.
+	tmp := createTempFile("*.txt", "frequency test")
+	if tmp == "" {
+		t.Fatal("Failed to create temp file")
+	}
+
+	// Set the file's modified time to now.
+	now := time.Now()
+	if err := os.Chtimes(tmp, now, now); err != nil {
+		t.Fatal(err)
+	}
+
+	n, err := New([]string{filepath.Dir(tmp)}, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer n.Close()
+
+	// Set last execution time very close to current modified time.
+	n.times[tmp] = time.UnixNano() - 50*1e6 // 50 ms ago
+	n.PendingPeriod(100)                    // 100ms pending period
+
+	// Simulate a Write event.
+	event := fsnotify.Event{Name: tmp, Op: fsnotify.Write}
+
+	if n.shouldExecute(tmp, event) {
+		t.Fatalf("shouldExecute expected false due to frequency throttle")
+	}
+}
+
+func TestShouldExecute_UnsupportedChar(t *testing.T) {
+	// Use an artificial file path containing unsupported characters.
+	fakePath := `invalid"file'.txt`
+	n, err := New([]string{"."}, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer n.Close()
+
+	// Manually add a last execution time.
+	n.times[fakePath] = 0
+
+	// Simulate a Write event.
+	event := fsnotify.Event{Name: fakePath, Op: fsnotify.Write}
+	if n.shouldExecute(fakePath, event) {
+		t.Fatalf("shouldExecute expected false due to unsupported characters in the path")
+	}
+}
+
+func TestShouldExecute_NonFile(t *testing.T) {
+	// Create a temporary directory.
+	tmpDir := createTempDir()
+	if tmpDir == "" {
+		t.Fatal("Failed to create temp directory")
+	}
+
+	n, err := New([]string{tmpDir}, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer n.Close()
+
+	// Simulate a Write event on a directory.
+	event := fsnotify.Event{Name: tmpDir, Op: fsnotify.Write}
+	if n.shouldExecute(tmpDir, event) {
+		t.Fatalf("shouldExecute expected false for directory path")
+	}
 }

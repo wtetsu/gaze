@@ -8,7 +8,6 @@ package gazer
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -348,13 +347,13 @@ func TestInvalidTimeout(t *testing.T) {
 }
 
 func createTempFile(pattern string, content string) string {
-	dirpath, err := ioutil.TempDir("", "_gaze")
+	dirpath, err := os.MkdirTemp("", "_gaze")
 
 	if err != nil {
 		return ""
 	}
 
-	file, err := ioutil.TempFile(dirpath, pattern)
+	file, err := os.CreateTemp(dirpath, pattern)
 	if err != nil {
 		return ""
 	}
