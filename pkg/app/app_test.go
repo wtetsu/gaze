@@ -7,7 +7,6 @@
 package app
 
 import (
-	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -141,7 +140,7 @@ func TestParseArgs(t *testing.T) {
 }
 
 func createTempFile(pattern string, content string) string {
-	file, err := ioutil.TempFile("", pattern)
+	file, err := os.CreateTemp("", pattern)
 	if err != nil {
 		return ""
 	}
