@@ -19,19 +19,19 @@ func Test(t *testing.T) {
 	fileTime := GetFileModifiedTime("time.go")
 
 	Sleep(1)
-	now1 := Now()
+	now1 := UnixNano()
 
 	if now1 < fileTime {
 		t.Fatal()
 	}
 
 	ch := After(5)
-	now2 := Now()
+	now2 := UnixNano()
 	if now2 < now1 {
 		t.Fatal()
 	}
 	<-ch
-	now3 := Now()
+	now3 := UnixNano()
 	if now3 < now2 {
 		t.Fatal()
 	}

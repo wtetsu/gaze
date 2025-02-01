@@ -44,5 +44,9 @@ commands:
   cmd: zig run "{{file}}"
 - re: ^Dockerfile$
   cmd: docker build -f "{{file}}" .
+
+log:
+  start: "[{{{command}}}]{{step}}"
+  end: "({{elapsed_ms}}ms)"
 `
 }

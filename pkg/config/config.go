@@ -7,12 +7,13 @@
 package config
 
 import (
-	"io/ioutil"
+	"os"
 	"os/user"
 	"path"
 	"path/filepath"
 	"regexp"
 
+	"github.com/cbroglie/mustache"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"gopkg.in/yaml.v3"
@@ -21,6 +22,7 @@ import (
 // Config represents Gaze configuration
 type Config struct {
 	Commands []Command
+	Log      *Log
 }
 
 // Command represents Gaze configuration
@@ -29,6 +31,13 @@ type Command struct {
 	Cmd string
 	Re  string
 	re  *regexp.Regexp
+}
+
+type Log struct {
+	Start string
+	End   string
+	start *mustache.Template
+	end   *mustache.Template
 }
 
 // New returns a new Config.
@@ -58,18 +67,17 @@ func makeConfigFromFile(configPath string) (*Config, error) {
 
 func defaultConfig() (*Config, error) {
 	bytes := []byte(Default())
-	entries, err := parseConfig(bytes)
+	config, err := parseConfig(bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	config := Config{Commands: *entries}
-	return prepare(&config), nil
+	return prepare(config), nil
 }
 
 // LoadConfig loads a configuration file.
 func LoadConfig(configPath string) (*Config, error) {
-	bytes, err := ioutil.ReadFile(configPath)
+	bytes, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -77,16 +85,19 @@ func LoadConfig(configPath string) (*Config, error) {
 }
 
 func makeConfigFromBytes(bytes []byte) (*Config, error) {
-	commands, err := parseConfig(bytes)
+	config, err := parseConfig(bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	config := Config{Commands: *commands}
-	return prepare(&config), nil
+	return prepare(config), nil
 }
 
 func prepare(configs *Config) *Config {
+	if len(configs.Commands) == 0 {
+		logger.Notice("No commands defined in the configuration file. Gaze will not function properly.")
+	}
+
 	for i := 0; i < len(configs.Commands); i++ {
 		reStr := configs.Commands[i].Re
 		if reStr == "" {
@@ -95,8 +106,30 @@ func prepare(configs *Config) *Config {
 		re, err := regexp.Compile(reStr)
 		if err == nil {
 			configs.Commands[i].re = re
+		} else {
+			logger.Error("Failed to compile regexp: " + err.Error())
 		}
 	}
+
+	if configs.Log == nil {
+		c, _ := parseConfig([]byte(Default())) // Parse error never occurs
+		configs.Log = c.Log
+	}
+
+	start, err := mustache.ParseString(configs.Log.Start)
+	if err == nil {
+		configs.Log.start = start
+	} else {
+		logger.Error("Failed to parse start template: %s: %s", err.Error(), configs.Log.Start)
+	}
+
+	end, err := mustache.ParseString(configs.Log.End)
+	if err == nil {
+		configs.Log.end = end
+	} else {
+		logger.Error("Failed to parse end template: %s: %s", err.Error(), configs.Log.End)
+	}
+
 	return configs
 }
 
@@ -128,13 +161,14 @@ func homeDirPath() string {
 	return filepath.ToSlash(currentUser.HomeDir)
 }
 
-func parseConfig(fileBuffer []byte) (*[]Command, error) {
+func parseConfig(fileBuffer []byte) (*Config, error) {
 	config := Config{}
 	err := yaml.Unmarshal(fileBuffer, &config)
 	if err != nil {
 		return nil, err
 	}
-	return &config.Commands, nil
+
+	return &config, nil
 }
 
 // Match return true is filePath meets the condition
@@ -155,4 +189,28 @@ func (c *Command) Match(filePath string) bool {
 
 	// c.Ext == "" && c.re == nil
 	return false
+}
+
+func (l *Log) RenderStart(params map[string]string) string {
+	if l.start == nil {
+		return ""
+	}
+	log, err := l.start.Render(params)
+	if err != nil {
+		logger.Error("Failed to render start: %s", err)
+		return ""
+	}
+	return log
+}
+
+func (l *Log) RenderEnd(params map[string]string) string {
+	if l.end == nil {
+		return ""
+	}
+	log, err := l.end.Render(params)
+	if err != nil {
+		logger.Error("Failed to render end: %s", err)
+		return ""
+	}
+	return log
 }

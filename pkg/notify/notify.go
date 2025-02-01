@@ -279,7 +279,7 @@ func (n *Notify) wait() {
 				continue
 			}
 			logger.Debug("notified: %s: %s", normalizedName, event.Op)
-			now := time.Now()
+			now := time.UnixNano()
 			n.times[normalizedName] = now
 			e := Event{
 				Name: normalizedName,
@@ -343,7 +343,7 @@ func (n *Notify) shouldExecute(filePath string, op Op) bool {
 		}
 	}
 	if op == R {
-		elapsed := time.Now() - modifiedTime
+		elapsed := time.UnixNano() - modifiedTime
 		logger.Debug("lastExecutionTime(%s): %d, %d", op, lastExecutionTime, elapsed)
 		if elapsed > n.regardRenameAsModPeriod*1000000 {
 			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, op)
