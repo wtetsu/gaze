@@ -16,7 +16,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
-	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/tutil"
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
@@ -279,7 +279,7 @@ func (n *Notify) wait() {
 				continue
 			}
 			logger.Debug("notified: %s: %s", normalizedName, event.Op)
-			now := time.UnixNano()
+			now := tutil.UnixNano()
 			n.times[normalizedName] = now
 			e := Event{
 				Name: normalizedName,
@@ -332,7 +332,7 @@ func (n *Notify) shouldExecute(filePath string, ev fsnotify.Event) bool {
 		return false
 	}
 
-	modifiedTime := time.GetFileModifiedTime(filePath)
+	modifiedTime := tutil.GetFileModifiedTime(filePath)
 
 	if ev.Has(W) || ev.Has(C) {
 		elapsed := modifiedTime - lastExecutionTime
@@ -343,7 +343,7 @@ func (n *Notify) shouldExecute(filePath string, ev fsnotify.Event) bool {
 		}
 	}
 	if ev.Has(R) {
-		elapsed := time.UnixNano() - modifiedTime
+		elapsed := tutil.UnixNano() - modifiedTime
 		logger.Debug("lastExecutionTime(%s): %d, %d", ev.Op, lastExecutionTime, elapsed)
 		if elapsed > n.regardRenameAsModPeriod*1000000 {
 			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, ev.Op)

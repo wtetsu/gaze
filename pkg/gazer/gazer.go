@@ -18,7 +18,7 @@ import (
 	"github.com/wtetsu/gaze/pkg/fs"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/notify"
-	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 // Gazer gazes filesystem.
@@ -162,11 +162,11 @@ func (g *Gazer) lock(queueManageKey string) *sync.Mutex {
 
 // invoke executes commands, handles timeouts, and processes queued events.
 func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64, logConfig *config.Log) {
-	lastLaunched := time.UnixNano()
+	lastLaunched := tutil.UnixNano()
 
 	commandSize := len(commandStringList)
 
-	timeoutCh := time.After(timeout)
+	timeoutCh := tutil.After(timeout)
 	for i, commandString := range commandStringList {
 		logCommandStart(logConfig, commandString, commandSize, i)
 
@@ -219,7 +219,7 @@ func logCommandEnd(logConfig *config.Log, commandString string, elapsedMs int64)
 }
 
 func makeCommonLogParams(makeCommonLogParams string) map[string]string {
-	now := time.Now()
+	now := tutil.Now()
 	return map[string]string{
 		"command": makeCommonLogParams,
 		"YYYY":    now.Format("2006"),

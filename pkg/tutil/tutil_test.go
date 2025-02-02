@@ -4,7 +4,7 @@
  * Licensed under MIT
  */
 
-package time
+package tutil
 
 import (
 	"testing"

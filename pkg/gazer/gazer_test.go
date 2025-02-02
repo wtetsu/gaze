@@ -14,7 +14,7 @@ import (
 	"testing"
 
 	"github.com/wtetsu/gaze/pkg/config"
-	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 func TestBasic(t *testing.T) {
@@ -46,7 +46,7 @@ func TestBasic(t *testing.T) {
 		if gazer.InvokeCount() >= 4 {
 			break
 		}
-		time.Sleep(50)
+		tutil.Sleep(50)
 	}
 
 	if gazer.InvokeCount() < 4 {
@@ -83,7 +83,7 @@ func TestDoNothing(t *testing.T) {
 		if gazer.InvokeCount() >= 4 {
 			break
 		}
-		time.Sleep(5)
+		tutil.Sleep(5)
 	}
 
 	if gazer.InvokeCount() > 0 {
@@ -125,14 +125,14 @@ func TestRename(t *testing.T) {
 		os.Rename(py1, py2)
 		os.Rename(rb1, rb2)
 
-		time.Sleep(50)
+		tutil.Sleep(50)
 
 		touch(py1)
 		os.Rename(py2, py1)
 		touch(rb2)
 		os.Rename(rb2, rb1)
 
-		time.Sleep(50)
+		tutil.Sleep(50)
 	}
 
 	if gazer.InvokeCount() < 10 {
@@ -177,7 +177,7 @@ print("end")
 		if gazer.InvokeCount() >= 2 {
 			break
 		}
-		time.Sleep(10)
+		tutil.Sleep(10)
 	}
 
 	if gazer.InvokeCount() < 2 {
@@ -229,7 +229,7 @@ func TestKill(t *testing.T) {
 		if pyKilled && rbKilled {
 			break
 		}
-		time.Sleep(10)
+		tutil.Sleep(10)
 	}
 
 	if !pyKilled || !rbKilled {
@@ -276,7 +276,7 @@ func TestInvalidCommand(t *testing.T) {
 		if gazer.InvokeCount() >= 1 {
 			break
 		}
-		time.Sleep(5)
+		tutil.Sleep(5)
 	}
 
 	if gazer.InvokeCount() > 0 {

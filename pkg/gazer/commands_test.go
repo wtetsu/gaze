@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/wtetsu/gaze/pkg/notify"
-	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 func TestCommandsBasic1(t *testing.T) {
@@ -70,20 +70,20 @@ func TestCommandsParallel(t *testing.T) {
 	go func() {
 		for i := 0; i < 100; i++ {
 			commands.get(key)
-			time.Sleep(1)
+			tutil.Sleep(1)
 		}
 	}()
 	go func() {
 		for i := 0; i < 100; i++ {
 			var cmd exec.Cmd
 			commands.update(key, &cmd)
-			time.Sleep(1)
+			tutil.Sleep(1)
 		}
 	}()
 	go func() {
 		for i := 0; i < 100; i++ {
 			commands.update(key, nil)
-			time.Sleep(1)
+			tutil.Sleep(1)
 		}
 	}()
 

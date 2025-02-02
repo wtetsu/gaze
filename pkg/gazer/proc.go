@@ -17,7 +17,7 @@ import (
 
 	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/logger"
-	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 type CmdResult struct {
@@ -38,7 +38,7 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) (int64, err
 		select {
 		case <-timeout:
 			if cmd.Process == nil {
-				timeout = time.After(5)
+				timeout = tutil.After(5)
 				continue
 			}
 			kill(cmd, "Timeout")
@@ -85,7 +85,7 @@ func executeCommand(cmd *exec.Cmd) (int64, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	start := time.UnixNano()
+	start := tutil.UnixNano()
 	cmd.Start()
 
 	if cmd.Process != nil {
@@ -95,7 +95,7 @@ func executeCommand(cmd *exec.Cmd) (int64, error) {
 	}
 	err := cmd.Wait()
 
-	elapsed := time.UnixNano() - start
+	elapsed := tutil.UnixNano() - start
 	return elapsed, err
 }
 

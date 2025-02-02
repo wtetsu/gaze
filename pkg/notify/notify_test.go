@@ -15,10 +15,11 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/logger"
-	"github.com/wtetsu/gaze/pkg/time"
+	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 func TestUtilFunctions(t *testing.T) {
@@ -338,7 +339,7 @@ func TestUpdate(t *testing.T) {
 		if count >= 2 {
 			break
 		}
-		time.Sleep(20)
+		tutil.Sleep(20)
 	}
 	if count < 2 {
 		t.Fatalf("count:%d", count)
@@ -395,7 +396,7 @@ func TestCreateAndMove(t *testing.T) {
 		if count >= 4 {
 			break
 		}
-		time.Sleep(20)
+		tutil.Sleep(20)
 	}
 
 	if count < 4 {
@@ -457,7 +458,7 @@ func TestDelete(t *testing.T) {
 	os.Remove(py1)
 	os.Remove(py2)
 
-	time.Sleep(20)
+	tutil.Sleep(20)
 
 	if count != 0 {
 		t.Fatalf("count:%d", count)
@@ -519,7 +520,7 @@ func TestQueue(t *testing.T) {
 		if count >= 2 {
 			break
 		}
-		time.Sleep(20)
+		tutil.Sleep(20)
 	}
 	if count < 2 {
 		t.Fatalf("count:%d", count)
@@ -562,72 +563,93 @@ func touch(fileName string) {
 	file.Close()
 }
 
-func TestShouldExecute_Frequency(t *testing.T) {
-	// Create a temporary file.
-	tmp := createTempFile("*.txt", "frequency test")
-	if tmp == "" {
-		t.Fatal("Failed to create temp file")
+func TestShouldExecute(t *testing.T) {
+	// create a temporary file to test with
+	tmpFile := createTempFile("test-*.txt", "content")
+	if tmpFile == "" {
+		t.Fatal("failed to create temp file")
+	}
+	defer os.Remove(tmpFile)
+
+	// Create a dummy Notify instance with minimal fields for testing
+	n := &Notify{
+		times:                   make(map[string]int64),
+		pendingPeriod:           10,   // in ms
+		regardRenameAsModPeriod: 1000, // in ms
+		detectCreate:            true,
 	}
 
-	// Set the file's modified time to now.
-	now := time.Now()
-	if err := os.Chtimes(tmp, now, now); err != nil {
-		t.Fatal(err)
+	// Test 1: Valid Write event.
+	// Set lastExecutionTime to 0 so the elapsed time (file mod time - 0) is large.
+	n.times[tmpFile] = 0
+	eventWrite := fsnotify.Event{Name: tmpFile, Op: fsnotify.Write}
+	if !n.shouldExecute(tmpFile, eventWrite) {
+		t.Fatalf("shouldExecute returned false for a valid Write event")
 	}
 
-	n, err := New([]string{filepath.Dir(tmp)}, 100)
+	// Test 2: Too frequent Write event.
+	// Set lastExecutionTime to current time and update file mod time to now.
+	now := tutil.UnixNano()
+	n.times[tmpFile] = now
+	_, err := os.Stat(tmpFile)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer n.Close()
-
-	// Set last execution time very close to current modified time.
-	n.times[tmp] = time.UnixNano() - 50*1e6 // 50 ms ago
-	n.PendingPeriod(100)                    // 100ms pending period
-
-	// Simulate a Write event.
-	event := fsnotify.Event{Name: tmp, Op: fsnotify.Write}
-
-	if n.shouldExecute(tmp, event) {
-		t.Fatalf("shouldExecute expected false due to frequency throttle")
-	}
-}
-
-func TestShouldExecute_UnsupportedChar(t *testing.T) {
-	// Use an artificial file path containing unsupported characters.
-	fakePath := `invalid"file'.txt`
-	n, err := New([]string{"."}, 100)
+	currentTime := time.Unix(0, now)
+	err = os.Chtimes(tmpFile, currentTime, currentTime)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer n.Close()
-
-	// Manually add a last execution time.
-	n.times[fakePath] = 0
-
-	// Simulate a Write event.
-	event := fsnotify.Event{Name: fakePath, Op: fsnotify.Write}
-	if n.shouldExecute(fakePath, event) {
-		t.Fatalf("shouldExecute expected false due to unsupported characters in the path")
-	}
-}
-
-func TestShouldExecute_NonFile(t *testing.T) {
-	// Create a temporary directory.
-	tmpDir := createTempDir()
-	if tmpDir == "" {
-		t.Fatal("Failed to create temp directory")
+	if n.shouldExecute(tmpFile, eventWrite) {
+		t.Fatalf("shouldExecute returned true for a too frequent Write event")
 	}
 
-	n, err := New([]string{tmpDir}, 100)
+	// Test 3: Valid Create event.
+	n.times[tmpFile] = 0
+	eventCreate := fsnotify.Event{Name: tmpFile, Op: fsnotify.Create}
+	if !n.shouldExecute(tmpFile, eventCreate) {
+		t.Fatalf("shouldExecute returned false for a valid Create event")
+	}
+
+	// Test 4: Valid Rename event.
+	// For Rename, the elapsed time is measured as (now - file mod time).
+	// Set file mod time to current time so that elapsed is small.
+	now = tutil.UnixNano()
+	n.times[tmpFile] = 0
+	currentTime = time.Unix(0, now)
+	err = os.Chtimes(tmpFile, currentTime, currentTime)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer n.Close()
+	eventRename := fsnotify.Event{Name: tmpFile, Op: fsnotify.Rename}
+	if !n.shouldExecute(tmpFile, eventRename) {
+		t.Fatalf("shouldExecute returned false for a valid Rename event")
+	}
 
-	// Simulate a Write event on a directory.
-	event := fsnotify.Event{Name: tmpDir, Op: fsnotify.Write}
-	if n.shouldExecute(tmpDir, event) {
-		t.Fatalf("shouldExecute expected false for directory path")
+	// Test 5: Too old Rename event.
+	// Set the file modification time in the past such that
+	// (current time - modifiedTime) > regardRenameAsModPeriod*1e6.
+	pastTime := tutil.UnixNano() - (n.regardRenameAsModPeriod*1000000 + 1)
+	past := time.Unix(0, pastTime)
+	err = os.Chtimes(tmpFile, past, past)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n.shouldExecute(tmpFile, eventRename) {
+		t.Fatalf("shouldExecute returned true for a too old Rename event")
+	}
+
+	// Test 6: Non-existent file should be skipped.
+	nonExistent := tmpFile + "_nonexistent"
+	eventNonExistent := fsnotify.Event{Name: nonExistent, Op: fsnotify.Write}
+	if n.shouldExecute(nonExistent, eventNonExistent) {
+		t.Fatalf("shouldExecute returned true for a non-existent file")
+	}
+
+	// Test 7: File with unsupported characters.
+	invalidName := tmpFile + `"`
+	eventInvalidChar := fsnotify.Event{Name: invalidName, Op: fsnotify.Write}
+	if n.shouldExecute(invalidName, eventInvalidChar) {
+		t.Fatalf("shouldExecute returned true for a file with unsupported characters")
 	}
 }
