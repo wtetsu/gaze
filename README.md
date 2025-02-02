@@ -19,7 +19,8 @@
 👁️Gaze runs a command, **right after** you save a file.
 
 It significantly enhances your coding efficiency by allowing you to focus on writing code!
-![gaze02](https://user-images.githubusercontent.com/515948/73607575-1fbfe900-45fb-11ea-813e-6be6bf9ece6d.gif)
+
+<img src="https://github.com/user-attachments/assets/a7be2e53-b516-419e-afea-735fa7bc095e" width="800px" />
 
 ---
 
