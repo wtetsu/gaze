@@ -10,6 +10,7 @@ import (
 	"math"
 	"os/exec"
 	"testing"
+	"time"
 
 	"github.com/wtetsu/gaze/pkg/tutil"
 )
@@ -32,7 +33,7 @@ func TestProc3(t *testing.T) {
 	go executeCommandOrTimeout(cmd, tutil.After(60*10000))
 
 	for {
-		tutil.Sleep(50)
+		time.Sleep(50 * time.Millisecond)
 		if cmd.Process != nil {
 			cmd.Process.Kill()
 			break

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/fsnotify/fsnotify"
@@ -279,7 +280,7 @@ func (n *Notify) wait() {
 				continue
 			}
 			logger.Debug("notified: %s: %s", normalizedName, event.Op)
-			now := tutil.UnixNano()
+			now := time.Now().UnixNano()
 			n.times[normalizedName] = now
 			e := Event{
 				Name: normalizedName,
@@ -343,7 +344,7 @@ func (n *Notify) shouldExecute(filePath string, ev fsnotify.Event) bool {
 		}
 	}
 	if ev.Has(R) {
-		elapsed := tutil.UnixNano() - modifiedTime
+		elapsed := time.Now().UnixNano() - modifiedTime
 		logger.Debug("lastExecutionTime(%s): %d, %d", ev.Op, lastExecutionTime, elapsed)
 		if elapsed > n.regardRenameAsModPeriod*1000000 {
 			logger.Debug("skipped: %s: %s (unnatural rename)", filePath, ev.Op)

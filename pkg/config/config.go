@@ -7,6 +7,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"os/user"
 	"path"
@@ -19,6 +20,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// For deserialize
+type rawConfig struct {
+	Commands []rawCommand
+	Log      *rawLog
+}
+
+// For deserialize
+type rawCommand struct {
+	Ext string
+	Cmd string
+	Re  string
+}
+
+// For deserialize
+type rawLog struct {
+	Start string
+	End   string
+}
+
 // Config represents Gaze configuration
 type Config struct {
 	Commands []Command
@@ -29,108 +49,128 @@ type Config struct {
 type Command struct {
 	Ext string
 	Cmd string
-	Re  string
 	re  *regexp.Regexp
 }
 
 type Log struct {
-	Start string
-	End   string
 	start *mustache.Template
 	end   *mustache.Template
 }
 
 // New returns a new Config.
-func New(command string) *Config {
-	fixedCommand := Command{Re: ".", Cmd: command}
-	config := Config{Commands: []Command{fixedCommand}}
-	return prepare(&config)
-}
-
-// InitConfig loads a configuration file.
-// Priority: default < ~/.gaze.yml < ~/.config/gaze/gaze.yml < -f option)
-func InitConfig() (*Config, error) {
-	home := homeDirPath()
-	configPath := searchConfigPath(home)
-	return makeConfigFromFile(configPath)
-}
-
-func makeConfigFromFile(configPath string) (*Config, error) {
-	if configPath != "" {
-		logger.Info("config: " + configPath)
-		return LoadConfig(configPath)
+func NewWithFixedCommand(command string) (*Config, error) {
+	if command == "" {
+		return nil, errors.New("empty command")
 	}
-
-	logger.Info("config: (default)")
-	return defaultConfig()
-}
-
-func defaultConfig() (*Config, error) {
-	bytes := []byte(Default())
-	config, err := parseConfig(bytes)
+	fixedCommand := rawCommand{Cmd: command, Re: "."}
+	loadedRawConfig, err := loadPreferredRawConfig(homeDirPath())
 	if err != nil {
 		return nil, err
 	}
 
-	return prepare(config), nil
+	config := rawConfig{Commands: []rawCommand{fixedCommand}, Log: loadedRawConfig.Log}
+	return toConfig(&config), nil
 }
 
-// LoadConfig loads a configuration file.
-func LoadConfig(configPath string) (*Config, error) {
+// LoadPreferredConfig loads a configuration file.
+// Priority: default < ~/.gaze.yml < ~/.config/gaze/gaze.yml < -f option)
+func LoadPreferredConfig() (*Config, error) {
+	rawConfig, err := loadPreferredRawConfig(homeDirPath())
+	if err != nil {
+		return nil, err
+	}
+	return toConfig(rawConfig), nil
+}
+
+func loadPreferredRawConfig(home string) (*rawConfig, error) {
+	configPath := searchConfigPath(home)
+
+	if configPath != "" {
+		logger.Info("config: " + configPath)
+		parsedRawConfig, err := parseRawConfigFromFile(configPath)
+		if err != nil {
+			return nil, err
+		}
+		return parsedRawConfig, nil
+	}
+
+	logger.Info("config: (default)")
+	return defaultRawConfig(), nil
+}
+
+func defaultRawConfig() *rawConfig {
+	bytes := []byte(Default())
+	rawConfig, _ := parseRawConfigFromBytes(bytes) // Parse error never occurs
+	return rawConfig
+}
+
+// LoadConfigFromFile loads a configuration file.
+func LoadConfigFromFile(configPath string) (*Config, error) {
 	bytes, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
-	return makeConfigFromBytes(bytes)
-}
 
-func makeConfigFromBytes(bytes []byte) (*Config, error) {
-	config, err := parseConfig(bytes)
+	rawConfig, err := parseRawConfigFromBytes(bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	return prepare(config), nil
+	return toConfig(rawConfig), nil
 }
 
-func prepare(configs *Config) *Config {
-	if len(configs.Commands) == 0 {
+func toConfig(rawConfig *rawConfig) *Config {
+	resultConfig := &Config{}
+	if len(rawConfig.Commands) == 0 {
 		logger.Notice("No commands defined in the configuration file. Gaze will not function properly.")
 	}
 
-	for i := 0; i < len(configs.Commands); i++ {
-		reStr := configs.Commands[i].Re
-		if reStr == "" {
+	for i := 0; i < len(rawConfig.Commands); i++ {
+		rawCmd := &rawConfig.Commands[i]
+
+		if rawCmd.Cmd == "" {
+			logger.Error("Empty cmd (%d)", i)
 			continue
 		}
-		re, err := regexp.Compile(reStr)
-		if err == nil {
-			configs.Commands[i].re = re
-		} else {
-			logger.Error("Failed to compile regexp: " + err.Error())
+		if rawCmd.Ext == "" && rawCmd.Re == "" {
+			logger.Debug("Both ext and re are empty (%d)", i)
+			continue
+		}
+
+		if rawCmd.Re != "" {
+			re, err := regexp.Compile(rawCmd.Re)
+			if err == nil {
+				resultConfig.Commands = append(resultConfig.Commands, Command{Cmd: rawCmd.Cmd, Ext: rawCmd.Ext, re: re})
+			} else {
+				logger.Error("Failed to compile regexp: " + err.Error())
+			}
+			continue
+		}
+
+		if rawCmd.Ext != "" {
+			resultConfig.Commands = append(resultConfig.Commands, Command{Cmd: rawCmd.Cmd, Ext: rawCmd.Ext})
+			continue
 		}
 	}
 
-	if configs.Log == nil {
-		c, _ := parseConfig([]byte(Default())) // Parse error never occurs
-		configs.Log = c.Log
+	sourceLog := rawConfig.Log
+	if sourceLog == nil {
+		defaultRawConfig, _ := parseRawConfigFromBytes([]byte(Default())) // Parse error never occurs
+		sourceLog = defaultRawConfig.Log
 	}
 
-	start, err := mustache.ParseString(configs.Log.Start)
-	if err == nil {
-		configs.Log.start = start
-	} else {
-		logger.Error("Failed to parse start template: %s: %s", err.Error(), configs.Log.Start)
+	start, err := mustache.ParseString(sourceLog.Start)
+	if err != nil {
+		logger.Error("Failed to parse start template: %s: %s", err.Error(), sourceLog.Start)
+	}
+	end, err := mustache.ParseString(sourceLog.End)
+	if err != nil {
+		logger.Error("Failed to parse end template: %s: %s", err.Error(), sourceLog.End)
 	}
 
-	end, err := mustache.ParseString(configs.Log.End)
-	if err == nil {
-		configs.Log.end = end
-	} else {
-		logger.Error("Failed to parse end template: %s: %s", err.Error(), configs.Log.End)
-	}
+	resultConfig.Log = &Log{start: start, end: end}
 
-	return configs
+	return resultConfig
 }
 
 func searchConfigPath(home string) string {
@@ -161,14 +201,22 @@ func homeDirPath() string {
 	return filepath.ToSlash(currentUser.HomeDir)
 }
 
-func parseConfig(fileBuffer []byte) (*Config, error) {
-	config := Config{}
-	err := yaml.Unmarshal(fileBuffer, &config)
+func parseRawConfigFromFile(path string) (*rawConfig, error) {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return parseRawConfigFromBytes(bytes)
+}
+
+func parseRawConfigFromBytes(fileBuffer []byte) (*rawConfig, error) {
+	rawConfig := rawConfig{}
+	err := yaml.Unmarshal(fileBuffer, &rawConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return &rawConfig, nil
 }
 
 // Match return true is filePath meets the condition
@@ -177,9 +225,6 @@ func (c *Command) Match(filePath string) bool {
 		return false
 	}
 
-	if c.Ext != "" && c.re != nil {
-		return c.Ext == filepath.Ext(filePath) && c.re.MatchString(filePath)
-	}
 	if c.Ext != "" && c.re == nil {
 		return c.Ext == filepath.Ext(filePath)
 	}
@@ -187,8 +232,8 @@ func (c *Command) Match(filePath string) bool {
 		return c.re.MatchString(filePath)
 	}
 
-	// c.Ext == "" && c.re == nil
-	return false
+	// Both are set
+	return c.Ext == filepath.Ext(filePath) && c.re.MatchString(filePath)
 }
 
 func (l *Log) RenderStart(params map[string]string) string {

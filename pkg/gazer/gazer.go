@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/wtetsu/gaze/pkg/config"
 	"github.com/wtetsu/gaze/pkg/fs"
@@ -162,7 +163,7 @@ func (g *Gazer) lock(queueManageKey string) *sync.Mutex {
 
 // invoke executes commands, handles timeouts, and processes queued events.
 func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64, logConfig *config.Log) {
-	lastLaunched := tutil.UnixNano()
+	lastLaunched := time.Now().UnixNano()
 
 	commandSize := len(commandStringList)
 
@@ -219,7 +220,7 @@ func logCommandEnd(logConfig *config.Log, commandString string, elapsedMs int64)
 }
 
 func makeCommonLogParams(makeCommonLogParams string) map[string]string {
-	now := tutil.Now()
+	now := time.Now()
 	return map[string]string{
 		"command": makeCommonLogParams,
 		"YYYY":    now.Format("2006"),
@@ -251,9 +252,6 @@ func getMatchedCommand(filePath string, commandConfigs []config.Command) (string
 	var result string
 	var resultError error
 	for _, c := range commandConfigs {
-		if c.Cmd == "" || c.Ext == "" && c.Re == "" {
-			continue
-		}
 		if c.Match(filePath) {
 			command, err := render(c.Cmd, filePath)
 			result = command

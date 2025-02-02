@@ -8,6 +8,7 @@ package tutil
 
 import (
 	"testing"
+	"time"
 )
 
 func Test(t *testing.T) {
@@ -16,22 +17,25 @@ func Test(t *testing.T) {
 		t.Fatal()
 	}
 
-	fileTime := GetFileModifiedTime("time.go")
+	fileTime := GetFileModifiedTime("tutil.go")
+	if fileTime == 0 {
+		t.Fatal()
+	}
 
-	Sleep(1)
-	now1 := UnixNano()
+	time.Sleep(1 * time.Millisecond)
+	now1 := time.Now().UnixNano()
 
 	if now1 < fileTime {
 		t.Fatal()
 	}
 
 	ch := After(5)
-	now2 := UnixNano()
+	now2 := time.Now().UnixNano()
 	if now2 < now1 {
 		t.Fatal()
 	}
 	<-ch
-	now3 := UnixNano()
+	now3 := time.Now().UnixNano()
 	if now3 < now2 {
 		t.Fatal()
 	}

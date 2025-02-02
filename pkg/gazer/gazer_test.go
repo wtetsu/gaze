@@ -12,9 +12,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/wtetsu/gaze/pkg/config"
-	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 func TestBasic(t *testing.T) {
@@ -31,7 +31,7 @@ func TestBasic(t *testing.T) {
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig()
+	c, err := config.LoadPreferredConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -46,7 +46,7 @@ func TestBasic(t *testing.T) {
 		if gazer.InvokeCount() >= 4 {
 			break
 		}
-		tutil.Sleep(50)
+		time.Sleep(50 * time.Millisecond)
 	}
 
 	if gazer.InvokeCount() < 4 {
@@ -68,7 +68,7 @@ func TestDoNothing(t *testing.T) {
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig()
+	c, err := config.LoadPreferredConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -83,7 +83,7 @@ func TestDoNothing(t *testing.T) {
 		if gazer.InvokeCount() >= 4 {
 			break
 		}
-		tutil.Sleep(5)
+		time.Sleep(5 * time.Millisecond)
 	}
 
 	if gazer.InvokeCount() > 0 {
@@ -108,7 +108,7 @@ func TestRename(t *testing.T) {
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig()
+	c, err := config.LoadPreferredConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -125,14 +125,14 @@ func TestRename(t *testing.T) {
 		os.Rename(py1, py2)
 		os.Rename(rb1, rb2)
 
-		tutil.Sleep(50)
+		time.Sleep(50 * time.Millisecond)
 
 		touch(py1)
 		os.Rename(py2, py1)
 		touch(rb2)
 		os.Rename(rb2, rb1)
 
-		tutil.Sleep(50)
+		time.Sleep(50 * time.Millisecond)
 	}
 
 	if gazer.InvokeCount() < 10 {
@@ -160,7 +160,7 @@ print("end")
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig()
+	c, err := config.LoadPreferredConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -177,7 +177,7 @@ print("end")
 		if gazer.InvokeCount() >= 2 {
 			break
 		}
-		tutil.Sleep(10)
+		time.Sleep(10 * time.Millisecond)
 	}
 
 	if gazer.InvokeCount() < 2 {
@@ -202,7 +202,7 @@ func TestKill(t *testing.T) {
 	}
 	defer gazer.Close()
 
-	c, err := config.InitConfig()
+	c, err := config.LoadPreferredConfig()
 	if err != nil {
 		t.Fatal()
 	}
@@ -229,7 +229,7 @@ func TestKill(t *testing.T) {
 		if pyKilled && rbKilled {
 			break
 		}
-		tutil.Sleep(10)
+		time.Sleep(10 * time.Millisecond)
 	}
 
 	if !pyKilled || !rbKilled {
@@ -276,7 +276,7 @@ func TestInvalidCommand(t *testing.T) {
 		if gazer.InvokeCount() >= 1 {
 			break
 		}
-		tutil.Sleep(5)
+		time.Sleep(5 * time.Millisecond)
 	}
 
 	if gazer.InvokeCount() > 0 {

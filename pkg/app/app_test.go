@@ -46,13 +46,7 @@ func TestCreateCommandConfigWithFile(t *testing.T) {
 	if commandConfigs == nil || err != nil {
 		t.Fatal(err)
 	}
-	if commandConfigs.Commands[0].Ext != ".py" {
-		t.Fatal()
-	}
-	if commandConfigs.Commands[1].Ext != ".rb" {
-		t.Fatal()
-	}
-	if commandConfigs.Commands[2].Ext != ".js" {
+	if len(commandConfigs.Commands) != 0 {
 		t.Fatal()
 	}
 }
@@ -68,11 +62,11 @@ func TestEndTopEnd(t *testing.T) {
 
 	go Start(watchFiles, userCommand, file, appOptions)
 
-	time.Sleep(100)
+	time.Sleep(100 * time.Millisecond)
 	touch(rb)
-	time.Sleep(100)
+	time.Sleep(100 * time.Millisecond)
 	touch(py)
-	time.Sleep(300)
+	time.Sleep(300 * time.Millisecond)
 }
 
 func TestEndTopEndError(t *testing.T) {

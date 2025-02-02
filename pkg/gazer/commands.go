@@ -9,9 +9,9 @@ package gazer
 import (
 	"os/exec"
 	"sync"
+	"time"
 
 	"github.com/wtetsu/gaze/pkg/notify"
-	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 type commands struct {
@@ -41,7 +41,7 @@ func (c *commands) update(key string, cmd *exec.Cmd) {
 		delete(c.commands, key)
 		return
 	}
-	c.commands[key] = command{cmd: cmd, lastLaunched: tutil.UnixNano()}
+	c.commands[key] = command{cmd: cmd, lastLaunched: time.Now().UnixNano()}
 }
 
 func (c *commands) get(key string) *command {

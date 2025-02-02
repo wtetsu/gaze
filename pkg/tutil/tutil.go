@@ -21,20 +21,6 @@ func GetFileModifiedTime(filePath string) int64 {
 	return fileInfo.ModTime().UnixNano()
 }
 
-// UnixNano returns current time as a int64 value.
-func UnixNano() int64 {
-	return time.Now().UnixNano()
-}
-
-func Now() time.Time {
-	return time.Now()
-}
-
-// Sleep sleeps milliseconds time
-func Sleep(d time.Duration) {
-	time.Sleep(d * time.Millisecond)
-}
-
 // After waits for the duration.
 func After(d int64) <-chan struct{} {
 	ch := make(chan struct{})
