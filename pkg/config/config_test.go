@@ -21,7 +21,7 @@ func TestNewWithFixedCommand(t *testing.T) {
 	}
 
 	config, err := NewWithFixedCommand("")
-	if err == nil {
+	if err == nil || config != nil {
 		t.Fatal()
 	}
 }

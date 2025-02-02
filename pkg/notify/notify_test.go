@@ -195,11 +195,11 @@ func TestFindCandidatesDirectories(t *testing.T) {
 	for _, rawData := range testDataList {
 		actual := findCandidatesDirectories(rawData.args)
 		if !reflect.DeepEqual(actual, rawData.expected) {
-			t.Fatal(fmt.Sprintf("param: %s, actual:%s, expected:%s",
+			t.Fatalf("param: %s, actual:%s, expected:%s",
 				strings.Join(rawData.args, ","),
 				strings.Join(actual, ","),
 				strings.Join(rawData.expected, ","),
-			))
+			)
 		}
 	}
 }
@@ -284,11 +284,11 @@ func TestParsePathPattern(t *testing.T) {
 		actual := parsePathPattern(rawData.arg)
 
 		if !reflect.DeepEqual(actual, rawData.expected) {
-			t.Fatal(fmt.Sprintf("param: %s, actual:%s, expected:%s",
+			t.Fatalf("param: %s, actual:%s, expected:%s",
 				rawData.arg,
 				strings.Join(actual, ","),
 				strings.Join(rawData.expected, ","),
-			))
+			)
 		}
 	}
 }

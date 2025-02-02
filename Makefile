@@ -28,3 +28,10 @@ clean:
 	rm -f ${OUT}/macos-arm/$(BINARY_NAME)
 	rm -f ${OUT}/windows/$(BINARY_NAME)
 	rm -f ${OUT}/linux/$(BINARY_NAME)
+check-cross-compile:
+	@echo "Checking cross-compiled binaries..."
+	@file ${OUT}/linux/gaze       | grep -c "ELF 64-bit LSB executable, x86-64" | grep -q "1" || (echo "Error: Linux binary is not correctly built"     && exit 1)
+	@file ${OUT}/macos_amd/gaze   | grep -c "Mach-O 64-bit x86_64 executable"   | grep -q "1" || (echo "Error: macOS amd binary is not correctly built" && exit 1)
+	@file ${OUT}/macos_arm/gaze   | grep -c "Mach-O 64-bit arm64 executable"    | grep -q "1" || (echo "Error: macOS arm binary is not correctly built" && exit 1)
+	@file ${OUT}/windows/gaze.exe | grep -c "x86-64, for MS Windows"            | grep -q "1" || (echo "Error: Windows binary is not correctly built"   && exit 1)
+	@echo "Cross-compilation check passed!"
