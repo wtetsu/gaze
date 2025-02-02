@@ -19,7 +19,6 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/wtetsu/gaze/pkg/logger"
-	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 func TestUtilFunctions(t *testing.T) {
@@ -339,7 +338,7 @@ func TestUpdate(t *testing.T) {
 		if count >= 2 {
 			break
 		}
-		tutil.Sleep(20)
+		time.Sleep(20 * time.Millisecond)
 	}
 	if count < 2 {
 		t.Fatalf("count:%d", count)
@@ -396,7 +395,7 @@ func TestCreateAndMove(t *testing.T) {
 		if count >= 4 {
 			break
 		}
-		tutil.Sleep(20)
+		time.Sleep(20 * time.Millisecond)
 	}
 
 	if count < 4 {
@@ -458,7 +457,7 @@ func TestDelete(t *testing.T) {
 	os.Remove(py1)
 	os.Remove(py2)
 
-	tutil.Sleep(20)
+	time.Sleep(20 * time.Millisecond)
 
 	if count != 0 {
 		t.Fatalf("count:%d", count)
@@ -520,7 +519,7 @@ func TestQueue(t *testing.T) {
 		if count >= 2 {
 			break
 		}
-		tutil.Sleep(20)
+		time.Sleep(20 * time.Millisecond)
 	}
 	if count < 2 {
 		t.Fatalf("count:%d", count)
@@ -589,7 +588,7 @@ func TestShouldExecute(t *testing.T) {
 
 	// Test 2: Too frequent Write event.
 	// Set lastExecutionTime to current time and update file mod time to now.
-	now := tutil.UnixNano()
+	now := time.Now().UnixNano()
 	n.times[tmpFile] = now
 	_, err := os.Stat(tmpFile)
 	if err != nil {
@@ -614,7 +613,7 @@ func TestShouldExecute(t *testing.T) {
 	// Test 4: Valid Rename event.
 	// For Rename, the elapsed time is measured as (now - file mod time).
 	// Set file mod time to current time so that elapsed is small.
-	now = tutil.UnixNano()
+	now = time.Now().UnixNano()
 	n.times[tmpFile] = 0
 	currentTime = time.Unix(0, now)
 	err = os.Chtimes(tmpFile, currentTime, currentTime)
@@ -629,7 +628,7 @@ func TestShouldExecute(t *testing.T) {
 	// Test 5: Too old Rename event.
 	// Set the file modification time in the past such that
 	// (current time - modifiedTime) > regardRenameAsModPeriod*1e6.
-	pastTime := tutil.UnixNano() - (n.regardRenameAsModPeriod*1000000 + 1)
+	pastTime := time.Now().UnixNano() - (n.regardRenameAsModPeriod*1000000 + 1)
 	past := time.Unix(0, pastTime)
 	err = os.Chtimes(tmpFile, past, past)
 	if err != nil {

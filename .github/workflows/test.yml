@@ -16,12 +16,13 @@ jobs:
     steps:
       - name: Install tools
         run: curl --version
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Checkout code
-        uses: actions/checkout@v4
+          cache: true
       - name: Test
         if: matrix.os != 'ubuntu-latest'
         uses: nick-fields/retry@v2

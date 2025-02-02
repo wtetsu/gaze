@@ -9,9 +9,9 @@ package gazer
 import (
 	"os/exec"
 	"testing"
+	"time"
 
 	"github.com/wtetsu/gaze/pkg/notify"
-	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 func TestCommandsBasic1(t *testing.T) {
@@ -70,20 +70,20 @@ func TestCommandsParallel(t *testing.T) {
 	go func() {
 		for i := 0; i < 100; i++ {
 			commands.get(key)
-			tutil.Sleep(1)
+			time.Sleep(1 * time.Millisecond)
 		}
 	}()
 	go func() {
 		for i := 0; i < 100; i++ {
 			var cmd exec.Cmd
 			commands.update(key, &cmd)
-			tutil.Sleep(1)
+			time.Sleep(1 * time.Millisecond)
 		}
 	}()
 	go func() {
 		for i := 0; i < 100; i++ {
 			commands.update(key, nil)
-			tutil.Sleep(1)
+			time.Sleep(1 * time.Millisecond)
 		}
 	}()
 

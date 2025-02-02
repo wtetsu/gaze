@@ -14,6 +14,7 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
 	"github.com/mattn/go-shellwords"
 	"github.com/wtetsu/gaze/pkg/logger"
@@ -85,7 +86,7 @@ func executeCommand(cmd *exec.Cmd) (int64, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	start := tutil.UnixNano()
+	start := time.Now().UnixNano()
 	cmd.Start()
 
 	if cmd.Process != nil {
@@ -95,7 +96,7 @@ func executeCommand(cmd *exec.Cmd) (int64, error) {
 	}
 	err := cmd.Wait()
 
-	elapsed := tutil.UnixNano() - start
+	elapsed := time.Now().UnixNano() - start
 	return elapsed, err
 }
 

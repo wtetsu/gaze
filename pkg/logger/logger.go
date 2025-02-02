@@ -62,15 +62,12 @@ func Colorful() {
 
 // Plain disables colorful output
 func Plain() {
-	printInfo = func(format string, a ...interface{}) {
+	naivePrint := func(format string, a ...interface{}) {
 		fmt.Printf(format, a...)
 	}
-	printNotice = func(format string, a ...interface{}) {
-		fmt.Printf(format, a...)
-	}
-	printDebug = func(format string, a ...interface{}) {
-		fmt.Printf(format, a...)
-	}
+	printInfo = naivePrint
+	printNotice = naivePrint
+	printDebug = naivePrint
 	printError = func(format string, a ...interface{}) {
 		fmt.Fprintf(os.Stderr, format, a...)
 	}

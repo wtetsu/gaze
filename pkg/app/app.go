@@ -36,15 +36,18 @@ func Start(watchFiles []string, userCommand string, file string, appOptions AppO
 func createCommandConfig(userCommand string, file string) (*config.Config, error) {
 	if userCommand != "" {
 		logger.Debug("userCommand: %s", userCommand)
-		commandConfigs := config.New(userCommand)
+		commandConfigs, err := config.NewWithFixedCommand(userCommand)
+		if err != nil {
+			return nil, err
+		}
 		return commandConfigs, nil
 	}
 
 	if file != "" {
-		return config.LoadConfig(file)
+		return config.LoadConfigFromFile(file)
 	}
 
-	return config.InitConfig()
+	return config.LoadPreferredConfig()
 }
 
 // ParseArgs parses command arguments.
