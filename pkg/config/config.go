@@ -15,7 +15,7 @@ import (
 	"regexp"
 
 	"github.com/cbroglie/mustache"
-	"github.com/wtetsu/gaze/pkg/fs"
+	"github.com/wtetsu/gaze/pkg/gutil"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"gopkg.in/yaml.v3"
 )
@@ -159,34 +159,38 @@ func toConfig(rawConfig *rawConfig) *Config {
 		sourceLog = defaultRawConfig.Log
 	}
 
-	start, err := mustache.ParseString(sourceLog.Start)
-	if err != nil {
-		logger.Error("Failed to parse start template: %s: %s", err.Error(), sourceLog.Start)
-	}
-	end, err := mustache.ParseString(sourceLog.End)
-	if err != nil {
-		logger.Error("Failed to parse end template: %s: %s", err.Error(), sourceLog.End)
-	}
+	start := parseMustacheTemplate(sourceLog.Start)
+	end := parseMustacheTemplate(sourceLog.End)
 
 	resultConfig.Log = &Log{start: start, end: end}
 
 	return resultConfig
 }
 
+// parseMustacheTemplate parses a mustache template that tolerates errors
+func parseMustacheTemplate(source string) *mustache.Template {
+	template, err := mustache.ParseString(source)
+	if err != nil {
+		logger.Error("Failed to parse template: %s: %s", err.Error(), source)
+		return nil
+	}
+	return template
+}
+
 func searchConfigPath(home string) string {
-	if !fs.IsDir(home) {
+	if !gutil.IsDir(home) {
 		return ""
 	}
 	configDir := path.Join(home, ".config", "gaze")
 	for _, n := range []string{"gaze.yml", "gaze.yaml"} {
 		candidate := path.Join(configDir, n)
-		if fs.IsFile(candidate) {
+		if gutil.IsFile(candidate) {
 			return candidate
 		}
 	}
 	for _, n := range []string{".gaze.yml", ".gaze.yaml"} {
 		candidate := path.Join(home, n)
-		if fs.IsFile(candidate) {
+		if gutil.IsFile(candidate) {
 			return candidate
 		}
 	}
@@ -245,6 +249,9 @@ func (l *Log) RenderEnd(params map[string]string) string {
 }
 
 func renderLog(tmpl *mustache.Template, params map[string]string) string {
+	if tmpl == nil {
+		return ""
+	}
 	log, err := tmpl.Render(params)
 	if err != nil {
 		logger.Error("Failed to render log: %s", err)

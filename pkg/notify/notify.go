@@ -15,9 +15,8 @@ import (
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/fsnotify/fsnotify"
-	"github.com/wtetsu/gaze/pkg/fs"
+	"github.com/wtetsu/gaze/pkg/gutil"
 	"github.com/wtetsu/gaze/pkg/logger"
-	"github.com/wtetsu/gaze/pkg/tutil"
 	"github.com/wtetsu/gaze/pkg/uniq"
 )
 
@@ -196,10 +195,10 @@ func findDirsByPattern(pattern string) []string {
 		targets = append(targets, realDir)
 	}
 
-	_, dirs1 := fs.Find(pattern)
+	_, dirs1 := gutil.Find(pattern)
 	targets = append(targets, dirs1...)
 
-	_, dirs2 := fs.Find(patternDir)
+	_, dirs2 := gutil.Find(patternDir)
 	targets = append(targets, dirs2...)
 
 	return targets
@@ -218,7 +217,7 @@ func findRealDirectory(path string) string {
 	}
 	currentPath = strings.TrimSuffix(currentPath, string(filepath.Separator))
 
-	if fs.IsDir(currentPath) {
+	if gutil.IsDir(currentPath) {
 		return currentPath
 	} else {
 		return ""
@@ -231,7 +230,7 @@ func containsWildcard(path string) bool {
 
 func shouldWatch(dirPath string, candidates []string) bool {
 	dirPathSlash := filepath.ToSlash(dirPath)
-	if !fs.IsDir(dirPathSlash) {
+	if !gutil.IsDir(dirPathSlash) {
 		return false
 	}
 
@@ -267,7 +266,7 @@ func (n *Notify) wait() {
 		case event, ok := <-n.watcher.Events:
 			normalizedName := filepath.Clean(event.Name)
 
-			logger.Debug("fs.IsDir: %s", fs.IsDir(normalizedName))
+			logger.Debug("IsDir: %s", gutil.IsDir(normalizedName))
 			if event.Has(fsnotify.Create) && shouldWatch(normalizedName, n.candidates) {
 				logger.Info("gazing at: %s", normalizedName)
 				n.watchNewDirRecursive(normalizedName)
@@ -323,7 +322,7 @@ func (n *Notify) shouldExecute(filePath string, ev fsnotify.Event) bool {
 
 	lastExecutionTime := n.times[filePath]
 
-	if !fs.IsFile(filePath) {
+	if !gutil.IsFile(filePath) {
 		logger.Debug("skipped: %s: %s (not a file)", filePath, ev.Op)
 		return false
 	}
@@ -333,7 +332,7 @@ func (n *Notify) shouldExecute(filePath string, ev fsnotify.Event) bool {
 		return false
 	}
 
-	modifiedTime := tutil.GetFileModifiedTime(filePath)
+	modifiedTime := gutil.GetFileModifiedTime(filePath)
 
 	if ev.Has(W) || ev.Has(C) {
 		elapsed := modifiedTime - lastExecutionTime

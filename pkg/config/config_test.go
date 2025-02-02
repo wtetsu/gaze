@@ -11,7 +11,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/cbroglie/mustache" // 追加
+	"github.com/cbroglie/mustache"
 )
 
 func TestNewWithFixedCommand(t *testing.T) {
@@ -92,6 +92,28 @@ func TestInvalidYaml(t *testing.T) {
 	}
 }
 
+func TestLoadConfigFromFileInvalidYaml(t *testing.T) {
+	invalidYAML := "invalid: : yaml: ::::"
+	tmpFile, err := os.CreateTemp("", "invalid-config-*.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	_, err = tmpFile.WriteString(invalidYAML)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmpFile.Close()
+
+	cfg, err := LoadConfigFromFile(tmpFile.Name())
+	if err == nil {
+		t.Fatal("expected error when loading a file with invalid YAML")
+	}
+	if cfg != nil {
+		t.Fatal("expected nil configuration when YAML is invalid")
+	}
+}
 func TestSearchConfigPath(t *testing.T) {
 	tempDir, err := os.MkdirTemp("", "__gaze_test")
 	if err != nil {
@@ -222,6 +244,11 @@ func TestRenderLog(t *testing.T) {
 	if result != expected {
 		t.Fatalf("expected %q but got %q", expected, result)
 	}
+
+	result = renderLog(nil, nil)
+	if result != "" {
+		t.Fatalf("expected empty string but got %q", result)
+	}
 }
 
 func TestToConfig(t *testing.T) {
@@ -299,6 +326,34 @@ func TestToConfig(t *testing.T) {
 		t.Errorf("expected end log 'end: Y', got '%s'", endOut)
 	}
 }
+
+func TestToConfigNoCommands(t *testing.T) {
+	// rawConfig with no commands; only log section provided.
+	rawCfg := &rawConfig{
+		Commands: []rawCommand{},
+		Log: &rawLog{
+			Start: "start: {{var}}",
+			End:   "end: {{var}}",
+		},
+	}
+	cfg := toConfig(rawCfg)
+
+	// Expect no commands to be added.
+	if len(cfg.Commands) != 0 {
+		t.Fatalf("expected 0 commands but got %d", len(cfg.Commands))
+	}
+
+	// Validate that log templates are parsed and rendered correctly.
+	startOut := cfg.Log.RenderStart(map[string]string{"var": "test"})
+	if startOut != "start: test" {
+		t.Errorf("expected 'start: test', got %q", startOut)
+	}
+	endOut := cfg.Log.RenderEnd(map[string]string{"var": "test"})
+	if endOut != "end: test" {
+		t.Errorf("expected 'end: test', got %q", endOut)
+	}
+}
+
 func TestParseRawConfigFromFile(t *testing.T) {
 	// Test with valid YAML content
 	validYAML := `
@@ -421,5 +476,43 @@ func TestLoadPreferredRawConfigDefault(t *testing.T) {
 	// Since default configuration is used, we expect Log to be non-nil.
 	if rawCfg.Log == nil {
 		t.Fatal("expected non-nil Log in the default configuration")
+	}
+}
+func TestParseMustacheTemplate(t *testing.T) {
+	t.Run("valid template", func(t *testing.T) {
+		templateStr := "Hello, {{name}}!"
+		tmpl := parseMustacheTemplate(templateStr)
+		if tmpl == nil {
+			t.Fatal("expected non-nil template for valid mustache string")
+		}
+		result, err := tmpl.Render(map[string]string{"name": "World"})
+		if err != nil {
+			t.Fatalf("error rendering template: %s", err)
+		}
+		expected := "Hello, World!"
+		if result != expected {
+			t.Fatalf("expected %q but got %q", expected, result)
+		}
+	})
+
+	t.Run("invalid template", func(t *testing.T) {
+		// An unclosed tag should result in an error during parsing.
+		invalidTemplateStr := "Hello, {{name"
+		tmpl := parseMustacheTemplate(invalidTemplateStr)
+		if tmpl != nil {
+			t.Fatal("expected nil template for invalid mustache string")
+		}
+	})
+}
+func TestRenderLogSimple(t *testing.T) {
+	templateStr := "Test: {{value}}"
+	tmpl, err := mustache.ParseString(templateStr)
+	if err != nil {
+		t.Fatalf("failed to parse template: %s", err)
+	}
+	result := renderLog(tmpl, map[string]string{"value": "OK"})
+	expected := "Test: OK"
+	if result != expected {
+		t.Fatalf("expected %q but got %q", expected, result)
 	}
 }
