@@ -4,7 +4,7 @@
  * Licensed under MIT
  */
 
-package tutil
+package gutil
 
 import (
 	"testing"
@@ -17,7 +17,7 @@ func Test(t *testing.T) {
 		t.Fatal()
 	}
 
-	fileTime := GetFileModifiedTime("tutil.go")
+	fileTime := GetFileModifiedTime("time.go")
 	if fileTime == 0 {
 		t.Fatal()
 	}

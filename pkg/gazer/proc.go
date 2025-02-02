@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/mattn/go-shellwords"
+	"github.com/wtetsu/gaze/pkg/gutil"
 	"github.com/wtetsu/gaze/pkg/logger"
-	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 type CmdResult struct {
@@ -39,7 +39,7 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) (int64, err
 		select {
 		case <-timeout:
 			if cmd.Process == nil {
-				timeout = tutil.After(5)
+				timeout = gutil.After(5)
 				continue
 			}
 			kill(cmd, "Timeout")

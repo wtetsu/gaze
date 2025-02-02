@@ -4,7 +4,7 @@
  * Licensed under MIT
  */
 
-package fs
+package gutil
 
 import (
 	"os"
@@ -18,7 +18,11 @@ import (
 
 // Find returns a list of files and directories that match the pattern.
 func Find(pattern string) ([]string, []string) {
-	foundFiles, err := doublestar.Glob(pattern)
+	return find(pattern, doublestar.Glob)
+}
+
+func find(pattern string, globFunc func(string) ([]string, error)) ([]string, []string) {
+	foundFiles, err := globFunc(pattern)
 	if err != nil {
 		return []string{}, []string{}
 	}
@@ -37,7 +41,7 @@ func doFileDir(entries []string) ([]string, []string) {
 		if stat == nil {
 			continue
 		}
-		if isDir(entry) {
+		if IsDir(entry) {
 			dirUniq.Add(filepath.Clean(entry))
 		} else {
 			fileUniq.Add(entry)
@@ -46,14 +50,6 @@ func doFileDir(entries []string) ([]string, []string) {
 		}
 	}
 	return fileUniq.List(), dirUniq.List()
-}
-
-func isDir(name string) bool {
-	fi, err := os.Stat(name)
-	if err != nil {
-		return false
-	}
-	return fi.IsDir()
 }
 
 // GlobMatch returns true if a pattern matches a path string
@@ -81,20 +77,14 @@ func GlobMatch(rawPattern string, rawFilePath string) bool {
 
 // IsDir returns true if path is a directory.
 func IsDir(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return info.IsDir()
+	info := Stat(path)
+	return info != nil && info.IsDir()
 }
 
 // IsFile returns true if path is a file.
 func IsFile(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return !info.IsDir()
+	info := Stat(path)
+	return info != nil && !info.IsDir()
 }
 
 // Stat returns a FileInfo.

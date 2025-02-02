@@ -16,10 +16,9 @@ import (
 	"time"
 
 	"github.com/wtetsu/gaze/pkg/config"
-	"github.com/wtetsu/gaze/pkg/fs"
+	"github.com/wtetsu/gaze/pkg/gutil"
 	"github.com/wtetsu/gaze/pkg/logger"
 	"github.com/wtetsu/gaze/pkg/notify"
-	"github.com/wtetsu/gaze/pkg/tutil"
 )
 
 // Gazer gazes filesystem.
@@ -167,7 +166,7 @@ func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeou
 
 	commandSize := len(commandStringList)
 
-	timeoutCh := tutil.After(timeout)
+	timeoutCh := gutil.After(timeout)
 	for i, commandString := range commandStringList {
 		logCommandStart(logConfig, commandString, commandSize, i)
 
@@ -241,7 +240,7 @@ func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, ti
 
 func matchAny(watchFiles []string, s string) bool {
 	for _, f := range watchFiles {
-		if fs.GlobMatch(f, s) {
+		if gutil.GlobMatch(f, s) {
 			return true
 		}
 	}

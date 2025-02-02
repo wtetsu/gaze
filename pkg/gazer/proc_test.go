@@ -12,25 +12,25 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wtetsu/gaze/pkg/tutil"
+	"github.com/wtetsu/gaze/pkg/gutil"
 )
 
 func TestProc1(t *testing.T) {
 	// Very normal
 	cmd := createCommand("echo hello")
-	executeCommandOrTimeout(cmd, tutil.After(math.MaxInt64))
+	executeCommandOrTimeout(cmd, gutil.After(math.MaxInt64))
 }
 
 func TestProc2(t *testing.T) {
 	// Kill using timeout
 	cmd := createCommand("sleep 60")
-	executeCommandOrTimeout(cmd, tutil.After(100))
+	executeCommandOrTimeout(cmd, gutil.After(100))
 }
 
 func TestProc3(t *testing.T) {
 	// Kill using a signal
 	cmd := createCommand("sleep 60")
-	go executeCommandOrTimeout(cmd, tutil.After(60*10000))
+	go executeCommandOrTimeout(cmd, gutil.After(60*10000))
 
 	for {
 		time.Sleep(50 * time.Millisecond)
@@ -69,7 +69,7 @@ func TestProc4(t *testing.T) {
 
 func TestProc5(t *testing.T) {
 	var cmd *exec.Cmd = nil
-	_, err := executeCommandOrTimeout(cmd, tutil.After(100))
+	_, err := executeCommandOrTimeout(cmd, gutil.After(100))
 	if err == nil {
 		t.Fatal()
 	}

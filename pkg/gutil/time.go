@@ -4,7 +4,7 @@
  * Licensed under MIT
  */
 
-package tutil
+package gutil
 
 import (
 	"os"
