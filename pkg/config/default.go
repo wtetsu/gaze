@@ -47,6 +47,5 @@ commands:
 
 log:
   start: "[{{{command}}}]{{step}}"
-  end: "({{elapsed_ms}}ms)"
-`
+  end: "({{elapsed_ms}}ms)"`
 }
