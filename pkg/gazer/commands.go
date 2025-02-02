@@ -23,7 +23,6 @@ type commands struct {
 type command struct {
 	cmd          *exec.Cmd
 	lastLaunched int64
-	event        notify.Event
 }
 
 func newCommands() commands {

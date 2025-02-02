@@ -4,7 +4,7 @@ permissions:
   contents: read
   pull-requests: write
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   test:
@@ -22,19 +22,28 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache: true
       - name: Make
-        run: make build-all-amd
-      - name: Upload Build as Artifact
+        run: make build-all
+      - name: Check Cross-Compilation
+        run: make check-cross-compile
+      - name: Check if manual build
+        id: manual_build
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "is_manual_build=true" >> $GITHUB_OUTPUT
+      - name: Upload Build as Artifact (macOS)
+        if: steps.manual_build.outputs.is_manual_build == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: macos_amd-${{ matrix.go-version }}
-          path: dist/macos_amd-${{ matrix.go-version }}
-      - name: Upload Build as Artifact
+          path: dist/macos_amd
+      - name: Upload Build as Artifact (Linux)
+        if: steps.manual_build.outputs.is_manual_build == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.go-version }}
-          path: dist/linux-${{ matrix.go-version }}
-      - name: Upload Build as Artifact
+          path: dist/linux
+      - name: Upload Build as Artifact (Windows)
+        if: steps.manual_build.outputs.is_manual_build == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: windows-${{ matrix.go-version }}
-          path: dist/windows-${{ matrix.go-version }}
+          path: dist/windows

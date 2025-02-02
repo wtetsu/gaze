@@ -84,12 +84,3 @@ func TestIs(t *testing.T) {
 		t.Fatal()
 	}
 }
-
-func TestSuffix(t *testing.T) {
-	if TrimSuffix("/aaa/bbb/ccc", "/") != "/aaa/bbb/ccc" {
-		t.Fatal()
-	}
-	if TrimSuffix("/aaa/bbb/ccc/", "/") != "/aaa/bbb/ccc" {
-		t.Fatal()
-	}
-}

@@ -59,7 +59,7 @@ func isDir(name string) bool {
 // GlobMatch returns true if a pattern matches a path string
 func GlobMatch(rawPattern string, rawFilePath string) bool {
 	pattern := filepath.ToSlash(rawPattern)
-	filePath := TrimSuffix(filepath.ToSlash(rawFilePath), "/")
+	filePath := strings.TrimSuffix(filepath.ToSlash(rawFilePath), "/")
 
 	ok, _ := doublestar.Match(pattern, filePath)
 	if ok {
@@ -77,13 +77,6 @@ func GlobMatch(rawPattern string, rawFilePath string) bool {
 
 	logger.Debug("rawPattern:%s, rawFilePath:%s, false", rawPattern, rawFilePath)
 	return false
-}
-
-func TrimSuffix(s, suffix string) string {
-	if strings.HasSuffix(s, suffix) {
-		s = s[:len(s)-len(suffix)]
-	}
-	return s
 }
 
 // IsDir returns true if path is a directory.

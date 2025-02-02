@@ -32,3 +32,29 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: dist/*.zip
+
+  license:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        go-version: ["1.23"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+      - name: Install Licenses tool
+        run: go get github.com/google/go-licenses
+      - name: License
+        run: |
+          go-licenses save ./... --save_path=license
+          go-licenses csv ./... | tee license/license.csv
+          zip -r ./license.zip ./license
+      - name: Upload
+        uses: softprops/action-gh-release@v1
+        with:
+          files: license.zip

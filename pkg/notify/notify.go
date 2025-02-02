@@ -216,7 +216,7 @@ func findRealDirectory(path string) string {
 
 		currentPath += entries[i] + string(filepath.Separator)
 	}
-	currentPath = fs.TrimSuffix(currentPath, string(filepath.Separator))
+	currentPath = strings.TrimSuffix(currentPath, string(filepath.Separator))
 
 	if fs.IsDir(currentPath) {
 		return currentPath
