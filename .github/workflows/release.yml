@@ -26,10 +26,18 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
           cache: true
+      - name: Check version
+        run: |
+          VERSION_FILE=$(cmd/gaze/version)
+          TAG_VERSION=${GITHUB_REF##*/}
+          if [ "$VERSION_FILE" != "$TAG_VERSION" ]; then
+            echo "Error: Version in version file ($VERSION_FILE) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
       - name: Build
-        run: sh build.sh ${GITHUB_REF##*/}
+        run: sh build.sh
       - name: Upload
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*.zip
 
@@ -48,13 +56,13 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache: true
       - name: Install Licenses tool
-        run: go get github.com/google/go-licenses
+        run: go install github.com/google/go-licenses@latest
       - name: License
         run: |
           go-licenses save ./... --save_path=license
           go-licenses csv ./... | tee license/license.csv
           zip -r ./license.zip ./license
       - name: Upload
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: license.zip

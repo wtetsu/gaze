@@ -7,6 +7,7 @@
 package main
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -17,13 +18,13 @@ import (
 	"github.com/wtetsu/gaze/pkg/logger"
 )
 
-const version = "v1.1.7"
+//go:embed version
+var version string
 
 const (
 	errTimeout      = "timeout must be more than 0"
 	errColor        = "color must be 0 or 1"
 	errMaxWatchDirs = "maxWatchDirs must be more than 0"
-	versionInfo     = "gaze " + version
 )
 
 func main() {
@@ -71,7 +72,7 @@ func earlyExit(args *app.Args) (bool, int) {
 	}
 
 	if args.Version() {
-		fmt.Println(versionInfo)
+		fmt.Println("gaze " + version)
 		return true, 0
 	}
 
