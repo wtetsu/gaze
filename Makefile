@@ -39,6 +39,6 @@ check-cross-compile:
 	@echo "Cross-compilation check passed!"
 package: clean build-all check-cross-compile
 	@for plat in $(PLATFORMS); do \
-	  cp LICENSE README.md ${OUT}/gaze_$${plat}_${VERSION}; \
-	  (cd ${OUT} && zip -r gaze_$${plat}_${VERSION}.zip ./gaze_$${plat}_${VERSION}); \
+		cp LICENSE README.md ${OUT}/gaze_$${plat}_${VERSION}; \
+		(cd ${OUT} && zip -r gaze_$${plat}_${VERSION}.zip ./gaze_$${plat}_${VERSION}); \
 	done
