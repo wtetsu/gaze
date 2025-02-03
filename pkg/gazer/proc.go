@@ -22,16 +22,18 @@ import (
 )
 
 type CmdResult struct {
-	Elapsed int64
-	Err     error
+	StartTime time.Time
+	EndTime   time.Time
+	Err       error
 }
 
-func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) (int64, error) {
+func executeCommandOrTimeout(cmd *exec.Cmd, timeoutMills int64) CmdResult {
 	exec := executeCommandAsync(cmd)
 
-	var err error
 	var cmdResult CmdResult
+	var launchedTime = time.Now()
 	finished := false
+	timeout := gutil.After(timeoutMills)
 	for {
 		if finished {
 			break
@@ -44,24 +46,24 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeout <-chan struct{}) (int64, err
 			}
 			kill(cmd, "Timeout")
 			finished = true
-			err = errors.New("")
+			cmdResult = CmdResult{StartTime: launchedTime, EndTime: time.Now(), Err: errors.New("timeout")}
 		case cmdResult = <-exec:
-			err = cmdResult.Err
 			finished = true
 		}
 	}
-	if err != nil {
-		return 0, err
+	if cmdResult.Err != nil {
+		return cmdResult
 	}
 
 	if cmd.ProcessState != nil {
 		exitCode := cmd.ProcessState.ExitCode()
 		if exitCode != 0 {
-			return cmdResult.Elapsed, fmt.Errorf("exitCode:%d", exitCode)
+			cmdResult.Err = fmt.Errorf("exitCode:%d", exitCode)
+			return cmdResult
 		}
 	}
 
-	return cmdResult.Elapsed, nil
+	return cmdResult
 }
 
 func executeCommandAsync(cmd *exec.Cmd) <-chan CmdResult {
@@ -72,21 +74,17 @@ func executeCommandAsync(cmd *exec.Cmd) <-chan CmdResult {
 			ch <- CmdResult{Err: errors.New("failed: cmd is nil")}
 			return
 		}
-		elapsed, err := executeCommand(cmd)
-		if err != nil {
-			ch <- CmdResult{Err: err}
-			return
-		}
-		ch <- CmdResult{Elapsed: elapsed, Err: nil}
+		cmdResult := executeCommand(cmd)
+		ch <- cmdResult
 	}()
 	return ch
 }
 
-func executeCommand(cmd *exec.Cmd) (int64, error) {
+func executeCommand(cmd *exec.Cmd) CmdResult {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	start := time.Now().UnixNano()
+	start := time.Now()
 	cmd.Start()
 
 	if cmd.Process != nil {
@@ -96,8 +94,8 @@ func executeCommand(cmd *exec.Cmd) (int64, error) {
 	}
 	err := cmd.Wait()
 
-	elapsed := time.Now().UnixNano() - start
-	return elapsed, err
+	end := time.Now()
+	return CmdResult{StartTime: start, EndTime: end, Err: err}
 }
 
 func kill(cmd *exec.Cmd, reason string) bool {
