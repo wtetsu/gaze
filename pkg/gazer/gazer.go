@@ -62,11 +62,11 @@ func (g *Gazer) Close() {
 }
 
 // Run starts to gaze.
-func (g *Gazer) Run(configs *config.Config, timeout int64, restart bool) error {
-	if timeout <= 0 {
+func (g *Gazer) Run(configs *config.Config, timeoutMills int64, restart bool) error {
+	if timeoutMills <= 0 {
 		return errors.New("timeout must be more than 0")
 	}
-	err := g.repeatRunAndWait(configs, timeout, restart)
+	err := g.repeatRunAndWait(configs, timeoutMills, restart)
 	return err
 }
 
@@ -74,7 +74,7 @@ func (g *Gazer) Run(configs *config.Config, timeout int64, restart bool) error {
 // - Executes corresponding commands based on provided configuration
 // - Handles process restarts and timeouts if needed
 // - Gracefully shuts down upon receiving a SIGINT signal
-func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, restart bool) error {
+func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeoutMills int64, restart bool) error {
 	sigInt := sigIntChannel()
 
 	isTerminated := false
@@ -87,7 +87,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 			logger.Debug("Receive: %s", event.Name)
 
 			// This line is expected to not be executed concurrently by multiple threads.
-			g.handleEvent(commandConfigs, timeout, restart, event)
+			g.handleEvent(commandConfigs, timeoutMills, restart, event)
 
 		case <-sigInt:
 			isTerminated = true
@@ -97,7 +97,7 @@ func (g *Gazer) repeatRunAndWait(commandConfigs *config.Config, timeout int64, r
 }
 
 // handleEvent processes the received file system event.
-func (g *Gazer) handleEvent(config *config.Config, timeout int64, restart bool, event notify.Event) {
+func (g *Gazer) handleEvent(config *config.Config, timeoutMills int64, restart bool, event notify.Event) {
 	commandStringList := g.tryToFindCommand(event.Name, config.Commands)
 	if commandStringList == nil {
 		return
@@ -122,7 +122,7 @@ func (g *Gazer) handleEvent(config *config.Config, timeout int64, restart bool, 
 	g.invokeCount++
 
 	go func() {
-		g.invoke(commandStringList, queueManageKey, timeout, config.Log)
+		g.invoke(commandStringList, queueManageKey, timeoutMills, config.Log)
 		logger.Debug("Unlock: %s", queueManageKey)
 		mutex.Unlock()
 	}()
@@ -161,21 +161,20 @@ func (g *Gazer) lock(queueManageKey string) *sync.Mutex {
 }
 
 // invoke executes commands, handles timeouts, and processes queued events.
-func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeout int64, logConfig *config.Log) {
+func (g *Gazer) invoke(commandStringList []string, queueManageKey string, timeoutMills int64, logConfig *config.Log) {
 	lastLaunched := time.Now().UnixNano()
 
 	commandSize := len(commandStringList)
 
-	timeoutCh := gutil.After(timeout)
 	for i, commandString := range commandStringList {
 		logCommandStart(logConfig, commandString, commandSize, i)
 
-		elapsed, err := g.invokeOneCommand(commandString, queueManageKey, timeoutCh)
-
+		cmdResult := g.invokeOneCommand(commandString, queueManageKey, timeoutMills)
+		elapsed := cmdResult.EndTime.UnixNano() - cmdResult.StartTime.UnixNano()
 		logCommandEnd(logConfig, commandString, elapsed/1_000_000)
-		if err != nil {
-			if len(err.Error()) > 0 {
-				logger.NoticeObject(err)
+		if cmdResult.Err != nil {
+			if len(cmdResult.Err.Error()) > 0 {
+				logger.NoticeObject(cmdResult.Err)
 			}
 			break
 		}
@@ -232,10 +231,10 @@ func makeCommonLogParams(makeCommonLogParams string) map[string]string {
 	}
 }
 
-func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutCh <-chan struct{}) (int64, error) {
+func (g *Gazer) invokeOneCommand(commandString string, queueManageKey string, timeoutMills int64) CmdResult {
 	cmd := createCommand(commandString)
 	g.commands.update(queueManageKey, cmd)
-	return executeCommandOrTimeout(cmd, timeoutCh)
+	return executeCommandOrTimeout(cmd, timeoutMills)
 }
 
 func matchAny(watchFiles []string, s string) bool {
