@@ -46,7 +46,7 @@ func executeCommandOrTimeout(cmd *exec.Cmd, timeoutMills int64) CmdResult {
 			}
 			kill(cmd, "Timeout")
 			finished = true
-			cmdResult = CmdResult{StartTime: launchedTime, EndTime: time.Now(), Err: errors.New("timeout")}
+			cmdResult = CmdResult{StartTime: launchedTime, EndTime: time.Now(), Err: errors.New("")}
 		case cmdResult = <-exec:
 			finished = true
 		}
