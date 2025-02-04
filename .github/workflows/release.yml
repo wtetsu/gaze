@@ -1,7 +1,7 @@
 name: Release
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 on:
@@ -10,8 +10,7 @@ on:
       - "v*.*.*"
 
 jobs:
-  build:
-    name: Release
+  release:
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -28,7 +27,7 @@ jobs:
           cache: true
       - name: Verify version
         run: |
-          VERSION_FILE=$(cmd/gaze/version)
+          VERSION_FILE=$(cat cmd/gaze/version)
           TAG_VERSION=${GITHUB_REF##*/}
           if [ "$VERSION_FILE" != "$TAG_VERSION" ]; then
             echo "Error: Version in version file ($VERSION_FILE) does not match tag version ($TAG_VERSION)"

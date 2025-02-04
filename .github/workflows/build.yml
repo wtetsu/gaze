@@ -7,7 +7,7 @@ permissions:
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  test:
+  build:
     strategy:
       matrix:
         os: [ubuntu-latest]
