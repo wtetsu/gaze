@@ -14,31 +14,29 @@
 </p>
 
 
-# What is Gaze?
+# 👁️Gaze: Save & Run
 
-👁️Gaze runs a command, **right after** you save a file.
 
-It significantly enhances your coding efficiency by allowing you to focus on writing code!
+Focus on your code, not commands!
 
 <img src="https://github.com/user-attachments/assets/a7be2e53-b516-419e-afea-735fa7bc095e" width="800px" />
 
----
+----
 
-Setting up Gaze is easy.
 
-```
-gaze .
-```
+Repetitive command execution after each edit is a common frustration that disrupts our development flow. 😵‍💫
 
-Then, invoke your favorite editor on another terminal and edit it!
+Let Gaze handle it!
 
-```
-vi a.py
-```
+- Save a.py -> 👁️Runs `python a.py`
+- Save a.rb -> 👁️Runs `rubocop`
+- Save a.go -> 👁️Runs `make build`
+- Save Dockerfile -> 👁️Runs `docker build`
+- And so forth...
 
 ## Installation
 
-### Brew (for macOS)
+### Homebrew (macOS)
 
 ```
 brew install gaze
@@ -46,43 +44,36 @@ brew install gaze
 
 Or, [download binary](https://github.com/wtetsu/gaze/releases)
 
-## Usage examples
+## Quick start
 
-- Modify a.py -> 👁️Runs `python a.py`
-- Modify a.rb -> 👁️Runs `rubocop`
-- Modify a.js -> 👁️Runs `npm run lint`
-- Modify a.go -> 👁️Runs `make build`
-- Modify Dockerfile -> 👁️Runs `docker build`
-- And so forth...
 
----
+Setting up Gaze is easy.
 
-Software development often requires us to repeatedly execute the same command manually.
+```
+gaze .
+```
 
-For example, when writing a simple Python script, you may create a.py file, write a few lines of code, and run `python a.py`. If the result isn't what you expected, you edit a.py and run `python a.py` again.
+Then, open your favorite editor in another terminal and start editing!
 
-Again and again...
 
-As a result, you may find yourself constantly switching between the editor and terminal, typing the same command repeatedly.
+```
+vi a.py
+```
 
-This can be a frustrating and time-consuming process that drains your energy🙄
 
----
-
-👁️Gaze runs a command for you, **right after** you save a file.
 
 ## Why Gaze? (Features)
 
 Gaze is designed as a CLI tool that accelerates your coding.
 
 - 📦 Easy to use, out-of-the-box
-- ⚡ Super quick reaction
+- ⚡ Lightning-fast response
 - 🌎 Language-agnostic, editor-agnostic
 - 🔧 Flexible configuration
 - 📝 Create-and-rename file actions handling
 - 🔍 Advanced options for more control
-  - `-r`: restart (useful for server applications)
-  - `-t 2000`: timeout (useful if you sometimes write infinite loops)
+  - `-r`: Restart mode (useful for server applications)
+  - `-t 2000`: Timeout (useful for preventing infinite loops)
 - 🚀 Optimal parallel handling
   - See also: [Parallel handling](/doc/parallel.md)
   - <img src="doc/img/p04.png" width="300">
@@ -92,11 +83,11 @@ Gaze is designed as a CLI tool that accelerates your coding.
 
 Gaze was developed for supporting daily coding.
 
-While many "update-and-run" tools exist, Gaze stands out for its focus on rapid coding, thanks to its carefully considered technical design.
+While many "update-and-run" tools exist, Gaze stands out with its focus on accelerating your coding workflow through a carefully considered technical design.
 
-# How to use Gaze
+# How to use
 
-The top priority of the Gaze's design is "easy to invoke".
+Gaze prioritizes ease of use with its simple invocation.
 
 ```
 gaze .
@@ -104,7 +95,7 @@ gaze .
 
 Then, switch to another terminal and run `vi a.py`. Gaze executes a.py in response to your file modifications.
 
-### Other examples
+---
 
 Gaze at one file.
 
@@ -114,7 +105,7 @@ gaze a.py
 
 ---
 
-Specify files with pattern matching (\*, \*\*, ?, {, })
+Specify files using pattern matching (\*, \*\*, ?, {, })
 
 ```
 gaze "*.py"
@@ -130,7 +121,7 @@ gaze "{aaa,bbb}/*.{rb,py}"
 
 ---
 
-Specify an arbitrary command by `-c` option.
+Specify a custom command by `-c` option.
 
 ```
 gaze "src/**/*.js" -c "eslint {{file}}"
@@ -138,7 +129,7 @@ gaze "src/**/*.js" -c "eslint {{file}}"
 
 ---
 
-Kill the previous one before launching a new process. This is useful if you are writing a server.
+Kill the previous process before launching a new process. This is useful if you are writing a server.
 
 ```
 gaze -r server.py
@@ -146,7 +137,7 @@ gaze -r server.py
 
 ---
 
-Kill an ongoing process after 1000(ms). This is useful if you love infinite loops.
+Kill a running process after 1000(ms). This is useful if you love infinite loops.
 
 ```
 gaze -t 1000 complicated.py
@@ -154,7 +145,7 @@ gaze -t 1000 complicated.py
 
 ---
 
-Specify multiple commands in quotations, separated by newlines.
+Specify multiple commands within quotes, separated by newlines.
 
 ```
 gaze "*.cpp" -c "gcc {{file}} -o a.out
@@ -174,7 +165,8 @@ Output when a.cpp was updated.
 hello, world!
 ```
 
-If a command exited with non-zero, Gaze won't execute the subsequent commands.
+Gaze will not execute subsequent commands if a command exits with a non-zero status.
+
 
 ```
 [gcc a.cpp -o a.out](1/3)
@@ -190,77 +182,94 @@ exit status 1
 
 ### Configuration
 
-Gaze is Language-agnostic.
+Gaze is language-agnostic.
 
-For convenience, it has useful default configurations for some major languages (e.g. Go, Python, Ruby, JavaScript, Rust, and so forth)
+For convenience, it provides helpful default configurations for a variety of popular languages (e.g., Go, Python, Ruby, JavaScript, Rust, etc.).
 
-Thanks to the default configurations, the command below is valid.
 
 ```
 gaze a.py
 ```
 
-The above command is equivalent to `gaze a.py -c 'python "{{file}}"'`.
+By default, this command is equivalent to `gaze a.py -c 'python "{{file}}"'` because the default configuration includes:
+
+```yaml
+commands:
+- ext: .py
+  cmd: python "{{file}}"
+```
+
 
 
 You can view the default YAML configuration using `gaze -y`.
 
+
+<details>
+<summary>The default configuration</summary>
+
 ```yaml
 commands:
-  - ext: .go
-    cmd: go run "{{file}}"
-  - ext: .py
-    cmd: python "{{file}}"
-  - ext: .rb
-    cmd: ruby "{{file}}"
-  - ext: .js
-    cmd: node "{{file}}"
-  - ext: .d
-    cmd: dmd -run "{{file}}"
-  - ext: .groovy
-    cmd: groovy "{{file}}"
-  - ext: .php
-    cmd: php "{{file}}"
-  - ext: .java
-    cmd: java "{{file}}"
-  - ext: .kts
-    cmd: kotlinc -script "{{file}}"
-  - ext: .rs
-    cmd: |
-      rustc "{{file}}" -o"{{base0}}.out"
-      ./"{{base0}}.out"
-  - ext: .cpp
-    cmd: |
-      gcc "{{file}}" -o"{{base0}}.out"
-      ./"{{base0}}.out"
-  - ext: .ts
-    cmd: |
-      tsc "{{file}}" --out "{{base0}}.out"
-      node ./"{{base0}}.out"
-  - ext: .zig
-    cmd: zig run "{{file}}"
-  - re: ^Dockerfile$
-    cmd: docker build -f "{{file}}" .
+- ext: .go
+  cmd: go run "{{file}}"
+- ext: .py
+  cmd: python "{{file}}"
+- ext: .rb
+  cmd: ruby "{{file}}"
+- ext: .js
+  cmd: node "{{file}}"
+- ext: .d
+  cmd: dmd -run "{{file}}"
+- ext: .groovy
+  cmd: groovy "{{file}}"
+- ext: .php
+  cmd: php "{{file}}"
+- ext: .java
+  cmd: java "{{file}}"
+- ext: .kts
+  cmd: kotlinc -script "{{file}}"
+- ext: .rs
+  cmd: |
+    rustc "{{file}}" -o"{{base0}}.out"
+    ./"{{base0}}.out"
+- ext: .cpp
+  cmd: |
+    gcc "{{file}}" -o"{{base0}}.out"
+    ./"{{base0}}.out"
+- ext: .ts
+  cmd: |
+    tsc "{{file}}" --out "{{base0}}.out"
+    node ./"{{base0}}.out"
+- ext: .zig
+  cmd: zig run "{{file}}"
+- re: ^Dockerfile$
+  cmd: docker build -f "{{file}}" .
+
+log:
+  start: "[{{{command}}}]{{step}}"
+  end: "({{elapsed_ms}}ms)"
 ```
 
-Note:
+</details>
 
-- It's prohibited to specify both 'ext' and 're' for a single command
-- 'cmd' can accept multiple commands. Use vertical line(|) to write multiple commands
+---
 
-If you want to customize it, please set up your own configuration file.
+To customize your configuration, create your own configuration file:
+
 
 ```
 gaze -y > ~/.gaze.yml
 vi ~/.gaze.yml
 ```
 
-Gaze searches a configuration file according to its priority rule.
+Gaze searches for a configuration file in the following order:
 
 1. A file specified by -f option
 1. ~/.config/gaze/gaze.yml
 1. ~/.gaze.yml
 1. (Default)
+
+
+
 
 
 ### Options:
@@ -294,7 +303,7 @@ For more information: https://github.com/wtetsu/gaze
 
 ### Command format
 
-You can write [Mustache](<https://en.wikipedia.org/wiki/Mustache_(template_system)>) templates for commands.
+You can use [Mustache](<https://en.wikipedia.org/wiki/Mustache_(template_system)>) templates in your commands.
 
 ```
 gaze -c "echo {{file}} {{ext}} {{abs}}" .
@@ -308,6 +317,7 @@ gaze -c "echo {{file}} {{ext}} {{abs}}" .
 | {{base0}} | main                      |
 | {{dir}}   | src/mod1                  |
 | {{abs}}   | /my/proj/src/mod1/main.py |
+
 
 # Third-party data
 
