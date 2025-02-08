@@ -1,8 +1,6 @@
 
 <p align="center">
   <img width="500" src="https://user-images.githubusercontent.com/515948/179385932-48ea38a3-3bbb-4f45-8d68-63dc076e757d.png" alt="gaze logo" />
-  <br/>
-  Gaze is gazing at you
 </p>
 
 <p align="center">
@@ -24,7 +22,7 @@ Focus on your code, not commands!
 ----
 
 
-Repetitive command execution after each edit is a common frustration that disrupts our development flow. 😵‍💫
+😵‍💫 Rerunning commands after each edit disrupts your flow.
 
 Let Gaze handle it!
 
@@ -42,7 +40,7 @@ Let Gaze handle it!
 brew install gaze
 ```
 
-Or, [download binary](https://github.com/wtetsu/gaze/releases)
+Or, [download binary](https://github.com/wtetsu/gaze/releases) (macOS, Windows, Linux)
 
 ## Quick start
 
@@ -50,6 +48,7 @@ Or, [download binary](https://github.com/wtetsu/gaze/releases)
 Setting up Gaze is easy.
 
 ```
+# Gaze current directory
 gaze .
 ```
 
@@ -71,13 +70,9 @@ Gaze is designed as a CLI tool that accelerates your coding.
 - 🌎 Language-agnostic, editor-agnostic
 - 🔧 Flexible configuration
 - 📝 Create-and-rename file actions handling
-- 🔍 Advanced options for more control
-  - `-r`: Restart mode (useful for server applications)
-  - `-t 2000`: Timeout (useful for preventing infinite loops)
 - 🚀 Optimal parallel handling
   - See also: [Parallel handling](/doc/parallel.md)
   - <img src="doc/img/p04.png" width="300">
-- 💻 Multiplatform (macOS, Windows, Linux)
 
 ---
 
