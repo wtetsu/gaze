@@ -76,9 +76,7 @@ Gaze is designed as a CLI tool that accelerates your coding.
 
 ---
 
-Gaze was developed for supporting daily coding.
-
-While many "update-and-run" tools exist, Gaze stands out with its focus on accelerating your coding workflow through a carefully considered technical design.
+Plenty of 'update-and-run' tools exist, but if you're coding, Gaze is the  ideal choice — it's designed for coding flow.
 
 # How to use
 
