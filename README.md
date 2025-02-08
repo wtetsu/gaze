@@ -63,7 +63,7 @@ vi a.py
 
 ## Why Gaze? (Features)
 
-Gaze is designed as a CLI tool that accelerates your coding.
+Plenty of 'update-and-run' tools exist, but if you're coding, Gaze is the  ideal choice — it's designed for coding flow.
 
 - 📦 Easy to use, out-of-the-box
 - ⚡ Lightning-fast response
@@ -74,9 +74,6 @@ Gaze is designed as a CLI tool that accelerates your coding.
   - See also: [Parallel handling](/doc/parallel.md)
   - <img src="doc/img/p04.png" width="300">
 
----
-
-Plenty of 'update-and-run' tools exist, but if you're coding, Gaze is the  ideal choice — it's designed for coding flow.
 
 # How to use
 
