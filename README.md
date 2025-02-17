@@ -235,7 +235,7 @@ commands:
   cmd: docker build -f "{{file}}" .
 
 log:
-  start: "[{{{command}}}]{{step}}"
+  start: "[{{command}}]{{step}}"
   end: "({{elapsed_ms}}ms)"
 ```
 

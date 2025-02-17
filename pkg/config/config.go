@@ -169,7 +169,7 @@ func toConfig(rawConfig *rawConfig) *Config {
 
 // parseMustacheTemplate parses a mustache template that tolerates errors
 func parseMustacheTemplate(source string) *mustache.Template {
-	template, err := mustache.ParseString(source)
+	template, err := mustache.ParseStringRaw(source, true)
 	if err != nil {
 		logger.Error("Failed to parse template: %s: %s", err.Error(), source)
 		return nil

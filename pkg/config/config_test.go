@@ -191,13 +191,13 @@ func createTempFile(pattern string, content string) string {
 func TestRenderStartEnd(t *testing.T) {
 	logConf := &Log{}
 
-	startTmpl, err := mustache.ParseString("Start: {{key}}")
+	startTmpl, err := mustache.ParseStringRaw("Start: {{key}}", true)
 	if err != nil {
 		t.Fatalf("failed to parse start template: %s", err)
 	}
 	logConf.start = startTmpl
 
-	endTmpl, err := mustache.ParseString("End: {{key}}")
+	endTmpl, err := mustache.ParseStringRaw("End: {{key}}", true)
 	if err != nil {
 		t.Fatalf("failed to parse end template: %s", err)
 	}
@@ -226,7 +226,7 @@ func TestRenderStartEnd(t *testing.T) {
 
 func TestRenderLog(t *testing.T) {
 	templateStr := "Hello, {{name}}!"
-	tmpl, err := mustache.ParseString(templateStr)
+	tmpl, err := mustache.ParseStringRaw(templateStr, true)
 	if err != nil {
 		t.Fatalf("failed to parse template: %s", err)
 	}
@@ -506,7 +506,7 @@ func TestParseMustacheTemplate(t *testing.T) {
 }
 func TestRenderLogSimple(t *testing.T) {
 	templateStr := "Test: {{value}}"
-	tmpl, err := mustache.ParseString(templateStr)
+	tmpl, err := mustache.ParseStringRaw(templateStr, true)
 	if err != nil {
 		t.Fatalf("failed to parse template: %s", err)
 	}
