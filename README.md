@@ -63,7 +63,7 @@ vi a.py
 
 ## Why Gaze? (Features)
 
-Plenty of 'update-and-run' tools exist, but if you're coding, Gaze is the  ideal choice — it's designed for coding flow.
+Plenty of 'update-and-run' tools exist, but if you're coding, Gaze is the ideal choice — it's designed for coding flow.
 
 - 📦 Easy to use, out-of-the-box
 - ⚡ Lightning-fast response
@@ -195,7 +195,7 @@ You can view the default YAML configuration using `gaze -y`.
 
 
 <details>
-<summary>The default configuration</summary>
+<summary>⚙️The default configuration</summary>
 
 ```yaml
 commands:
@@ -265,19 +265,19 @@ Gaze searches for a configuration file in the following order:
 ### Options:
 
 ```
-Usage: gaze [options...] file(s)
+Usage: gaze [options] file(s)
 
 Options:
-  -c  Command(s) to run when files are changed.
-  -r  Restart mode. Sends SIGTERM to the ongoing process before invoking the next command.
-  -t  Timeout(ms). Sends SIGTERM to the ongoing process after the specified time has elapsed.
-  -f  Specify a YAML configuration file.
-  -v  Verbose mode. Displays additional information.
-  -q  Quiet mode. Suppresses normal output.
-  -y  Displays the default YAML configuration.
-  -h  Displays help.
-  --color    Color mode (0:plain, 1:colorful).
-  --version  Display version information.
+  -c <command>    Command(s) to run when files change.
+  -r              Restart mode: send SIGTERM to the running process before starting the next command.
+  -t <time_ms>    Timeout (ms): send SIGTERM to the running process after the specified time.
+  -f <file>       Path to a YAML configuration file.
+  -v              Verbose mode: show additional information.
+  -q              Quiet mode: suppress normal output.
+  -y              Show the default YAML configuration.
+  -h              Show help.
+  --color <mode>  Set color mode (0: plain, 1: colorful).
+  --version       Show version information.
 
 Examples:
   gaze .

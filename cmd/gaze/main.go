@@ -123,13 +123,13 @@ func validate(args *app.Args) error {
 }
 
 func usage1() string {
-	return `Usage: gaze [options...] file(s)
+	return `Usage: gaze [options] file(s)
 
 Options(excerpt):
-  -c  Command(s) to run when files are changed.
-  -r  Restart mode. Sends SIGTERM to the ongoing process before invoking the next command.
-  -t  Timeout(ms). Sends SIGTERM to the ongoing process after the specified time has elapsed.
-  -h  Displays help.
+  -c <command>    Command(s) to run when files change.
+  -r              Restart mode: send SIGTERM to the running process before starting the next command.
+  -t <time_ms>    Timeout (ms): send SIGTERM to the running process after the specified time.
+  -h              Show help.
 
 Examples:
   gaze .
@@ -144,19 +144,19 @@ For more information: https://github.com/wtetsu/gaze`
 }
 
 func usage2() string {
-	return `Usage: gaze [options...] file(s)
+	return `Usage: gaze [options] file(s)
 
 Options:
-  -c  Command(s) to run when files are changed.
-  -r  Restart mode. Sends SIGTERM to the ongoing process before invoking the next command.
-  -t  Timeout(ms). Sends SIGTERM to the ongoing process after the specified time has elapsed.
-  -f  Specify a YAML configuration file.
-  -v  Verbose mode. Displays additional information.
-  -q  Quiet mode. Suppresses normal output.
-  -y  Displays the default YAML configuration.
-  -h  Displays help.
-  --color    Color mode (0:plain, 1:colorful).
-  --version  Display version information.
+  -c <command>    Command(s) to run when files change.
+  -r              Restart mode: send SIGTERM to the running process before starting the next command.
+  -t <time_ms>    Timeout (ms): send SIGTERM to the running process after the specified time.
+  -f <file>       Path to a YAML configuration file.
+  -v              Verbose mode: show additional information.
+  -q              Quiet mode: suppress normal output.
+  -y              Show the default YAML configuration.
+  -h              Show help.
+  --color <mode>  Set color mode (0: plain, 1: colorful).
+  --version       Show version information.
 
 Examples:
   gaze .
