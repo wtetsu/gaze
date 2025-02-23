@@ -85,17 +85,19 @@ func executeCommand(cmd *exec.Cmd) CmdResult {
 	cmd.Stderr = os.Stderr
 
 	start := time.Now()
-	cmd.Start()
+	err := cmd.Start()
+	if err != nil {
+		return CmdResult{StartTime: start, EndTime: time.Now(), Err: err}
+	}
 
 	if cmd.Process != nil {
 		logger.Info("Pid: %d", cmd.Process.Pid)
 	} else {
 		logger.Info("Pid: ????")
 	}
-	err := cmd.Wait()
+	err = cmd.Wait()
 
-	end := time.Now()
-	return CmdResult{StartTime: start, EndTime: end, Err: err}
+	return CmdResult{StartTime: start, EndTime: time.Now(), Err: err}
 }
 
 func kill(cmd *exec.Cmd, reason string) bool {
