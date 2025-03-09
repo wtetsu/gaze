@@ -227,7 +227,7 @@ commands:
     ./"{{base0}}.out"
 - ext: .ts
   cmd: |
-    tsc "{{file}}" --out "{{base0}}.out"
+    tsc "{{file}}" --outFile "{{base0}}.out"
     node ./"{{base0}}.out"
 - ext: .zig
   cmd: zig run "{{file}}"
