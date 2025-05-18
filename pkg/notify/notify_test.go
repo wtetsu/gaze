@@ -303,9 +303,9 @@ func TestUpdate(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	pattens := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
+	patterns := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
 
-	notify, err := New(pattens, 100)
+	notify, err := New(patterns, 100)
 	if err != nil {
 		t.Fatal()
 	}
@@ -418,14 +418,14 @@ func TestDelete(t *testing.T) {
 		t.Fatal("Temp files error")
 	}
 
-	pattens := []string{
+	patterns := []string{
 		filepath.Dir(rb1) + "/*.rb",
 		filepath.Dir(rb2) + "/*.rb",
 		filepath.Dir(py1) + "/*.py",
 		filepath.Dir(py2) + "/*.py",
 	}
 
-	notify, err := New(pattens, 100)
+	notify, err := New(patterns, 100)
 	if err != nil {
 		t.Fatal()
 	}
@@ -480,9 +480,9 @@ func TestQueue(t *testing.T) {
 	rbCommand := fmt.Sprintf(`ruby "%s"`, rb)
 	pyCommand := fmt.Sprintf(`python "%s"`, py)
 
-	pattens := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
+	patterns := []string{filepath.Dir(rb) + "/*.rb", filepath.Dir(rb) + "/*.py"}
 
-	notify, err := New(pattens, 100)
+	notify, err := New(patterns, 100)
 	if err != nil {
 		t.Fatal()
 	}
