@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/wtetsu/gaze/pkg/config"
@@ -119,7 +120,7 @@ func (g *Gazer) handleEvent(config *config.Config, timeoutMills int64, restart b
 
 	mutex := g.lock(queueManageKey)
 
-	g.invokeCount++
+	atomic.AddUint64(&g.invokeCount, 1)
 
 	go func() {
 		g.invoke(commandStringList, queueManageKey, timeoutMills, config.Log)
@@ -275,5 +276,5 @@ func splitCommand(commandString string) []string {
 
 // InvokeCount returns the current execution counter
 func (g *Gazer) InvokeCount() uint64 {
-	return g.invokeCount
+	return atomic.LoadUint64(&g.invokeCount)
 }
