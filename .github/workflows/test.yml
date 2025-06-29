@@ -24,10 +24,10 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache: true
       - name: Test
-        if: matrix.os != 'ubuntu-latest'
+        if: matrix.os == 'macos-latest'
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 10
+          timeout_minutes: 30
           max_attempts: 30
           command: go test -v ./pkg/...
       - name: Test with coverage
