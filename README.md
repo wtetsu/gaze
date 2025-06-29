@@ -74,6 +74,33 @@ Plenty of 'update-and-run' tools exist, but if you're coding, Gaze is the ideal 
   - See also: [Parallel handling](/doc/parallel.md)
   - <img src="doc/img/p04.png" width="300">
 
+## 🤖 Perfect with AI Agents!
+
+Gaze works amazingly well with AI coding agents like Claude Code! Here's how this powerful combination works:
+
+```mermaid
+flowchart LR
+    subgraph cycle [" "]
+        A[🤖 AI Agent] -->|edits| B[📁 Files]
+        B -->|watches| C[👁️ Gaze]
+        C -->|outputs| D[📊 Results<br/>Tests • Lint • Output]
+        D -->|reads| A
+    end
+```
+
+1. **AI Agent edits files** - Claude Code modifies your source files, configs, or data
+2. **Gaze watches and runs** - Automatically executes tests, builds, linters, or data processing
+3. **Results feed back** - AI Agent reads the output and continues the cycle
+
+
+### Common AI + Gaze Patterns:
+- 🧪 **Test-driven development**: Auto-run tests as AI writes code
+- 📊 **Data pipeline**: Regenerate charts/reports when AI updates data
+- 🔨 **Build automation**: Rebuild projects as AI modifies source
+- 🚀 **Live development**: Restart servers when AI edits configs
+
+This combo is a game-changer for AI-assisted development! 🚀
+
 
 # How to use
 
