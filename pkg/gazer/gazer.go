@@ -26,7 +26,7 @@ import (
 type Gazer struct {
 	patterns    []string
 	notify      *notify.Notify
-	isClosed    bool
+	isClosed    atomic.Int32 // 0: false, 1: true (atomic access for thread safety)
 	invokeCount uint64
 	commands    commands
 	mutexes     sync.Map
@@ -44,9 +44,9 @@ func New(patterns []string, maxWatchDirs int) (*Gazer, error) {
 		return nil, err
 	}
 	return &Gazer{
-		patterns:    cleanPatterns,
-		notify:      notify,
-		isClosed:    false,
+		patterns: cleanPatterns,
+		notify:   notify,
+		// isClosed is auto-initialized to 0 (false) with atomic.Int32
 		invokeCount: 0,
 		commands:    newCommands(),
 		mutexes:     sync.Map{},
@@ -55,11 +55,12 @@ func New(patterns []string, maxWatchDirs int) (*Gazer, error) {
 
 // Close disposes internal resources.
 func (g *Gazer) Close() {
-	if g.isClosed {
-		return
+	// Use atomic.Int32.CompareAndSwap to avoid race conditions
+	// Only proceed with Close() if we successfully change 0->1
+	if !g.isClosed.CompareAndSwap(0, 1) {
+		return // Already closed
 	}
 	g.notify.Close()
-	g.isClosed = true
 }
 
 // Run starts to gaze.
