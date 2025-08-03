@@ -6,10 +6,12 @@
 <p align="center">
   <a href="https://github.com/wtetsu/gaze/actions?query=workflow%3ATest"><img src="https://github.com/wtetsu/gaze/workflows/Test/badge.svg" alt="Test" /></a>
   <a href="https://goreportcard.com/report/github.com/wtetsu/gaze"><img src="https://goreportcard.com/badge/github.com/wtetsu/gaze" alt="Go Report Card" /></a>
-  <a href="https://codeclimate.com/github/wtetsu/gaze/maintainability"><img src="https://api.codeclimate.com/v1/badges/bd322b9104f5fcd3e37e/maintainability" alt="Maintainability" /></a>
+  <!-- <a href="https://qlty.sh/gh/wtetsu/projects/gaze"><img src="https://qlty.sh/gh/wtetsu/projects/gaze/maintainability.svg" alt="Maintainability" /></a> -->
   <a href="https://codecov.io/gh/wtetsu/gaze"><img src="https://codecov.io/gh/wtetsu/gaze/branch/master/graph/badge.svg" alt="codecov" /></a>
   <a href="https://pkg.go.dev/github.com/wtetsu/gaze"><img src="https://pkg.go.dev/badge/github.com/wtetsu/gaze.svg" alt="Go Reference"></a>
 </p>
+
+
 
 
 # 👁️Gaze: Save & Run
