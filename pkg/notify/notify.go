@@ -64,7 +64,7 @@ func New(patterns []string, maxWatchDirs int) (*Notify, error) {
 	watchDirs := findActualDirs(candidates, maxWatchDirs)
 
 	if len(watchDirs) > maxWatchDirs {
-		logger.Error(strings.Join(watchDirs[:maxWatchDirs], "\n") + "\n...")
+		logger.Error("%s\n...", strings.Join(watchDirs[:maxWatchDirs], "\n"))
 		return nil, errors.New("too many watchDirs")
 	}
 

@@ -142,7 +142,7 @@ func toConfig(rawConfig *rawConfig) *Config {
 			if err == nil {
 				resultConfig.Commands = append(resultConfig.Commands, Command{Cmd: rawCmd.Cmd, Ext: rawCmd.Ext, re: re})
 			} else {
-				logger.Error("Failed to compile regexp: " + err.Error())
+				logger.Error("Failed to compile regexp: %s", err)
 			}
 			continue
 		}

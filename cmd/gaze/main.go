@@ -52,7 +52,7 @@ func main() {
 
 	err := validate(args)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("%s", err)
 		return
 	}
 

@@ -1,6 +1,6 @@
 module github.com/wtetsu/gaze
 
-go 1.24.4
+go 1.27.0
 
 require (
 	github.com/bmatcuk/doublestar v1.3.4

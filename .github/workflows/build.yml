@@ -2,48 +2,52 @@ name: Build
 
 permissions:
   contents: read
-  pull-requests: write
 
 on: [push, pull_request, workflow_dispatch]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        go-version: ["1.24"]
+        go-version: ["1.27"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go-version }}
-          cache: true
       - name: Make
         run: make build-all
       - name: Check Cross-Compilation
         run: make check-cross-compile
-      - name: Check if manual build
-        id: manual_build
+      - name: Upload Build as Artifact (macOS amd64)
         if: github.event_name == 'workflow_dispatch'
-        run: echo "is_manual_build=true" >> $GITHUB_OUTPUT
-      - name: Upload Build as Artifact (macOS)
-        if: steps.manual_build.outputs.is_manual_build == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos_amd-${{ matrix.go-version }}
-          path: dist/macos_amd
+          path: dist/gaze_macos_amd_*
+      - name: Upload Build as Artifact (macOS arm64)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos_arm-${{ matrix.go-version }}
+          path: dist/gaze_macos_arm_*
       - name: Upload Build as Artifact (Linux)
-        if: steps.manual_build.outputs.is_manual_build == 'true'
-        uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
         with:
           name: linux-${{ matrix.go-version }}
-          path: dist/linux
+          path: dist/gaze_linux_*
       - name: Upload Build as Artifact (Windows)
-        if: steps.manual_build.outputs.is_manual_build == 'true'
-        uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
         with:
           name: windows-${{ matrix.go-version }}
-          path: dist/windows
+          path: dist/gaze_windows_*

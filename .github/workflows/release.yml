@@ -2,7 +2,6 @@ name: Release
 
 permissions:
   contents: write
-  pull-requests: write
 
 on:
   push:
@@ -14,54 +13,33 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        go-version: ["1.24"]
+        go-version: ["1.27"]
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go-version }}
-          cache: true
       - name: Verify version
         run: |
           VERSION_FILE=$(cat cmd/gaze/version)
-          TAG_VERSION=${GITHUB_REF##*/}
+          TAG_VERSION=${GITHUB_REF_NAME}
           if [ "$VERSION_FILE" != "$TAG_VERSION" ]; then
             echo "Error: Version in version file ($VERSION_FILE) does not match tag version ($TAG_VERSION)"
             exit 1
           fi
       - name: Package
         run: make package
-      - name: Upload
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*.zip
-
-  license:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        go-version: ["1.24"]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-          cache: true
-      - name: Install Licenses tool
-        run: go install github.com/google/go-licenses@latest
       - name: License
         run: |
-          go-licenses save ./... --save_path=license
-          go-licenses csv ./... | tee license/license.csv
+          go run github.com/google/go-licenses/v2@v2.0.1 save ./... --save_path=license
+          go run github.com/google/go-licenses/v2@v2.0.1 csv ./... | tee license/license.csv
           zip -r ./license.zip ./license
       - name: Upload
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          files: license.zip
+          files: |
+            dist/*.zip
+            license.zip
